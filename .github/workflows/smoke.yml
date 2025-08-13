@@ -1,0 +1,42 @@
+name: smoke
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - run: npm ci
+
+      # 秘匿キーの静的チェック
+      - name: Check for service role key exposure
+        run: |
+          if grep -R "SUPABASE_SERVICE_ROLE_KEY" src | grep -E 'components|app/.+page|client.tsx?'; then
+            echo "❌ Service role key found in client-side code!"
+            exit 1
+          fi
+          echo "✅ No service role key exposure detected"
+
+      # CI用スモーク。CSVは認証必須なので、ADMIN_COOKIE があればチェック
+      - name: Run smoke:ci
+        env:
+          CI: "1"
+          BASE: "http://localhost:3000"
+          ADMIN_COOKIE: ${{ secrets.ADMIN_COOKIE }} # 任意（後述）
+        run: |
+          # 開発サーバーを起動
+          npm run dev &
+          # 起動待ち
+          sleep 10
+          # smoke テスト実行
+          npm run smoke:ci
