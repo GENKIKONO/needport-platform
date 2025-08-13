@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { getPageviewsSafe } from "@/lib/server/metrics"; // 新規ユーティリティ（次パッチ）
+import { getPageviewsSafe } from "@/lib/server/metrics";
 import Link from "next/link";
 
 export default async function PageviewsPage() {
