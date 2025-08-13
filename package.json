@@ -28,7 +28,7 @@
     "smoke": "bash scripts/smoke.sh",
     "smoke:ci": "BASE=${BASE:-http://localhost:3000} CI=1 bash scripts/smoke.sh",
     "smoke:schedule": "ts-node scripts/smoke-schedule.ts",
-    "vercel-build": "next build",
+    "vercel-build": "DISABLE_METRICS=1 next build",
     "backup:db": "./scripts/backup-db.sh",
     "backup:storage": "echo 'Storage backup not implemented yet'",
     "backup:full": "npm run backup:db && npm run backup:storage",
