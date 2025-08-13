@@ -16,7 +16,13 @@ jobs:
           node-version: 20
           cache: "npm"
 
-      - run: npm ci
+      - name: Install deps (prefer ci)
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
 
       # 秘匿キーの静的チェック
       - name: Check for service role key exposure
