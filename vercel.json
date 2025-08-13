@@ -1,10 +1,10 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
   "framework": "nextjs",
   "outputDirectory": ".next",
-
-  "installCommand": "npm ci --legacy-peer-deps",
   "buildCommand": "npm run vercel-build",
-
+  "installCommand": "npm ci --legacy-peer-deps",
   "headers": [
     {
       "source": "/(.*)",
@@ -18,22 +18,16 @@
     },
     {
       "source": "/_next/static/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     },
     {
       "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store" }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
     }
   ],
-
   "crons": [
     { "path": "/api/admin/cron/daily", "schedule": "0 0 * * *" }
   ],
-
   "functions": {
     "src/app/api/**/*.ts": { "maxDuration": 30 }
   }

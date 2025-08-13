@@ -42,8 +42,7 @@ export async function POST(req: Request) {
     }
 
     // Insert metadata to database
-    // @ts-expect-error - Supabase type issue
-    const { data: attachment, error: dbError } = await admin
+    const { data: attachment, error: dbError } = await (admin as any)
       .from("attachments")
       .insert({
         need_id: needId,
