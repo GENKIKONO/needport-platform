@@ -6,68 +6,33 @@
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=()"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options",       "value": "DENY" },
+        { "key": "X-XSS-Protection",      "value": "1; mode=block" },
+        { "key": "Referrer-Policy",       "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy",    "value": "camera=(), microphone=(), geolocation=()" }
       ]
     },
     {
       "source": "/_next/static/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
       "source": "/api/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
+        { "key": "Cache-Control", "value": "no-store" }
       ]
     }
   ],
+  "functions": {
+    "src/app/api/**/*.ts": { "maxDuration": 30 }
+  },
   "crons": [
     {
-      "path": "/api/admin/cron/close-expired",
+      "path": "/api/admin/cron/daily",
       "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/admin/backup/run",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/admin/jobs/threshold/run",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/admin/jobs/moderations/notify",
-      "schedule": "*/10 * * * *"
     }
-  ],
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
