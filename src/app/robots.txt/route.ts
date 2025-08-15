@@ -5,10 +5,18 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const isProduction = process.env.NODE_ENV === 'production';
   const isStaging = process.env.NEXT_PUBLIC_APP_ENV === 'staging';
+  const isNoIndex = process.env.NEXT_PUBLIC_SITE_NOINDEX === '1';
   
   let robotsContent = '';
   
-  if (isProduction && !isStaging) {
+  if (isNoIndex) {
+    // Force no-index mode
+    robotsContent = `User-agent: *
+Disallow: /
+
+# No indexing mode enabled
+# This site should not be indexed`;
+  } else if (isProduction && !isStaging) {
     // Production - allow all
     robotsContent = `User-agent: *
 Allow: /

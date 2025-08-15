@@ -5,7 +5,14 @@ const ADMIN_COOKIE = "np_admin";
 const ADMIN_PREFIX = "/admin";
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const { pathname, hostname } = req.nextUrl;
+  
+  // www → apex redirect
+  if (hostname === 'www.needport.jp') {
+    const url = req.nextUrl.clone();
+    url.hostname = 'needport.jp';
+    return NextResponse.redirect(url, 301);
+  }
   
   // Skip for assets and API routes that should be public
   if (
@@ -46,5 +53,9 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/admin/:path*", 
+    "/api/:path*"
+  ],
 };
