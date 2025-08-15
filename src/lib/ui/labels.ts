@@ -1,5 +1,20 @@
 // UI ラベル管理（B2B 語彙調整用）
 
+const MAP = {
+  Offer: { ja: '提案', en: 'Proposal' },
+  Adopt: { ja: '採用', en: 'Hire' },
+  Supporter: { ja: '賛同者', en: 'Endorser' },
+  Entry: { ja: 'エントリー', en: 'Entry' },
+  Payment: { ja: '決済', en: 'Payment' },
+  ComingSoon: { ja: '近日対応', en: 'Coming Soon' },
+} as const;
+
+export type LabelKey = keyof typeof MAP;
+
+export function label(k: LabelKey, lang: 'ja'|'en' = 'ja') {
+  return MAP[k]?.[lang] ?? String(k);
+}
+
 export const UI_LABELS = {
   // 既存（個人向け）
   personal: {

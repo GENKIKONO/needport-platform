@@ -4,28 +4,19 @@ import type { B2BApiResponse } from '@/lib/types/b2b';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+const notYet = (todo: string) =>
+  Response.json({ ok: false, todo }, { status: 501 });
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
-): Promise<NextResponse<B2BApiResponse>> {
-  return NextResponse.json(
-    {
-      ok: false,
-      todo: 'Reviews list API - Phase 2 implementation pending'
-    },
-    { status: 501 }
-  );
+): Promise<Response> {
+  return notYet('Reviews list API - Phase 2 implementation pending');
 }
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
-): Promise<NextResponse<B2BApiResponse>> {
-  return NextResponse.json(
-    {
-      ok: false,
-      todo: 'Review creation API - Phase 2 implementation pending'
-    },
-    { status: 501 }
-  );
+): Promise<Response> {
+  return notYet('Review creation API - Phase 2 implementation pending');
 }

@@ -9,6 +9,7 @@ import ConditionBadge from './ConditionBadge';
 import JoinGate from './JoinGate';
 import { STRIPE_ENABLED } from '@/lib/featureFlags';
 import { SCALE_LABEL, isCommunity, mainCtaLabel } from '@/lib/domain/need';
+import { label, shouldShowPayments } from '@/lib/ui/labels';
 
 interface NeedCardProps {
   need: Need;
@@ -99,73 +100,55 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
       });
       
       if (response.ok) {
+        // Update prejoin status
         await checkPrejoinStatus();
-        alert('参加予約をキャンセルしました');
       } else {
         const error = await response.json();
-        alert(error.error || 'キャンセルに失敗しました');
+        alert(error.error || '参加予約キャンセルに失敗しました');
       }
     } catch (error) {
-      alert('キャンセルに失敗しました');
+      alert('参加予約キャンセルに失敗しました');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCardClick = () => {
-    // TODO: Implement card click tracking
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent navigation if clicking on buttons
+    if ((e.target as HTMLElement).closest('button')) {
+      e.preventDefault();
+    }
   };
 
-  const remaining = adoptedOffer 
-    ? Math.max(0, adoptedOffer.min_people - need.prejoin_count)
-    : 0;
+  const remaining = adoptedOffer ? Math.max(0, adoptedOffer.min_people - need.prejoin_count) : 0;
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow ${className}`}>
+    <div 
+      className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow ${className}`}
+      onClick={handleCardClick}
+    >
       {/* ヘッダー */}
-      <div className="mb-4">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
             {need.title}
           </h3>
-          <span className="ml-2 text-sm text-gray-500">
-            {need.area || '全国対応'}
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-2 mb-2">
-          <span className="inline-flex items-center rounded-full bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 text-xs font-medium">
-            {SCALE_LABEL[scale]}
-          </span>
-          <ConditionBadge offer={adoptedOffer} />
-        </div>
-        
-        {/* Community hints block */}
-        {isCommunity(scale) && (need.macro_fee_hint || need.macro_use_freq || need.macro_area_hint) && (
-          <div className="mb-3 p-3 bg-gray-50 rounded-lg text-xs text-gray-600 border border-gray-200">
-            <div className="font-medium mb-2 text-gray-700">概要</div>
-            <div className="space-y-1">
-              {need.macro_fee_hint && (
-                <div><span className="font-medium">会費目安:</span> {need.macro_fee_hint}</div>
-              )}
-              {need.macro_use_freq && (
-                <div><span className="font-medium">利用頻度:</span> {need.macro_use_freq}</div>
-              )}
-              {need.macro_area_hint && (
-                <div><span className="font-medium">対象エリア:</span> {need.macro_area_hint}</div>
-              )}
-            </div>
+          <div className="flex items-center gap-2">
+            <ConditionBadge condition={need.condition} />
+            <span className="text-sm text-gray-500">
+              {SCALE_LABEL[scale]}
+            </span>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* 進捗表示（条件確定時のみ） */}
+      {/* 進捗バー（条件確定時） */}
       {adoptedOffer && (
         <div className="mb-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">参加予約</span>
-            <span className="text-sm font-medium">
-              {need.prejoin_count}名 / {adoptedOffer.min_people}名
+            <span className="text-sm text-gray-600">{label('Payment')}</span>
+            <span className="text-sm font-medium text-blue-600">
+              {need.prejoin_count}/{adoptedOffer.min_people}名
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
@@ -184,7 +167,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
       {!adoptedOffer && (
         <div className="mb-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">賛同</span>
+            <span className="text-sm text-gray-600">{label('Supporter')}</span>
             <span className="text-sm font-medium text-blue-600">
               {need.prejoin_count}名
             </span>
@@ -221,7 +204,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
         >
           共感
         </button>
-        {STRIPE_ENABLED && prejoinStatus?.hasPrejoined ? (
+        {shouldShowPayments() && STRIPE_ENABLED && prejoinStatus?.hasPrejoined ? (
           <button
             onClick={handleCancelPrejoin}
             disabled={isLoading}
@@ -229,7 +212,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
           >
             {isLoading ? '処理中...' : '参加予約キャンセル'}
           </button>
-        ) : STRIPE_ENABLED ? (
+        ) : shouldShowPayments() && STRIPE_ENABLED ? (
           <button
             onClick={handlePrejoin}
             disabled={!adoptedOffer || isLoading}
@@ -237,6 +220,10 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
           >
             {isLoading ? '処理中...' : cta}
           </button>
+        ) : !shouldShowPayments() ? (
+          <div className="flex-1 px-4 py-2 bg-gray-100 text-gray-500 rounded-md text-center min-h-[44px] flex items-center justify-center">
+            {label('ComingSoon')}
+          </div>
         ) : null}
       </div>
 

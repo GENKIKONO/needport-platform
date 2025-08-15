@@ -17,7 +17,15 @@ import {
   createSuccessResponse 
 } from '@/lib/server/response';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
+  // Phase 1: 決済機能を完全無効化
+  if (process.env.PAYMENTS_ENABLED !== '1') {
+    return Response.json({ ok: false, todo: 'payments disabled' }, { status: 501 });
+  }
+
   const config = getStripeWebhookConfig();
 
   if (!config.isConfigured) {

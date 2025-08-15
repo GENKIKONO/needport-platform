@@ -1,15 +1,16 @@
-export const dynamic = "force-dynamic";
+import { NextResponse } from 'next/server';
 
-import { NextResponse } from "next/server";
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const noindex = process.env.NEXT_PUBLIC_SITE_NOINDEX === '1';
   const isProduction = process.env.NODE_ENV === 'production';
   const isStaging = process.env.NEXT_PUBLIC_APP_ENV === 'staging';
-  const isNoIndex = process.env.NEXT_PUBLIC_SITE_NOINDEX === '1';
   
   let robotsContent = '';
   
-  if (isNoIndex) {
+  if (noindex) {
     // Force no-index mode
     robotsContent = `User-agent: *
 Disallow: /
