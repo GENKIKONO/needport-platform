@@ -7,6 +7,8 @@ const MAP = {
   Entry: { ja: 'エントリー', en: 'Entry' },
   Payment: { ja: '決済', en: 'Payment' },
   ComingSoon: { ja: '近日対応', en: 'Coming Soon' },
+  Endorsements: { ja: '賛同', en: 'Endorsements' },
+  UnlockProposals: { ja: '提案は賛同が集まると解禁', en: 'Proposals unlock after endorsements' },
 } as const;
 
 export type LabelKey = keyof typeof MAP;

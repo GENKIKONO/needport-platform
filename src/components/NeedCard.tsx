@@ -10,6 +10,8 @@ import JoinGate from './JoinGate';
 import { STRIPE_ENABLED } from '@/lib/featureFlags';
 import { SCALE_LABEL, isCommunity, mainCtaLabel } from '@/lib/domain/need';
 import { label, shouldShowPayments } from '@/lib/ui/labels';
+import { showB2BFeatures } from '@/lib/flags';
+import { variant, demoEndorseCount } from '@/lib/ab';
 
 interface NeedCardProps {
   need: Need;
@@ -27,6 +29,12 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
   
   const scale = (need.scale ?? 'personal') as 'personal'|'community';
   const cta = mainCtaLabel(scale);
+
+  // B2B 機能表示判定
+  const showB2BHint = showB2BFeatures();
+  const abVariant = typeof window !== 'undefined' ? variant('b2b_endorse_pill_v1') : 'A';
+  const seed = need.id ?? `${need.title}|${need.createdAt}`;
+  const demoCount = demoEndorseCount(seed);
 
   useEffect(() => {
     // Check prejoin status on mount (only if Stripe is enabled)
@@ -140,6 +148,24 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
             </span>
           </div>
         </div>
+        
+        {/* B2B 賛同ピル（右上） */}
+        {showB2BHint && (
+          <div className="flex flex-col items-end gap-1">
+            <div 
+              className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-xs font-medium"
+              data-b2b-endorse-pill="v1"
+            >
+              <span>{label('Endorsements')}</span>
+              <span className="tabular-nums">{demoCount}</span>
+            </div>
+            {abVariant === 'B' && (
+              <div className="text-[10px] text-gray-500 leading-tight">
+                {label('UnlockProposals')}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 進捗バー（条件確定時） */}
