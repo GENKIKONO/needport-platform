@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSmtpConfigured } from "@/lib/mail/smtp";
 
+export const dynamic = 'force-dynamic'; // 静的化しない
+export const runtime = 'nodejs';        // EdgeではなくNodeで実行
+export const revalidate = 0;            // キャッシュ無効
+
 interface HealthCheck {
   name: string;
   status: "ok" | "error" | "warning";

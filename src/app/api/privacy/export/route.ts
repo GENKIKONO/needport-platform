@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { cookies } from "next/headers";
 
+export const dynamic = 'force-dynamic'; // 静的化しない
+export const runtime = 'nodejs';        // EdgeではなくNodeで実行
+export const revalidate = 0;            // キャッシュ無効
+
 export async function GET(request: NextRequest) {
   try {
     // Get client ID from cookie

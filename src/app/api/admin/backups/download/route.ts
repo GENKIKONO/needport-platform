@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export const dynamic = 'force-dynamic'; // 静的化しない
+export const runtime = 'nodejs';        // EdgeではなくNodeで実行
+export const revalidate = 0;            // キャッシュ無効
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
