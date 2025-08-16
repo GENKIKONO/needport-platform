@@ -1,15 +1,29 @@
 // A/B テストユーティリティ（クライアントサイドのみ）
 
-export function variant(name: string, choices: string[] = ['A','B']) {
-  if (typeof window === 'undefined') return choices[0];
-  
+// メモリストレージ（SSR・テスト用フォールバック）
+let memStore = new Map<string, string>();
+
+type KV = { getItem: (k: string) => string | null; setItem: (k: string, v: string) => void };
+
+export function variant(name: string, choices: string[] = ['A','B'], storage?: KV) {
+  // SSR/テスト時のデフォルトは 'A'
+  if (typeof window === 'undefined' && !storage) return choices[0];
+
+  const store: KV = storage
+    ?? (typeof window !== 'undefined' && window.localStorage
+        ? window.localStorage
+        : { getItem: (k) => memStore.get(k) ?? null, setItem: (k,v) => { memStore.set(k, v); } });
+
   const key = `ab:${name}`;
-  let v = localStorage.getItem(key);
+  let v = store.getItem(key);
   
   if (!v) {
     v = choices[Math.random() < 0.5 ? 0 : 1];
-    localStorage.setItem(key, v);
-    console.debug(`[AB] Assigned variant ${v} for ${name}`);
+    store.setItem(key, v);
+    if (process.env.NODE_ENV !== 'test') {
+      // eslint-disable-next-line no-console
+      console.debug?.(`[AB] Assigned variant ${v} for ${name}`);
+    }
   }
   
   return v;

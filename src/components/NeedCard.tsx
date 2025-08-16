@@ -32,7 +32,8 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
 
   // B2B 機能表示判定
   const showB2BHint = showB2BFeatures();
-  const abVariant = typeof window !== 'undefined' ? variant('b2b_endorse_pill_v1') : 'A';
+  const storage = typeof window !== 'undefined' ? window.localStorage : undefined;
+  const abVariant = variant('b2b_endorse_pill_v1', ['A','B'], storage);
   const seed = need.id ?? `${need.title}|${need.createdAt}`;
   const demoCount = demoEndorseCount(seed);
 
