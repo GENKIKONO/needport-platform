@@ -184,7 +184,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
 
   return (
     <div 
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow ${className}`}
+      className={`card ${className}`}
       onClick={handleCardClick}
     >
       {/* ヘッダー */}
