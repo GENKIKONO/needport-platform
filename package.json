@@ -31,6 +31,7 @@
     "smoke:schedule": "ts-node scripts/smoke-schedule.ts",
     "prevercel-build": "rm -rf .next || (rmdir /s /q .next 2> NUL || true)",
     "vercel-build": "DISABLE_METRICS=1 next build",
+    "postvercel-build": "node scripts/guard-next-manifests.mjs",
     "backup:db": "./scripts/backup-db.sh",
     "backup:storage": "echo 'Storage backup not implemented yet'",
     "backup:full": "npm run backup:db && npm run backup:storage",
