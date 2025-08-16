@@ -122,6 +122,26 @@ export default function AdminDashboard() {
     showToast(`提案を${updated.featured ? '注目' : '通常'}に設定しました`);
   };
 
+  const resetDemo = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin:mod-overlay:v1');
+      localStorage.removeItem('admin:demo-projects');
+      localStorage.removeItem('demo:proposals:v1');
+      showToast('デモデータをリセットしました');
+      setTimeout(() => window.location.reload(), 1000);
+    }
+  };
+
+  const seedDemo = () => {
+    if (typeof window !== 'undefined') {
+      const { seedDemoProjects } = require('@/lib/admin/demo-data');
+      const projects = seedDemoProjects();
+      localStorage.setItem('admin:demo-projects', JSON.stringify(projects));
+      showToast('デモデータを再生成しました');
+      setTimeout(() => window.location.reload(), 1000);
+    }
+  };
+
   const saveAndToast = (newProjects: AdminProject[], message: string) => {
     setProjects(newProjects);
     // saveProjects(newProjects); // This line is removed as per the new_code
@@ -239,9 +259,36 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
           Admin Demo Console
         </h1>
+        
+        {/* フラグ表示 */}
+        <div className="text-xs text-gray-500 mb-4" data-testid="flags-indicator">
+          B2B: {process.env.EXPERIMENTAL_B2B === '1' ? 'ON' : 'OFF'} | 
+          NOINDEX: {process.env.NEXT_PUBLIC_SITE_NOINDEX === '1' ? 'ON' : 'OFF'} | 
+          DEMO: {process.env.NEXT_PUBLIC_SHOW_DEMO === '1' ? 'ON' : 'OFF'} | 
+          APPROVAL: {process.env.NEXT_PUBLIC_REQUIRE_APPROVAL === '1' ? 'ON' : 'OFF'}
+        </div>
+        
         <p className="text-gray-600 mb-4">
           デモ用管理画面です。すべての操作はローカルにのみ保存されます。
         </p>
+        
+        {/* Reset/Seed ボタン */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={resetDemo}
+            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+            data-testid="btn-reset-demo"
+          >
+            Reset Demo
+          </button>
+          <button
+            onClick={seedDemo}
+            className="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700"
+            data-testid="btn-seed-demo"
+          >
+            Seed Demo
+          </button>
+        </div>
         
         {/* Export/Import ボタン */}
         <div className="flex gap-2 mb-4">
