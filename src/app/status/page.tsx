@@ -71,8 +71,8 @@ async function checkStorage(): Promise<StatusCheck> {
 async function checkMail(): Promise<StatusCheck> {
   try {
     // Check if mail configuration exists
-    const smtpHost = process.env.SMTP_HOST;
-    const mailFrom = process.env.MAIL_FROM;
+    const smtpHost = process.env.NEXT_PUBLIC_SMTP_HOST || 'Not configured';
+    const mailFrom = process.env.NEXT_PUBLIC_MAIL_FROM || 'Not configured';
     
     if (!smtpHost || !mailFrom) {
       return {

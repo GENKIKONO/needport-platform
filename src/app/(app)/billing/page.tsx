@@ -16,8 +16,27 @@ export default function BillingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if Stripe is configured
+  // Check if Stripe is configured and payments are enabled
   const isStripeConfigured = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  const isPaymentsEnabled = process.env.PAYMENTS_ENABLED === '1';
+  
+  // Don't render if payments are disabled
+  if (!isPaymentsEnabled) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              決済機能は現在無効です
+            </h2>
+            <p className="text-gray-600">
+              決済機能は近日中にリリース予定です。
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (isLoaded && user) {
