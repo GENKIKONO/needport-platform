@@ -9,6 +9,16 @@ const MAP = {
   ComingSoon: { ja: '近日対応', en: 'Coming Soon' },
   Endorsements: { ja: '賛同', en: 'Endorsements' },
   UnlockProposals: { ja: '提案は賛同が集まると解禁', en: 'Proposals unlock after endorsements' },
+  Proposals: { ja: '提案', en: 'Proposals' },
+  CompareProposals: { ja: '提案を比較', en: 'Compare proposals' },
+  Vendor: { ja: 'ベンダー', en: 'Vendor' },
+  Price: { ja: '価格', en: 'Price' },
+  Duration: { ja: '期間', en: 'Duration' },
+  Deliverables: { ja: '成果物', en: 'Deliverables' },
+  Risk: { ja: 'リスク', en: 'Risk' },
+  Updated: { ja: '更新', en: 'Updated' },
+  NoProposals: { ja: 'まだ提案はありません', en: 'No proposals yet' },
+  UnlockAtTen: { ja: '賛同10で提案解禁', en: 'Proposals unlock at 10 endorsements' },
 } as const;
 
 export type LabelKey = keyof typeof MAP;

@@ -12,6 +12,8 @@ import { SCALE_LABEL, isCommunity, mainCtaLabel } from '@/lib/domain/need';
 import { label, shouldShowPayments } from '@/lib/ui/labels';
 import { showB2BFeatures } from '@/lib/flags';
 import { variant, demoEndorseCount } from '@/lib/ab';
+import { demoProposals } from '@/lib/b2b-demo';
+import ProposalCompare from './ProposalCompare';
 
 interface NeedCardProps {
   need: Need;
@@ -26,6 +28,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
     status: string | null;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showProposals, setShowProposals] = useState(false);
   
   const scale = (need.scale ?? 'personal') as 'personal'|'community';
   const cta = mainCtaLabel(scale);
@@ -34,8 +37,9 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
   const showB2BHint = showB2BFeatures();
   const storage = typeof window !== 'undefined' ? window.localStorage : undefined;
   const abVariant = variant('b2b_endorse_pill_v1', ['A','B'], storage);
-  const seed = need.id ?? `${need.title}|${need.createdAt}`;
+  const seed = need.id ?? `${need.title}|${Date.now()}`;
   const demoCount = demoEndorseCount(seed);
+  const demoProposalList = demoProposals(seed, 3);
 
   useEffect(() => {
     // Check prejoin status on mount (only if Stripe is enabled)
@@ -166,6 +170,22 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
                 {label('UnlockProposals')}
               </div>
             )}
+            
+            {/* 提案比較ボタン */}
+            <button
+              onClick={() => setShowProposals(!showProposals)}
+              className="text-xs text-blue-600 hover:text-blue-800 underline"
+              data-testid="btn-compare-proposals"
+            >
+              {label('CompareProposals')}
+            </button>
+            
+            {/* 賛同閾値未満の演出 */}
+            {abVariant === 'B' && demoCount < 10 && (
+              <div className="text-[10px] text-gray-400">
+                {label('UnlockAtTen')}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -260,6 +280,11 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
         <div className="mb-4 text-xs text-gray-500">
           ※ 残人数の表示は、提供者提示の成⽴条件（min_people）に基づく表⽰です。
         </div>
+      )}
+
+      {/* 提案比較テーブル（B2B機能） */}
+      {showB2BHint && showProposals && (
+        <ProposalCompare proposals={demoProposalList} />
       )}
 
       {/* 詳細リンク */}

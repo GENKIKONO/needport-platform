@@ -68,3 +68,13 @@ export type EndorsementPreview = {
   demoCount: number;
   // 注意: これは実データではなく、UI表示用のダミー値です
 };
+
+export type ProposalPreview = {
+  id: string;
+  vendorName: string;
+  priceJpy: number;
+  durationWeeks: number;
+  deliverables: string[];
+  riskNotes?: string;
+  updatedAt?: string; // ISO
+};
