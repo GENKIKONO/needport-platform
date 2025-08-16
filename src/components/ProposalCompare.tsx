@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { label } from '@/lib/ui/labels';
 import type { ProposalPreview } from '@/lib/types/b2b';
+import HireDisabledModal from './HireDisabledModal';
 
 interface ProposalCompareProps {
   proposals: ProposalPreview[];
@@ -14,6 +15,10 @@ type SortDirection = 'asc' | 'desc';
 export default function ProposalCompare({ proposals }: ProposalCompareProps) {
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [hireModal, setHireModal] = useState<{ open: boolean; proposal: ProposalPreview | null }>({
+    open: false,
+    proposal: null
+  });
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -93,6 +98,9 @@ export default function ProposalCompare({ proposals }: ProposalCompareProps) {
               <th className="px-3 py-2 text-left font-medium text-gray-700">
                 {label('Updated')}
               </th>
+              <th className="px-3 py-2 text-left font-medium text-gray-700">
+                アクション
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -135,11 +143,25 @@ export default function ProposalCompare({ proposals }: ProposalCompareProps) {
                 <td className="px-3 py-2 text-gray-500 text-xs">
                   {proposal.updatedAt ? formatDate(proposal.updatedAt) : '-'}
                 </td>
+                <td className="px-3 py-2 text-gray-700">
+                  <button
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
+                    onClick={() => setHireModal({ open: true, proposal })}
+                    data-testid="btn-hire"
+                  >
+                    {label('Hire')}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <HireDisabledModal
+        open={hireModal.open}
+        onClose={() => setHireModal({ open: false, proposal: null })}
+        proposal={hireModal.proposal}
+      />
     </div>
   );
 }

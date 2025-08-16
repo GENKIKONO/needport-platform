@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { loadProjects } from '@/lib/admin/local-store';
-import { setStatus, setCategory, addComment, deleteComment } from '@/lib/admin/mod-overlay';
+import { setStatus, setCategory, addComment, deleteComment, setEndorseCount } from '@/lib/admin/mod-overlay';
 import type { AdminProject, AdminStatus } from '@/lib/types/admin';
 
 const CATEGORIES = ['Web開発', 'モバイルアプリ', 'デザイン', 'マーケティング', 'コンサルティング'];
@@ -13,10 +13,89 @@ export default function AdminDashboard() {
   const [newComment, setNewComment] = useState('');
   const [newProject, setNewProject] = useState({ title: '', category: '', ownerName: '' });
   const [toast, setToast] = useState('');
+  const [endorseCounts, setEndorseCounts] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setProjects(loadProjects());
   }, []);
+
+  const showToast = (message: string) => {
+    setToast(message);
+    setTimeout(() => setToast(''), 3000);
+  };
+
+  const exportData = () => {
+    try {
+      const modOverlay = localStorage.getItem('admin:mod-overlay:v1');
+      const demoProjects = localStorage.getItem('admin:demo-projects');
+      
+      const exportData = {
+        modOverlay: modOverlay ? JSON.parse(modOverlay) : {},
+        demoProjects: demoProjects ? JSON.parse(demoProjects) : [],
+        exportedAt: new Date().toISOString()
+      };
+      
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `needport-admin-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      showToast('データをエクスポートしました');
+    } catch (error) {
+      console.warn('Export failed:', error);
+      showToast('エクスポートに失敗しました');
+    }
+  };
+
+  const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        
+        if (data.modOverlay) {
+          localStorage.setItem('admin:mod-overlay:v1', JSON.stringify(data.modOverlay));
+        }
+        if (data.demoProjects) {
+          localStorage.setItem('admin:demo-projects', JSON.stringify(data.demoProjects));
+        }
+        
+        setProjects(loadProjects());
+        showToast('データをインポートしました');
+      } catch (error) {
+        console.warn('Import failed:', error);
+        showToast('インポートに失敗しました');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const copyCurl = (project: AdminProject) => {
+    const curl = `curl -X POST "$SITE/api/needs" \\
+  -H "Content-Type: application/json" \\
+  -d '{"title":"${project.title}","description":"${project.ownerName} からの${project.category || 'プロジェクト'}です。","scale":"personal"}'`;
+    
+    navigator.clipboard.writeText(curl).then(() => {
+      showToast('cURLをクリップボードにコピーしました（$SITEを置換してください）');
+    }).catch(() => {
+      showToast('クリップボードへのコピーに失敗しました');
+    });
+  };
+
+  const updateEndorseCount = (id: string, value: string) => {
+    const num = value === '' ? undefined : parseInt(value, 10);
+    if (num !== undefined && (isNaN(num) || num < 0 || num > 999)) return;
+    
+    setEndorseCount(id, num);
+    setEndorseCounts(prev => ({ ...prev, [id]: value }));
+    showToast(`賛同数を ${num ?? '自動'} に設定しました`);
+  };
 
   const saveAndToast = (newProjects: AdminProject[], message: string) => {
     setProjects(newProjects);
@@ -139,6 +218,25 @@ export default function AdminDashboard() {
           デモ用管理画面です。すべての操作はローカルにのみ保存されます。
         </p>
         
+        {/* Export/Import ボタン */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={exportData}
+            className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+          >
+            Export
+          </button>
+          <label className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 cursor-pointer">
+            Import
+            <input
+              type="file"
+              accept=".json"
+              onChange={importData}
+              className="hidden"
+            />
+          </label>
+        </div>
+
         {/* 新規プロジェクト作成 */}
         <div className="bg-gray-50 p-4 rounded-lg mb-6">
           <h2 className="text-lg font-semibold mb-3">新規デモ作成</h2>
@@ -186,6 +284,7 @@ export default function AdminDashboard() {
               <th className="px-4 py-3 text-left font-medium text-gray-700">オーナー</th>
               <th className="px-4 py-3 text-left font-medium text-gray-700">カテゴリ</th>
               <th className="px-4 py-3 text-left font-medium text-gray-700">ステータス</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">賛同数</th>
               <th className="px-4 py-3 text-left font-medium text-gray-700">更新日</th>
               <th className="px-4 py-3 text-left font-medium text-gray-700">アクション</th>
             </tr>
@@ -217,6 +316,16 @@ export default function AdminDashboard() {
                   }`}>
                     {project.status}
                   </span>
+                </td>
+                <td className="px-4 py-3 text-gray-700">
+                  <input
+                    type="number"
+                    value={endorseCounts[project.id] || ''}
+                    onChange={(e) => updateEndorseCount(project.id, e.target.value)}
+                    className="px-2 py-1 border rounded text-sm"
+                    min="0"
+                    max="999"
+                  />
                 </td>
                 <td className="px-4 py-3 text-gray-500 text-sm">
                   {project.updatedAt ? formatDate(project.updatedAt) : formatDate(project.createdAt)}
@@ -257,6 +366,13 @@ export default function AdminDashboard() {
                       data-testid="btn-comment"
                     >
                       Comments ({project.comments.length})
+                    </button>
+                    <button
+                      onClick={() => copyCurl(project)}
+                      className="px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700"
+                      data-testid="btn-copy-curl"
+                    >
+                      cURL
                     </button>
                   </div>
                   

@@ -122,6 +122,23 @@ Admin Demo Console は UI のみの実装で、localStorage保存、Cookieで簡
 3. 承認ワークフローを永続化（監査ログ付き）
 4. RLSポリシーで公開制御を実装
 
+### 賛同オーバーライド＆解禁演出（Phase 1.11）
+賛同数オーバーライド、解禁バッジ、Hireモーダル（無効）、AdminのExport/ImportとcURL生成機能を実装しました。
+
+#### 範囲
+- **賛同オーバーライド**: Adminで手動設定可能（0〜999）
+- **解禁バッジ**: 閾値以上で「解禁」バッジ表示、ProposalCompare自動展開
+- **Hireモーダル**: 無効状態でマイルストーン表示（決済OFF時）
+- **Admin Export/Import**: JSON形式でローカル状態の保存・復元
+- **cURL生成**: 実案件作成用のコマンドをクリップボードにコピー
+
+#### 本番化プラン
+本番化時は以下の置換を行います：
+- `setEndorseCount()` → endorsementsテーブル更新
+- Hireモーダル → `/proposals/:id/hire` APIに接続
+- Export/Import → 実際のDBスキーマ対応
+- cURL生成 → 認証付きAPIコールに変更
+
 ## 既存機能との互換性
 - `/api/needs` の RLS-safe insert は変更なし
 - 個人向け機能はそのまま維持

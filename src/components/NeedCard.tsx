@@ -14,7 +14,7 @@ import { showB2BFeatures } from '@/lib/flags';
 import { variant, demoEndorseCount } from '@/lib/ab';
 import { demoProposals } from '@/lib/b2b-demo';
 import { demoIds } from '@/lib/admin/demo-data';
-import { getStatus, getCategory, isPubliclyVisible } from '@/lib/admin/mod-overlay';
+import { getStatus, getCategory, isPubliclyVisible, getEndorseCount } from '@/lib/admin/mod-overlay';
 import ProposalCompare from './ProposalCompare';
 
 interface NeedCardProps {
@@ -25,13 +25,6 @@ interface NeedCardProps {
 }
 
 export default function NeedCard({ need, adoptedOffer, membership, className = '' }: NeedCardProps) {
-  const [prejoinStatus, setPrejoinStatus] = useState<{
-    hasPrejoined: boolean;
-    status: string | null;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showProposals, setShowProposals] = useState(false);
-  
   const scale = (need.scale ?? 'personal') as 'personal'|'community';
   const cta = mainCtaLabel(scale);
 
@@ -40,8 +33,21 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
   const storage = typeof window !== 'undefined' ? window.localStorage : undefined;
   const abVariant = variant('b2b_endorse_pill_v1', ['A','B'], storage);
   const seed = need.id ?? `${need.title}|${Date.now()}`;
-  const demoCount = demoEndorseCount(seed);
+  
+  // 賛同数取得（オーバーライド優先）
+  const overrideCount = getEndorseCount(need.id);
+  const demoCount = overrideCount ?? demoEndorseCount(seed);
+  const threshold = Number(process.env.NEXT_PUBLIC_DEMO_UNLOCK_THRESHOLD ?? 10);
+  const isUnlocked = demoCount >= threshold;
+  
   const demoProposalList = demoProposals(seed, 3);
+
+  const [prejoinStatus, setPrejoinStatus] = useState<{
+    hasPrejoined: boolean;
+    status: string | null;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showProposals, setShowProposals] = useState(isUnlocked);
   
   // DEMO バッジ表示判定
   const showDemoBadge = process.env.NEXT_PUBLIC_SHOW_DEMO === '1' && 
@@ -190,13 +196,23 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
         {/* B2B 賛同ピル（右上） */}
         {showB2BHint && (
           <div className="flex flex-col items-end gap-1">
-            <div 
-              className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-xs font-medium"
-              data-b2b-endorse-pill="v1"
-              data-testid="b2b-endorse-pill"
-            >
-              <span>{label('Endorsements')}</span>
-              <span className="tabular-nums">{demoCount}</span>
+            <div className="flex items-center gap-2">
+              <div 
+                className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-xs font-medium"
+                data-b2b-endorse-pill="v1"
+                data-testid="b2b-endorse-pill"
+              >
+                <span>{label('Endorsements')}</span>
+                <span className="tabular-nums">{demoCount}</span>
+              </div>
+              {isUnlocked && (
+                <span 
+                  className="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-medium"
+                  data-testid="badge-unlocked"
+                >
+                  {label('Unlocked')}
+                </span>
+              )}
             </div>
             {abVariant === 'B' && (
               <div className="text-[10px] text-gray-500 leading-tight">
@@ -214,7 +230,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
             </button>
             
             {/* 賛同閾値未満の演出 */}
-            {abVariant === 'B' && demoCount < 10 && (
+            {abVariant === 'B' && demoCount < threshold && (
               <div className="text-[10px] text-gray-400">
                 {label('UnlockAtTen')}
               </div>

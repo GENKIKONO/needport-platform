@@ -19,6 +19,10 @@ const MAP = {
   Updated: { ja: '更新', en: 'Updated' },
   NoProposals: { ja: 'まだ提案はありません', en: 'No proposals yet' },
   UnlockAtTen: { ja: '賛同10で提案解禁', en: 'Proposals unlock at 10 endorsements' },
+  Hire: { ja: '採用', en: 'Hire' },
+  Milestones: { ja: 'マイルストーン', en: 'Milestones' },
+  Unlocked: { ja: '解禁', en: 'Unlocked' },
+  EscrowSoon: { ja: 'エスクローと契約は近日対応', en: 'Escrow & contract coming soon' },
 } as const;
 
 export type LabelKey = keyof typeof MAP;

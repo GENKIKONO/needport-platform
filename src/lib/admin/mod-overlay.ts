@@ -5,6 +5,7 @@ type Store = {
   status: Record<string, ModStatus>;
   category: Record<string, string | undefined>;
   comments: Record<string, { id: string; author: string; body: string; at: string }[]>;
+  endorse: Record<string, number | undefined>;
 };
 
 const KEY = 'admin:mod-overlay:v1';
@@ -12,9 +13,9 @@ let mem: Store | null = null;
 
 function load(): Store {
   if (mem) return mem;
-  if (typeof window === 'undefined') return { status: {}, category: {}, comments: {} };
+  if (typeof window === 'undefined') return { status: {}, category: {}, comments: {}, endorse: {} };
   const raw = window.localStorage.getItem(KEY);
-  mem = raw ? JSON.parse(raw) as Store : { status: {}, category: {}, comments: {} };
+  mem = raw ? JSON.parse(raw) as Store : { status: {}, category: {}, comments: {}, endorse: {} };
   return mem!;
 }
 
@@ -27,6 +28,7 @@ function save(s: Store) {
 export const getStatus = (id: string): ModStatus | undefined => load().status[id];
 export const getCategory = (id: string): string | undefined => load().category[id];
 export const getComments = (id: string) => load().comments[id] ?? [];
+export const getEndorseCount = (id: string): number | undefined => load().endorse[id];
 
 // setters
 export function setStatus(id: string, st: ModStatus) {
@@ -38,6 +40,12 @@ export function setStatus(id: string, st: ModStatus) {
 export function setCategory(id: string, cat?: string) {
   const s = load();
   s.category[id] = cat;
+  save(s);
+}
+
+export function setEndorseCount(id: string, n: number | undefined) {
+  const s = load();
+  s.endorse[id] = n;
   save(s);
 }
 
