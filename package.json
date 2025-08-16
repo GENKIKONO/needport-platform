@@ -23,21 +23,7 @@
     "db:seed": "supabase db reset --prompt=false && supabase db execute supabase/seed.sql",
     "notify:dispatch": "curl -s -X POST http://localhost:3000/api/admin/notifications/dispatch",
     "cron:close": "curl -s -X POST http://localhost:3000/api/admin/cron/close-expired",
-    "build:analyze": "ANALYZE=true next build",
-    "prebuild": "rm -rf .next || (rmdir /s /q .next 2> NUL || true)",
-    "preflight": "npm run typecheck && npm run lint && npm test",
-    "smoke": "bash scripts/smoke.sh",
-    "smoke:ci": "BASE=${BASE:-http://localhost:3000} CI=1 bash scripts/smoke.sh",
-    "smoke:schedule": "ts-node scripts/smoke-schedule.ts",
-    "prevercel-build": "rm -rf .next || (rmdir /s /q .next 2> NUL || true)",
-    "vercel-build": "DISABLE_METRICS=1 next build",
-    "postvercel-build": "node scripts/guard-next-manifests.mjs",
-    "backup:db": "./scripts/backup-db.sh",
-    "backup:storage": "echo 'Storage backup not implemented yet'",
-    "backup:full": "npm run backup:db && npm run backup:storage",
-    "backup:health": "echo 'Backup health check not implemented yet'",
-    "backup:verify": "echo 'Backup verification not implemented yet'",
-    "backup:test-recovery": "echo 'Recovery testing not implemented yet'"
+    "build:analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.30.0",
