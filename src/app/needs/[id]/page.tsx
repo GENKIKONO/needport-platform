@@ -6,7 +6,6 @@ import EntryForm from "@/components/EntryForm";
 import ShareActions from "@/components/ShareActions";
 import { FF_PUBLIC_ENTRY } from "@/lib/flags";
 import { Metadata } from "next";
-import { headers } from "next/headers";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import { SCALE_LABEL, isCommunity } from "@/lib/domain/need";
 
@@ -79,10 +78,6 @@ export default async function NeedDetailPage({
   try {
     const { id } = await params;
     const supabase = supabaseServer();
-    
-    // Set cache headers for detail pages
-    const headersList = await headers();
-    headersList.append('Cache-Control', 's-maxage=30, stale-while-revalidate=300');
 
     // Fetch need with optional offer data and entries count
     const { data: need, error } = await supabase

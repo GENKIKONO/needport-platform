@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { formatRemainingPeople } from '@/lib/ui/format';
 import { config } from '@/lib/config';
@@ -51,6 +51,8 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
   const [showProposals, setShowProposals] = useState(isUnlocked);
   const [showProposalForm, setShowProposalForm] = useState(false);
   const [toast, setToast] = useState('');
+  const [endorseCount, setEndorseCount] = useState(need.prejoin_count || 0);
+  const [isPending, startTransition] = useTransition();
 
   // 提案作成可能判定
   const canPropose = showB2BHint && 
@@ -108,7 +110,21 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
   };
 
   const handleEndorse = () => {
-    // TODO: Implement endorse functionality
+    if (isPending) return;
+    const prev = endorseCount;
+    setEndorseCount(c => c + 1); // 楽観更新
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/needs/${need.id}/endorse`, { method: 'POST' });
+        if (!res.ok) throw new Error();
+        setToast('共感しました！');
+        setTimeout(() => setToast(''), 3000);
+      } catch {
+        setEndorseCount(prev); // 失敗時に戻す
+        setToast('エラーが発生しました');
+        setTimeout(() => setToast(''), 3000);
+      }
+    });
   };
 
   const handlePrejoin = async () => {
@@ -354,9 +370,10 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
       <div className="flex gap-3 mb-4">
         <button
           onClick={handleEndorse}
-          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors min-h-[44px]"
+          disabled={isPending}
+          className="btn btn-ghost flex-1"
         >
-          共感
+          {isPending ? '処理中...' : `共感 ${endorseCount}`}
         </button>
         {shouldShowPayments() && STRIPE_ENABLED && prejoinStatus?.hasPrejoined ? (
           <button

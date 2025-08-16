@@ -298,7 +298,7 @@ export default async function Page({
           </div>
 
           {/* Needs Grid */}
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {needsWithOffers.map(({ need, adoptedOffer, membership }) => (
               <NeedCard
                 key={need.id}
@@ -406,7 +406,7 @@ export default async function Page({
           データベースが空のためモック表示中（投稿すると自動でDBの値に切り替わります）
         </p>
       )}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {needsWithOffers.map(({ need, adoptedOffer, membership }) => (
           <NeedCard
             key={need.id}
