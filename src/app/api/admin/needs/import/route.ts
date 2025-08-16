@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = supabaseServer();
-    const inserted = 0;
-    const skipped = 0;
+    let inserted = 0;
+    let skipped = 0;
     const errors: string[] = [];
     const createdIds: string[] = [];
 
