@@ -63,7 +63,7 @@ export default function EntryForm({ needId }: { needId: string }) {
 
   if (success) {
     return (
-      <div className="rounded-lg border border-emerald-500/40 bg-emerald-600/20 p-4 text-emerald-200">
+      <div className="card border-emerald-500/40 bg-emerald-600/20 text-emerald-200">
         <h3 className="font-medium mb-2">お申し込みを受け付けました</h3>
         <p className="text-sm opacity-80">
           ご登録いただいたメールアドレスに確認メールをお送りします。
@@ -79,7 +79,7 @@ export default function EntryForm({ needId }: { needId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-lg border border-white/10 p-4 space-y-4">
+    <form onSubmit={handleSubmit} className="card space-y-4">
       <h3 className="font-medium">参加申し込み</h3>
       
       <div>

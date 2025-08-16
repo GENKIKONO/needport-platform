@@ -7,7 +7,7 @@ import PwaPrompt from "@/components/PwaPrompt";
 import { headers } from "next/headers";
 import { makeNonce } from "@/lib/security/csp";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
 export const metadata: Metadata = {
   title: "NeedPort - ニーズとオファーをつなぐプラットフォーム",
@@ -63,7 +63,7 @@ export default async function RootLayout({
   const nonce = makeNonce();
   
   return (
-    <html lang="ja">
+    <html lang="ja" className={inter.className}>
       <head>
         <meta name="theme-color" content="#111827" />
         <link rel="manifest" href="/manifest.webmanifest" />
@@ -93,7 +93,7 @@ export default async function RootLayout({
           `
         }} />
       </head>
-      <body className={inter.className}>
+      <body>
         <div id="content">
           {children}
         </div>

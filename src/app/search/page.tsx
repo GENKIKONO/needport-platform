@@ -78,7 +78,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="container py-8">
         {/* Search Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-4">検索</h1>
@@ -97,7 +97,7 @@ export default function SearchPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-white font-medium"
+                className="btn btn-primary"
               >
                 {loading ? "検索中..." : "検索"}
               </button>

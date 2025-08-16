@@ -180,7 +180,7 @@ export default async function NeedDetailPage({
             vendor_name: needData.vendor_name
           }}
         />
-        <div className="p-6 space-y-4">
+        <div className="container space-y-4">
           <h1 className="text-2xl font-semibold">{needData.title}</h1>
           <ShareActions title={needData.title} url={currentUrl} />
         
@@ -198,7 +198,7 @@ export default async function NeedDetailPage({
         
         {/* Community hints block */}
         {isCommunity(needData.scale) && (needData.macro_fee_hint || needData.macro_use_freq || needData.macro_area_hint) && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-600 border border-gray-200">
+          <div className="card mt-4">
             <h3 className="font-medium mb-3 text-gray-700">概要</h3>
             <div className="space-y-2">
               {needData.macro_fee_hint && (
@@ -216,7 +216,7 @@ export default async function NeedDetailPage({
 
         {/* Recruitment Information Card */}
         {needData.adopted_offer_id && (
-          <div className="mt-6 rounded-lg border border-white/10 p-4 space-y-3">
+          <div className="card mt-6">
             <h3 className="font-medium">募集情報</h3>
             
             <div className="space-y-2">
@@ -272,7 +272,7 @@ export default async function NeedDetailPage({
                 <EntryForm needId={id} />
               </div>
             ) : (
-              <div className="mt-6 rounded-lg border border-red-500/40 bg-red-600/20 p-4 text-red-200">
+              <div className="card mt-6 border-red-500/40 bg-red-600/20 text-red-200">
                 <h3 className="font-medium mb-2">募集は終了しました</h3>
                 <p className="text-sm mb-3">
                   {needData.recruitment_closed ? "管理者による終了" :
