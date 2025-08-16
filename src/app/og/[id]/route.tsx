@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 export async function GET(
   request: Request,
