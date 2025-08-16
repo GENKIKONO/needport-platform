@@ -227,7 +227,7 @@ export default async function Page({
                 const totalPages = Math.ceil((displayNeeds.length || 0) / per);
 
       return (
-        <main className="mx-auto max-w-6xl px-4 py-8">
+        <main className="container py-8">
           {/* Search and Filters */}
           <div className="mb-8">
             <form method="GET" className="flex flex-wrap gap-4">

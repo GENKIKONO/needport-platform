@@ -21,7 +21,7 @@ export default function HireDisabledModal({ open, onClose, proposal }: HireDisab
   
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-4">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-5">
         <h3 className="text-lg font-semibold mb-2">{label('Hire')}: {proposal.vendorName}</h3>
         <div className="text-sm text-gray-700 space-y-2">
           <div>¥{proposal.priceJpy.toLocaleString()} / {proposal.durationWeeks}週</div>
@@ -34,12 +34,12 @@ export default function HireDisabledModal({ open, onClose, proposal }: HireDisab
           <div className="mt-2 text-xs text-gray-500">{label('EscrowSoon')}</div>
         </div>
         <div className="mt-4 flex gap-2 justify-end">
-          <button onClick={onClose} className="px-3 py-1.5 text-sm rounded border border-gray-300">
+          <button onClick={onClose} className="btn btn-ghost">
             閉じる
           </button>
           <button 
             disabled 
-            className="px-3 py-1.5 text-sm rounded bg-gray-300 text-white cursor-not-allowed" 
+            className="btn btn-primary disabled:opacity-50 cursor-not-allowed" 
             data-testid="btn-hire-disabled"
           >
             {disabled ? '近日対応（決済OFF）' : 'Hire'}

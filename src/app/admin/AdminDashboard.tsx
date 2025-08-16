@@ -254,7 +254,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8" data-testid="admin-dashboard">
+    <div className="container py-8" data-testid="admin-dashboard">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
           Admin Demo Console
@@ -276,14 +276,14 @@ export default function AdminDashboard() {
         <div className="flex gap-2 mb-4">
           <button
             onClick={resetDemo}
-            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+            className="btn btn-ghost"
             data-testid="btn-reset-demo"
           >
             Reset Demo
           </button>
           <button
             onClick={seedDemo}
-            className="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700"
+            className="btn btn-ghost"
             data-testid="btn-seed-demo"
           >
             Seed Demo
@@ -294,11 +294,11 @@ export default function AdminDashboard() {
         <div className="flex gap-2 mb-4">
           <button
             onClick={exportData}
-            className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+            className="btn btn-primary"
           >
             Export
           </button>
-          <label className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 cursor-pointer">
+          <label className="btn btn-ghost cursor-pointer">
             Import
             <input
               type="file"
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
             />
             <button
               onClick={createNewProject}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="btn btn-primary"
             >
               作成
             </button>

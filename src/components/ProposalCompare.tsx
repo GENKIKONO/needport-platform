@@ -82,15 +82,15 @@ export default function ProposalCompare({ proposals, needId }: ProposalComparePr
 
   return (
     <div className="mt-4" data-testid="proposal-compare">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border border-gray-200 rounded-lg">
-          <thead className="bg-gray-50">
+      <div className="card overflow-x-auto">
+        <table className="w-full text-sm border-separate border-spacing-0">
+          <thead>
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">
+              <th className="bg-white/5 text-neutral-200 font-semibold sticky top-0 px-3 py-2 text-left">
                 {label('Vendor')}
               </th>
               <th 
-                className="px-3 py-2 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                className="bg-white/5 text-neutral-200 font-semibold sticky top-0 px-3 py-2 text-left cursor-pointer hover:bg-white/10"
                 onClick={() => handleSort('price')}
               >
                 {label('Price')}
@@ -101,7 +101,7 @@ export default function ProposalCompare({ proposals, needId }: ProposalComparePr
                 )}
               </th>
               <th 
-                className="px-3 py-2 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                className="bg-white/5 text-neutral-200 font-semibold sticky top-0 px-3 py-2 text-left cursor-pointer hover:bg-white/10"
                 onClick={() => handleSort('duration')}
               >
                 {label('Duration')}
@@ -111,19 +111,19 @@ export default function ProposalCompare({ proposals, needId }: ProposalComparePr
                   </span>
                 )}
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">
+              <th className="bg-white/5 text-neutral-200 font-semibold sticky top-0 px-3 py-2 text-left">
                 {label('Deliverables')}
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">
+              <th className="bg-white/5 text-neutral-200 font-semibold sticky top-0 px-3 py-2 text-left">
                 {label('Risk')}
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">
+              <th className="bg-white/5 text-neutral-200 font-semibold sticky top-0 px-3 py-2 text-left">
                 {label('Updated')}
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">
+              <th className="bg-white/5 text-neutral-200 font-semibold sticky top-0 px-3 py-2 text-left">
                 ステータス
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">
+              <th className="bg-white/5 text-neutral-200 font-semibold sticky top-0 px-3 py-2 text-left">
                 アクション
               </th>
             </tr>
@@ -132,7 +132,7 @@ export default function ProposalCompare({ proposals, needId }: ProposalComparePr
             {sortedProposals.map((proposal) => (
               <tr 
                 key={proposal.id} 
-                className="border-t border-gray-100 hover:bg-gray-50"
+                className="border-t border-white/10 hover:bg-white/5 transition-colors"
                 data-testid="proposal-row"
               >
                 <td className="px-3 py-2 font-medium text-gray-900">
@@ -173,7 +173,7 @@ export default function ProposalCompare({ proposals, needId }: ProposalComparePr
                 </td>
                 <td className="px-3 py-2 text-gray-700">
                   <button
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
+                    className="btn btn-primary text-xs"
                     onClick={() => setHireModal({ open: true, proposal })}
                     data-testid="btn-hire"
                   >

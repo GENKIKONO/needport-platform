@@ -13,7 +13,7 @@ export default function DemoPage() {
   const visibleProjects = projects.filter(p => isPubliclyVisible(p.id, p.status));
   
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container py-8">
       {/* デモ注意バナー */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6" data-testid="banner-demo">
         <div className="flex items-center">
