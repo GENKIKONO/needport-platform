@@ -3,22 +3,44 @@
 import { useState } from 'react';
 import { label } from '@/lib/ui/labels';
 import type { ProposalPreview } from '@/lib/types/b2b';
-import HireDisabledModal from './HireDisabledModal';
+import { listByNeed } from '@/lib/proposals/local-store';
 
 interface ProposalCompareProps {
   proposals: ProposalPreview[];
+  needId: string;
 }
 
 type SortField = 'price' | 'duration' | null;
 type SortDirection = 'asc' | 'desc';
 
-export default function ProposalCompare({ proposals }: ProposalCompareProps) {
+export default function ProposalCompare({ proposals, needId }: ProposalCompareProps) {
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [hireModal, setHireModal] = useState<{ open: boolean; proposal: ProposalPreview | null }>({
     open: false,
     proposal: null
   });
+
+  // 承認済みドラフトを取得してマージ
+  const approvedDrafts = listByNeed(needId)
+    .filter(d => d.status === 'approved')
+    .map(d => ({
+      id: d.id,
+      vendorName: d.vendorName,
+      priceJpy: d.priceJpy,
+      durationWeeks: d.durationWeeks,
+      deliverables: d.deliverables,
+      riskNotes: d.riskNotes,
+      updatedAt: d.createdAt,
+      featured: d.featured
+    }));
+
+  // featuredを先頭、その後demo proposals
+  const allProposals = [
+    ...approvedDrafts.filter(p => p.featured),
+    ...approvedDrafts.filter(p => !p.featured),
+    ...proposals
+  ];
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -29,7 +51,7 @@ export default function ProposalCompare({ proposals }: ProposalCompareProps) {
     }
   };
 
-  const sortedProposals = [...proposals].sort((a, b) => {
+  const sortedProposals = [...allProposals].sort((a, b) => {
     if (!sortField) return 0;
     
     let aValue: number;
@@ -99,6 +121,9 @@ export default function ProposalCompare({ proposals }: ProposalCompareProps) {
                 {label('Updated')}
               </th>
               <th className="px-3 py-2 text-left font-medium text-gray-700">
+                ステータス
+              </th>
+              <th className="px-3 py-2 text-left font-medium text-gray-700">
                 アクション
               </th>
             </tr>
@@ -144,6 +169,9 @@ export default function ProposalCompare({ proposals }: ProposalCompareProps) {
                   {proposal.updatedAt ? formatDate(proposal.updatedAt) : '-'}
                 </td>
                 <td className="px-3 py-2 text-gray-700">
+                  {approvedDrafts.some(d => d.id === proposal.id) ? '承認済み' : 'デモ'}
+                </td>
+                <td className="px-3 py-2 text-gray-700">
                   <button
                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
                     onClick={() => setHireModal({ open: true, proposal })}
@@ -157,11 +185,11 @@ export default function ProposalCompare({ proposals }: ProposalCompareProps) {
           </tbody>
         </table>
       </div>
-      <HireDisabledModal
+      {/* <HireDisabledModal
         open={hireModal.open}
         onClose={() => setHireModal({ open: false, proposal: null })}
         proposal={hireModal.proposal}
-      />
+      /> */}
     </div>
   );
 }

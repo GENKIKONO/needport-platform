@@ -78,3 +78,17 @@ export type ProposalPreview = {
   riskNotes?: string;
   updatedAt?: string; // ISO
 };
+
+export type ProposalDraft = {
+  id: string;          // uuid
+  needId: string;
+  vendorName: string;
+  priceJpy: number;
+  durationWeeks: number;
+  deliverables: string[]; // 最低1つ
+  riskNotes?: string;
+  terms?: string;      // 条件・注意
+  createdAt: string;   // ISO
+  status: 'pending'|'approved'|'rejected';
+  featured?: boolean;  // 比較UIで先頭固定
+};

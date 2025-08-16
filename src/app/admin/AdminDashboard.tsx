@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { loadProjects } from '@/lib/admin/local-store';
 import { setStatus, setCategory, addComment, deleteComment, setEndorseCount } from '@/lib/admin/mod-overlay';
+import { listByNeed, upsert } from '@/lib/proposals/local-store';
 import type { AdminProject, AdminStatus } from '@/lib/types/admin';
+import type { ProposalDraft } from '@/lib/types/b2b';
 
 const CATEGORIES = ['Web開発', 'モバイルアプリ', 'デザイン', 'マーケティング', 'コンサルティング'];
 
@@ -14,6 +16,8 @@ export default function AdminDashboard() {
   const [newProject, setNewProject] = useState({ title: '', category: '', ownerName: '' });
   const [toast, setToast] = useState('');
   const [endorseCounts, setEndorseCounts] = useState<Record<string, string>>({});
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [proposals, setProposals] = useState<ProposalDraft[]>([]);
 
   useEffect(() => {
     setProjects(loadProjects());
@@ -95,6 +99,27 @@ export default function AdminDashboard() {
     setEndorseCount(id, num);
     setEndorseCounts(prev => ({ ...prev, [id]: value }));
     showToast(`賛同数を ${num ?? '自動'} に設定しました`);
+  };
+
+  const selectProject = (projectId: string) => {
+    setSelectedProject(selectedProject === projectId ? null : projectId);
+    if (selectedProject !== projectId) {
+      setProposals(listByNeed(projectId));
+    }
+  };
+
+  const updateProposalStatus = (proposal: ProposalDraft, status: 'approved' | 'rejected') => {
+    const updated = { ...proposal, status };
+    upsert(updated);
+    setProposals(listByNeed(proposal.needId));
+    showToast(`提案を${status === 'approved' ? '承認' : '却下'}しました`);
+  };
+
+  const toggleProposalFeatured = (proposal: ProposalDraft) => {
+    const updated = { ...proposal, featured: !proposal.featured };
+    upsert(updated);
+    setProposals(listByNeed(proposal.needId));
+    showToast(`提案を${updated.featured ? '注目' : '通常'}に設定しました`);
   };
 
   const saveAndToast = (newProjects: AdminProject[], message: string) => {
@@ -374,6 +399,13 @@ export default function AdminDashboard() {
                     >
                       cURL
                     </button>
+                    <button
+                      onClick={() => selectProject(project.id)}
+                      className="px-2 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700"
+                      data-testid="btn-manage-proposals"
+                    >
+                      提案管理 ({listByNeed(project.id).length})
+                    </button>
                   </div>
                   
                   {/* コメントパネル */}
@@ -413,6 +445,80 @@ export default function AdminDashboard() {
                         >
                           追加
                         </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 提案管理サブテーブル */}
+                  {selectedProject === project.id && proposals.length > 0 && (
+                    <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">提案一覧</h4>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-xs">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-2">ベンダー</th>
+                              <th className="text-left py-2">価格</th>
+                              <th className="text-left py-2">期間</th>
+                              <th className="text-left py-2">ステータス</th>
+                              <th className="text-left py-2">アクション</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {proposals.map((proposal) => (
+                              <tr key={proposal.id} className="border-b" data-testid="admin-proposal-row">
+                                <td className="py-2">{proposal.vendorName}</td>
+                                <td className="py-2">¥{proposal.priceJpy.toLocaleString()}</td>
+                                <td className="py-2">{proposal.durationWeeks}週</td>
+                                <td className="py-2">
+                                  <span className={`px-2 py-1 rounded text-xs ${
+                                    proposal.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                    proposal.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                    'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {proposal.status === 'approved' ? '承認済み' :
+                                     proposal.status === 'rejected' ? '却下' : '審査中'}
+                                  </span>
+                                </td>
+                                <td className="py-2">
+                                  <div className="flex gap-1">
+                                    {proposal.status === 'pending' && (
+                                      <>
+                                        <button
+                                          onClick={() => updateProposalStatus(proposal, 'approved')}
+                                          className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                                          data-testid="btn-prop-approve"
+                                        >
+                                          承認
+                                        </button>
+                                        <button
+                                          onClick={() => updateProposalStatus(proposal, 'rejected')}
+                                          className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+                                          data-testid="btn-prop-reject"
+                                        >
+                                          却下
+                                        </button>
+                                      </>
+                                    )}
+                                    {proposal.status === 'approved' && (
+                                      <button
+                                        onClick={() => toggleProposalFeatured(proposal)}
+                                        className={`px-2 py-1 rounded text-xs ${
+                                          proposal.featured 
+                                            ? 'bg-purple-600 text-white hover:bg-purple-700' 
+                                            : 'bg-gray-600 text-white hover:bg-gray-700'
+                                        }`}
+                                        data-testid="btn-prop-feature"
+                                      >
+                                        {proposal.featured ? '注目解除' : '注目'}
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   )}

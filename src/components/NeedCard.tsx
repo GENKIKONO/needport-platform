@@ -16,6 +16,7 @@ import { demoProposals } from '@/lib/b2b-demo';
 import { demoIds } from '@/lib/admin/demo-data';
 import { getStatus, getCategory, isPubliclyVisible, getEndorseCount } from '@/lib/admin/mod-overlay';
 import ProposalCompare from './ProposalCompare';
+import ProposalForm from './ProposalForm';
 
 interface NeedCardProps {
   need: Need;
@@ -48,6 +49,13 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showProposals, setShowProposals] = useState(isUnlocked);
+  const [showProposalForm, setShowProposalForm] = useState(false);
+  const [toast, setToast] = useState('');
+
+  // 提案作成可能判定
+  const canPropose = showB2BHint && 
+    process.env.NEXT_PUBLIC_ALLOW_DEMO_PROPOSALS === '1' && 
+    isUnlocked;
   
   // DEMO バッジ表示判定
   const showDemoBadge = process.env.NEXT_PUBLIC_SHOW_DEMO === '1' && 
@@ -229,6 +237,26 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
               {label('CompareProposals')}
             </button>
             
+            {/* 提案作成ボタン */}
+            {canPropose ? (
+              <button
+                onClick={() => setShowProposalForm(true)}
+                className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                data-testid="btn-create-proposal"
+              >
+                提案する
+              </button>
+            ) : showB2BHint && process.env.NEXT_PUBLIC_ALLOW_DEMO_PROPOSALS === '1' && !isUnlocked ? (
+              <button
+                disabled
+                className="text-xs bg-gray-300 text-gray-500 px-3 py-1 rounded cursor-not-allowed"
+                title="賛同が閾値に満たないため提案は解禁されていません"
+                data-testid="btn-create-proposal-disabled"
+              >
+                提案する
+              </button>
+            ) : null}
+            
             {/* 賛同閾値未満の演出 */}
             {abVariant === 'B' && demoCount < threshold && (
               <div className="text-[10px] text-gray-400">
@@ -362,7 +390,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
 
       {/* 提案比較テーブル（B2B機能） */}
       {showB2BHint && showProposals && (
-        <ProposalCompare proposals={demoProposalList} />
+        <ProposalCompare proposals={demoProposalList} needId={need.id} />
       )}
 
       {/* 詳細リンク */}
@@ -379,6 +407,30 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
       {/* 会員ゲート（ゲストのみ） */}
       {membership.isGuest && config.GUEST_VIEW && (
         <JoinGate />
+      )}
+
+      {/* 提案作成モーダル */}
+      {showProposalForm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <ProposalForm
+            needId={need.id}
+            onSaved={(draft) => {
+              setShowProposalForm(false);
+              setToast('提案を送信しました（デモ・審査中）');
+              setTimeout(() => setToast(''), 3000);
+              // 比較UIを更新
+              setShowProposals(true);
+            }}
+            onCancel={() => setShowProposalForm(false)}
+          />
+        </div>
+      )}
+
+      {/* トースト通知 */}
+      {toast && (
+        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50">
+          {toast}
+        </div>
       )}
     </div>
   );
