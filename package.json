@@ -24,8 +24,7 @@
     "notify:dispatch": "curl -s -X POST http://localhost:3000/api/admin/notifications/dispatch",
     "cron:close": "curl -s -X POST http://localhost:3000/api/admin/cron/close-expired",
     "build:analyze": "ANALYZE=true next build",
-    "vercel-build": "npm run build",
-    "postvercel-build": "node scripts/guard-next-manifests.mjs"
+    "vercel-build": "next build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.30.0",
