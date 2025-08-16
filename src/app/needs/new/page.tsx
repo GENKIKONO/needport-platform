@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { NeedScale } from '@/lib/domain/need';
 import { parseScale } from '@/lib/domain/need';
+import NeedApprovalNote from '@/components/NeedApprovalNote';
 
 export default function NewNeedPage() {
   const r = useRouter();
@@ -49,6 +50,7 @@ export default function NewNeedPage() {
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold">ニーズを投稿</h1>
+      <NeedApprovalNote />
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div>

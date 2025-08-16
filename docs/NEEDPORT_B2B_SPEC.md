@@ -106,6 +106,22 @@ Admin Demo Console は UI のみの実装で、localStorage保存、Cookieで簡
 - `NEXT_PUBLIC_SHOW_DEMO=1`: フラグONでバッジ表示
 - NeedCardで条件判定: `demoIds().includes(need.id)` で表示制御
 
+### 承認制モデレーション（Phase 1.10）
+承認制（Phase-1.10）はUIオーバーレイのみの実装で、`NEXT_PUBLIC_REQUIRE_APPROVAL=1` で公開抑止を行います。Admin操作はlocalStorage保存で即時反映されます。
+
+#### 範囲
+- **UIオーバーレイ**: `mod-overlay.ts` でlocalStorageベースの状態管理
+- **公開制御**: `isPubliclyVisible()` で承認済みのみ表示
+- **バッジ表示**: 優先順位（rejected > pending > demo > approved）
+- **審査中オーバーレイ**: pending状態で半透明オーバーレイ表示
+
+#### 本番化プラン
+本番化では Admin API（501）へ接続し、RLS＋監査ログ＋永続テーブルに昇格する手順：
+1. `mod-overlay.ts` の状態をDBスキーマに移行
+2. `setStatus()` / `setCategory()` をAPI呼び出しに置換
+3. 承認ワークフローを永続化（監査ログ付き）
+4. RLSポリシーで公開制御を実装
+
 ## 既存機能との互換性
 - `/api/needs` の RLS-safe insert は変更なし
 - 個人向け機能はそのまま維持

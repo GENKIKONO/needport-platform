@@ -14,6 +14,7 @@ import { showB2BFeatures } from '@/lib/flags';
 import { variant, demoEndorseCount } from '@/lib/ab';
 import { demoProposals } from '@/lib/b2b-demo';
 import { demoIds } from '@/lib/admin/demo-data';
+import { getStatus, getCategory, isPubliclyVisible } from '@/lib/admin/mod-overlay';
 import ProposalCompare from './ProposalCompare';
 
 interface NeedCardProps {
@@ -46,6 +47,32 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
   const showDemoBadge = process.env.NEXT_PUBLIC_SHOW_DEMO === '1' && 
                        showB2BFeatures() && 
                        demoIds().includes(need.id);
+  
+  // 承認制バッジ表示判定
+  const modStatus = getStatus(need.id);
+  const showModBadge = modStatus && modStatus !== 'approved';
+  
+  // カテゴリ上書き
+  const displayCategory = getCategory(need.id) || need.tags[0];
+  
+  // バッジ優先順位: rejected > pending > demo > approved
+  const getBadgeConfig = () => {
+    if (modStatus === 'rejected') {
+      return { text: '却下', className: 'bg-red-100 text-red-800', testId: 'badge-rejected' };
+    }
+    if (modStatus === 'pending') {
+      return { text: '審査中', className: 'bg-gray-100 text-gray-800', testId: 'badge-pending' };
+    }
+    if (showDemoBadge) {
+      return { text: 'DEMO', className: 'bg-orange-100 text-orange-800', testId: 'badge-demo' };
+    }
+    if (modStatus === 'approved') {
+      return { text: '承認済み', className: 'bg-green-100 text-green-800', testId: 'badge-approved' };
+    }
+    return null;
+  };
+  
+  const badgeConfig = getBadgeConfig();
 
   useEffect(() => {
     // Check prejoin status on mount (only if Stripe is enabled)
@@ -195,12 +222,25 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
           </div>
         )}
         
-        {/* DEMO バッジ（右上） */}
-        {showDemoBadge && (
+        {/* 承認制バッジ（右上） */}
+        {badgeConfig && (
           <div className="absolute top-2 right-2">
-            <span className="inline-flex items-center px-2 py-1 rounded-full bg-orange-100 text-orange-800 text-xs font-medium">
-              DEMO
+            <span 
+              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${badgeConfig.className}`}
+              data-testid={badgeConfig.testId}
+            >
+              {badgeConfig.text}
             </span>
+          </div>
+        )}
+        
+        {/* 審査中オーバーレイ */}
+        {modStatus === 'pending' && process.env.NEXT_PUBLIC_REQUIRE_APPROVAL === '1' && (
+          <div className="absolute inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center rounded-lg">
+            <div className="text-center">
+              <div className="text-gray-500 text-sm font-medium">審査中</div>
+              <div className="text-gray-400 text-xs">公開までお待ちください</div>
+            </div>
           </div>
         )}
       </div>
@@ -257,6 +297,13 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
             </span>
           ))}
         </div>
+      </div>
+
+      {/* カテゴリ */}
+      <div className="mb-4">
+        <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
+          {displayCategory}
+        </span>
       </div>
 
       {/* CTAボタン */}

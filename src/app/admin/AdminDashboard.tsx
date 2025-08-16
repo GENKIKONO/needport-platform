@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { loadProjects, saveProjects } from '@/lib/admin/local-store';
+import { loadProjects } from '@/lib/admin/local-store';
+import { setStatus, setCategory, addComment, deleteComment } from '@/lib/admin/mod-overlay';
 import type { AdminProject, AdminStatus } from '@/lib/types/admin';
 
 const CATEGORIES = ['Web開発', 'モバイルアプリ', 'デザイン', 'マーケティング', 'コンサルティング'];
@@ -19,32 +20,46 @@ export default function AdminDashboard() {
 
   const saveAndToast = (newProjects: AdminProject[], message: string) => {
     setProjects(newProjects);
-    saveProjects(newProjects);
+    // saveProjects(newProjects); // This line is removed as per the new_code
     setToast(message);
     setTimeout(() => setToast(''), 3000);
   };
 
   const updateProjectStatus = (id: string, status: AdminStatus) => {
+    setStatus(id, status);
     const updated = projects.map(p => 
       p.id === id ? { ...p, status, updatedAt: new Date().toISOString() } : p
     );
-    saveAndToast(updated, `ステータスを ${status} に変更しました (Demo mode only)`);
+    setProjects(updated);
+    setToast(`ステータスを ${status} に変更しました (Demo mode only)`);
+    setTimeout(() => setToast(''), 3000);
   };
 
   const updateProjectCategory = (id: string, category: string) => {
+    setCategory(id, category);
     const updated = projects.map(p => 
       p.id === id ? { ...p, category, updatedAt: new Date().toISOString() } : p
     );
-    saveAndToast(updated, `カテゴリを ${category} に変更しました (Demo mode only)`);
+    setProjects(updated);
+    setToast(`カテゴリを ${category} に変更しました (Demo mode only)`);
+    setTimeout(() => setToast(''), 3000);
   };
 
   const deleteProject = (id: string) => {
+    setStatus(id, 'archived');
     const updated = projects.filter(p => p.id !== id);
-    saveAndToast(updated, 'プロジェクトを削除しました (Demo mode only)');
+    setProjects(updated);
+    setToast('プロジェクトを削除しました (Demo mode only)');
+    setTimeout(() => setToast(''), 3000);
   };
 
-  const addComment = (projectId: string) => {
+  const addCommentToProject = (projectId: string) => {
     if (!newComment.trim()) return;
+    
+    addComment(projectId, {
+      author: '管理者',
+      body: newComment
+    });
     
     const updated = projects.map(p => {
       if (p.id === projectId) {
@@ -61,12 +76,16 @@ export default function AdminDashboard() {
       return p;
     });
     
-    saveAndToast(updated, 'コメントを追加しました (Demo mode only)');
+    setProjects(updated);
+    setToast('コメントを追加しました (Demo mode only)');
     setNewComment('');
     setShowComments(null);
+    setTimeout(() => setToast(''), 3000);
   };
 
-  const deleteComment = (projectId: string, commentId: string) => {
+  const deleteCommentFromProject = (projectId: string, commentId: string) => {
+    deleteComment(projectId, commentId);
+    
     const updated = projects.map(p => {
       if (p.id === projectId) {
         return {
@@ -77,7 +96,9 @@ export default function AdminDashboard() {
       return p;
     });
     
-    saveAndToast(updated, 'コメントを削除しました (Demo mode only)');
+    setProjects(updated);
+    setToast('コメントを削除しました (Demo mode only)');
+    setTimeout(() => setToast(''), 3000);
   };
 
   const createNewProject = () => {
@@ -252,7 +273,7 @@ export default function AdminDashboard() {
                                 <span className="text-gray-500 text-xs ml-2">{formatDate(comment.at)}</span>
                               </div>
                               <button
-                                onClick={() => deleteComment(project.id, comment.id)}
+                                onClick={() => deleteCommentFromProject(project.id, comment.id)}
                                 className="text-red-600 text-xs hover:text-red-800"
                               >
                                 削除
@@ -271,7 +292,7 @@ export default function AdminDashboard() {
                           className="flex-1 px-2 py-1 border rounded text-sm"
                         />
                         <button
-                          onClick={() => addComment(project.id)}
+                          onClick={() => addCommentToProject(project.id)}
                           className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                         >
                           追加

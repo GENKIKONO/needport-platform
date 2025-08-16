@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { loadProjects } from '@/lib/admin/local-store';
+import { isPubliclyVisible } from '@/lib/admin/mod-overlay';
 import NeedCard from '@/components/NeedCard';
 
 export default function DemoPage() {
@@ -9,7 +10,7 @@ export default function DemoPage() {
   }
   
   const projects = loadProjects();
-  const demoProjects = projects.filter(p => p.status === 'demo' || p.status === 'approved');
+  const visibleProjects = projects.filter(p => isPubliclyVisible(p.id, p.status));
   
   return (
     <div className="container mx-auto px-4 py-8">
@@ -23,7 +24,7 @@ export default function DemoPage() {
       </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {demoProjects.map((project) => (
+        {visibleProjects.map((project) => (
           <div key={project.id} className="relative">
             <NeedCard
               need={{
@@ -47,7 +48,7 @@ export default function DemoPage() {
         ))}
       </div>
       
-      {demoProjects.length === 0 && (
+      {visibleProjects.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500">デモプロジェクトがありません。</p>
         </div>
