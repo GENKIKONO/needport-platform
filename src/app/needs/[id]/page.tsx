@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-export const revalidate = 30; // 30 seconds cache for detail pages
+export const revalidate = 0;
 
 import { supabaseServer } from "@/lib/server/supabase";
 import EntryForm from "@/components/EntryForm";
