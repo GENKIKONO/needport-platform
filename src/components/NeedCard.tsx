@@ -155,6 +155,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
             <div 
               className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-xs font-medium"
               data-b2b-endorse-pill="v1"
+              data-testid="b2b-endorse-pill"
             >
               <span>{label('Endorsements')}</span>
               <span className="tabular-nums">{demoCount}</span>
