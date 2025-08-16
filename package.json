@@ -23,7 +23,8 @@
     "db:seed": "supabase db reset --prompt=false && supabase db execute supabase/seed.sql",
     "notify:dispatch": "curl -s -X POST http://localhost:3000/api/admin/notifications/dispatch",
     "cron:close": "curl -s -X POST http://localhost:3000/api/admin/cron/close-expired",
-    "build:analyze": "ANALYZE=true next build"
+    "build:analyze": "ANALYZE=true next build",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.30.0",
