@@ -85,6 +85,27 @@ API差し替え時は `demoProposals()` を実データに置換してくださ�
 - `variant()` はストレージDI対応。テストやSSRでは引数ストレージを渡すことで安定性を向上
 - メモリストレージフォールバックにより、localStorageが利用できない環境でも動作
 
+### Admin Demo Console（Phase 1.9）
+Admin Demo Console は UI のみの実装で、localStorage保存、Cookieで簡易ログイン、APIは全501の安全な実装です。
+
+#### 範囲
+- **UIのみ**: すべての操作はローカルにのみ反映
+- **localStorage保存**: プロジェクトデータはブラウザに保存
+- **Cookieで簡易ログイン**: `admin=1` Cookieで認証状態管理
+- **APIは全501**: 将来の受け口として雛形のみ配置
+
+#### 本番化プラン
+承認ワークフロー（pending→approved）をB2Bスキーマに接続する手順：
+1. `AdminProject` 型を実際のDBスキーマにマッピング
+2. `loadProjects()` / `saveProjects()` をAPI呼び出しに置換
+3. 承認・却下・削除APIを実装（現在は501）
+4. コメント機能を実際のDBに接続
+
+#### DEMOバッジの出し方
+- `demoIds()` 経由: デモプロジェクトのIDリストを取得
+- `NEXT_PUBLIC_SHOW_DEMO=1`: フラグONでバッジ表示
+- NeedCardで条件判定: `demoIds().includes(need.id)` で表示制御
+
 ## 既存機能との互換性
 - `/api/needs` の RLS-safe insert は変更なし
 - 個人向け機能はそのまま維持

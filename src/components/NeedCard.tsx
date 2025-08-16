@@ -13,6 +13,7 @@ import { label, shouldShowPayments } from '@/lib/ui/labels';
 import { showB2BFeatures } from '@/lib/flags';
 import { variant, demoEndorseCount } from '@/lib/ab';
 import { demoProposals } from '@/lib/b2b-demo';
+import { demoIds } from '@/lib/admin/demo-data';
 import ProposalCompare from './ProposalCompare';
 
 interface NeedCardProps {
@@ -40,6 +41,11 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
   const seed = need.id ?? `${need.title}|${Date.now()}`;
   const demoCount = demoEndorseCount(seed);
   const demoProposalList = demoProposals(seed, 3);
+  
+  // DEMO バッジ表示判定
+  const showDemoBadge = process.env.NEXT_PUBLIC_SHOW_DEMO === '1' && 
+                       showB2BFeatures() && 
+                       demoIds().includes(need.id);
 
   useEffect(() => {
     // Check prejoin status on mount (only if Stripe is enabled)
@@ -186,6 +192,15 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
                 {label('UnlockAtTen')}
               </div>
             )}
+          </div>
+        )}
+        
+        {/* DEMO バッジ（右上） */}
+        {showDemoBadge && (
+          <div className="absolute top-2 right-2">
+            <span className="inline-flex items-center px-2 py-1 rounded-full bg-orange-100 text-orange-800 text-xs font-medium">
+              DEMO
+            </span>
           </div>
         )}
       </div>
