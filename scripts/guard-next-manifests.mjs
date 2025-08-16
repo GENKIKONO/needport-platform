@@ -1,31 +1,32 @@
-// scripts/guard-next-manifests.mjs
-// Next 14/15 で稀に欠ける per-route client manifest を後追い生成
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
+#!/usr/bin/env node
+import { readdir, stat, access, writeFile } from 'node:fs/promises';
+import { join, relative } from 'node:path';
 
 const ROOT = '.next/server/app';
-const STUB = `export { clientReferenceManifest } from '../client-reference-manifest.js';\n`;
+const TARGETS = ['page','layout','not-found'];
 
-async function ensure(file, content) {
-  try { await fs.lstat(file); } catch {
-    await fs.mkdir(dirname(file), { recursive: true });
-    await fs.writeFile(file, content);
-    console.log('[guard] created', file);
+async function exists(p){ try{ await access(p); return true; } catch{ return false; } }
+async function* walk(dir){
+  for (const name of await readdir(dir)) {
+    const p = join(dir, name);
+    const s = await stat(p);
+    if (s.isDirectory()) { yield p; yield* walk(p); }
   }
 }
 
-async function walk(dir) {
-  let entries;
-  try { entries = await fs.readdir(dir, { withFileTypes: true }); }
-  catch { console.log('[guard] skip (no', dir, 'yet)'); return; }
+const rootOk = await exists(ROOT);
+if (!rootOk) { console.log('[guard] skip (no .next/server/app yet)'); process.exit(0); }
 
-  for (const e of entries) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) { await walk(p); continue; }
-    if (/(^|\/)(page|layout|not-found)\.js$/.test(p)) {
-      await ensure(p.replace(/\.js$/, '_client-reference-manifest.js'), STUB);
-    }
+const rootManifest = join(ROOT, 'client-reference-manifest.js');
+for await (const dir of walk(ROOT)) {
+  for (const base of TARGETS) {
+    const codeFile = join(dir, `${base}.js`);
+    const stubFile = join(dir, `${base}_client-reference-manifest.js`);
+    if (!(await exists(codeFile))) continue;
+    if (await exists(stubFile)) continue;
+    const rel = relative(dir, rootManifest).replace(/\\/g,'/');
+    const content = `export { clientReferenceManifest } from '${rel}';\n`;
+    await writeFile(stubFile, content);
+    console.log('[guard] created', stubFile);
   }
 }
-
-await walk(ROOT);
