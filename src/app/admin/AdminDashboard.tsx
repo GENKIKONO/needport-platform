@@ -270,6 +270,8 @@ export default function AdminDashboard() {
         
         <p className="text-gray-600 mb-4">
           デモ用管理画面です。すべての操作はローカルにのみ保存されます。
+          <br />
+          <span className="text-sm text-gray-500">Seed/Reset/Export/Import は本番接続後に有効化されます。</span>
         </p>
         
         {/* Reset/Seed ボタン */}

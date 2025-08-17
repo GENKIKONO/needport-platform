@@ -22,6 +22,7 @@ export default function AdminLoginForm() {
       });
 
       if (response.ok) {
+        router.push('/admin');
         router.refresh();
       } else {
         const data = await response.json();
