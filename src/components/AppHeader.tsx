@@ -12,11 +12,8 @@ export default function AppHeader(){
     <>
       <header className="sticky top-0 z-40 border-b border-neutral-100 bg-white">
         <div className="container flex items-center justify-between gap-3 h-[60px] px-4">
-                  {/* ロゴは1つに統一（Logo側がテキストを含むなら span は削除） */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Logo className="w-7 h-7" />
-          {/* 重複防止: 片方だけにする。Logoがアイコンのみなら下のspanを残す */}
-          {/* <span className="font-semibold text-neutral-900 hidden sm:inline">NeedPort</span> */}
+                  <Link href="/" className="flex items-center gap-2">
+          <Logo showText />
         </Link>
           <button
             onClick={() => setMenuOpen(true)}
