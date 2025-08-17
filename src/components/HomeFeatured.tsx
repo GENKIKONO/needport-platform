@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getNeedsSafe } from "@/lib/demo/data";
 import InterestDialog from "./InterestDialog";
@@ -12,6 +12,21 @@ export default function HomeFeatured() {
   useState(() => {
     getNeedsSafe().then(setNeeds);
   });
+
+  function handleDone(needId: string, newCounts?: Record<string,number>) {
+    // 賛同済み状態を保存
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`np_endorsed_${needId}`, "1");
+    }
+    // カウント更新（楽観的更新）
+    if (newCounts) {
+      setNeeds(prev => prev.map(n => 
+        n.id === needId 
+          ? { ...n, counts: newCounts }
+          : n
+      ));
+    }
+  }
 
   return (
     <>
@@ -39,13 +54,11 @@ export default function HomeFeatured() {
                 <Link href={`/needs/${n.id}`} className="btn btn-primary flex-1">
                   詳細を見る
                 </Link>
-                <button 
-                  type="button" 
-                  className="btn btn-ghost flex-1" 
-                  onClick={() => setOpenDialog({open: true, need: n})}
-                >
-                  賛同する
-                </button>
+                <EndorseButton 
+                  need={n} 
+                  onOpen={() => setOpenDialog({open: true, need: n})}
+                  onDone={(counts) => handleDone(n.id, counts)}
+                />
               </div>
             </div>
           </article>
@@ -56,9 +69,41 @@ export default function HomeFeatured() {
         <InterestDialog
           open={openDialog.open}
           onClose={() => setOpenDialog({open: false, need: null})}
+          onDone={(counts) => handleDone(openDialog.need.id, counts)}
           need={openDialog.need}
         />
       )}
     </>
+  );
+}
+
+// 賛同ボタンコンポーネント
+function EndorseButton({ need, onOpen, onDone }: { 
+  need: any; 
+  onOpen: () => void; 
+  onDone: (counts?: Record<string,number>) => void;
+}) {
+  const [endorsed, setEndorsed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setEndorsed(!!localStorage.getItem(`np_endorsed_${need.id}`));
+    }
+  }, [need.id]);
+
+  function handleDone(counts?: Record<string,number>) {
+    setEndorsed(true);
+    onDone(counts);
+  }
+
+  return (
+    <button 
+      type="button" 
+      disabled={endorsed}
+      className={`btn btn-ghost flex-1 ${endorsed ? "opacity-60 cursor-default" : ""}`}
+      onClick={onOpen}
+    >
+      {endorsed ? "賛同済み" : "賛同する"}
+    </button>
   );
 }

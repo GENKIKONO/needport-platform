@@ -4,6 +4,7 @@ import { useState } from "react";
 type Props = {
   open: boolean;
   onClose: () => void;
+  onDone?: (counts?: Record<string,number>) => void; // 追加
   need: { id: string; title: string; area?: string; category?: string; budgetLabel?: string };
 };
 
@@ -13,26 +14,36 @@ const LEVELS = [
   { key: "curious", label: "興味あり", detail: "関心を示すのみ",              dot: "bg-blue-300" },
 ] as const;
 
-export default function InterestDialog({ open, onClose, need }: Props) {
+export default function InterestDialog({ open, onClose, onDone, need }: Props) {
   const [level, setLevel] = useState<typeof LEVELS[number]["key"]>("buy");
   const [area, setArea] = useState("");
   const [budget, setBudget] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   if (!open) return null;
 
   async function submit() {
     try {
+      setSubmitting(true);
       const res = await fetch(`/api/needs/${need.id}/interest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ level, area, budget }),
       });
-      if (!res.ok) throw new Error(`failed: ${res.status}`);
+      if (res.status === 204) {
+        onDone?.();
+        onClose();
+        return;
+      }
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      onDone?.(data.counts);
       onClose();
-      // TODO: 任意でトースト
     } catch (e) {
       console.error(e);
-      alert("送信に失敗しました。時間をおいてもう一度お試しください。");
+      alert("送信に失敗しました。時間をおいて再度お試しください。");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -97,7 +108,9 @@ export default function InterestDialog({ open, onClose, need }: Props) {
 
         <div className="mt-5 flex items-center justify-end gap-2">
           <button type="button" className="btn btn-ghost h-11" onClick={onClose}>キャンセル</button>
-          <button type="button" className="btn btn-primary h-11" onClick={submit}>賛同を送信</button>
+          <button type="button" disabled={submitting} className="btn btn-primary h-11" onClick={submit}>
+            {submitting ? "送信中..." : "賛同を送信"}
+          </button>
         </div>
       </div>
     </div>
