@@ -1,4 +1,6 @@
+// @needport: do-not-edit-outside-design-task
 'use client';
+import FlowStrip from "./FlowStrip";
 
 const steps = [
   { key: 'post',    label: '投稿',   note: '匿名OKで「欲しい」を投稿' },
@@ -13,6 +15,7 @@ export default function ServiceFlow() {
   return (
     <section className="bg-white hidden md:block">
       <div className="section">
+        <div className="mb-6"><FlowStrip /></div>
         <div className="text-center mb-6">
           <h2 className="text-xl md:text-2xl font-bold text-neutral-900">サービスの流れ</h2>
           <p className="mt-2 text-neutral-600 text-sm md:text-base">はじめてでも直感で分かる6ステップ</p>
