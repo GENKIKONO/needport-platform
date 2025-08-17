@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Menu } from 'lucide-react';
 import Logo from './Logo';
-import MobileMenu from './MobileMenu';
+import MobileDrawer from './MobileDrawer';
 
 export default function AppHeader(){
   const [menuOpen, setMenuOpen] = useState(false);
@@ -25,7 +25,7 @@ export default function AppHeader(){
         </div>
       </header>
 
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
     </>
   );
 }

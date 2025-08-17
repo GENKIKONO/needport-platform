@@ -1,33 +1,50 @@
-'use client'
-import { FileText, Handshake, ShieldCheck, Square, CreditCard, Ship } from 'lucide-react'
+"use client";
+import { useState } from "react";
+import Link from "next/link";
 
-const items = [
-  {icon: FileText,  label:'投稿'},
-  {icon: Handshake, label:'提案'},
-  {icon: ShieldCheck,label:'承認'},
-  {icon: Square,    label:'ルーム'},
-  {icon: CreditCard,label:'支払い'},
-]
+const steps = [
+  { key:"post",    label:"投稿",   href:"/post" },
+  { key:"offer",   label:"提案",   href:"/needs" },
+  { key:"approve", label:"承認",   href:"/guide#approve" },
+  { key:"room",    label:"ルーム", href:"/guide#room" },
+  { key:"pay",     label:"支払い", href:"/guide#pay" },
+];
 
-export default function FlowStrip() {
+export default function FlowStrip({ initial = 0 }: { initial?: number }) {
+  const [active, setActive] = useState(initial);
   return (
-    <div className="np-card p-4 sm:p-5">
-      {/* 航路 */}
-      <div className="relative h-7">
-        <div className="absolute inset-y-2 left-0 right-0 rounded-full bg-sky-100 overflow-hidden">
-          <div className="route-water absolute inset-0" />
+    <div className="relative rounded-2xl border border-black/5 bg-gradient-to-r from-sky-50 to-indigo-50 p-4 shadow-card">
+      {/* 航路（トラック） */}
+      <div className="relative h-2 bg-sky-100 rounded-full">
+        {/* 船（center基準） */}
+        <div
+          aria-hidden
+          className="absolute -top-3 size-6 transition-[left] duration-500 ease-out"
+          style={{ left: `calc(${(active * 100) / 4}% - 12px)` }}
+        >
+          {/* 船アイコン（シンプルSVG） */}
+          <svg viewBox="0 0 24 24" className="w-6 h-6 text-sky-600 drop-shadow">
+            <path fill="currentColor" d="M3 13l9-8 9 8h-3v6H6v-6H3z" />
+          </svg>
         </div>
-        <Ship aria-hidden className="route-boat absolute -top-0.5 left-0 h-7 w-7 text-blue-600" />
       </div>
-      {/* 5アイコン（等幅グリッド） */}
-      <ul className="mt-3 grid grid-cols-5 gap-2 text-center text-sm text-neutral-700">
-        {items.map(({icon:Icon,label}) => (
-          <li key={label} className="flex flex-col items-center gap-1">
-            <Icon className="h-[22px] w-[22px]" />
-            <span>{label}</span>
-          </li>
+
+      {/* ラベル群 */}
+      <div className="mt-4 grid grid-cols-5 gap-2 text-sm">
+        {steps.map((s, i) => (
+          <button
+            key={s.key}
+            onMouseEnter={() => setActive(i)}
+            onFocus={() => setActive(i)}
+            onClick={() => setActive(i)}
+            className={`rounded-xl py-3 font-medium transition-colors ${
+              i === active ? "bg-white text-sky-700 shadow" : "text-neutral-500 hover:bg-white/70"
+            }`}
+          >
+            <Link href={s.href} className="block w-full h-full">{s.label}</Link>
+          </button>
         ))}
-      </ul>
+      </div>
     </div>
-  )
+  );
 }
