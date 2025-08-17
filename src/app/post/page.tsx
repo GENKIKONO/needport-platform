@@ -12,6 +12,10 @@ export default function PostNeed(){
   const [category,setCategory]=useState("");
   const [sail, setSail] = useState(false);
   const router=useRouter();
+  
+  const titleOk = title.trim().length >= 4;
+  const descOk = desc.trim().length >= 20;
+  const canSubmit = titleOk && descOk;
   async function submit(){
     const payload={title, description:desc, area, category};
     try{
@@ -44,14 +48,37 @@ export default function PostNeed(){
           <div className="grid gap-4">
             <div>
               <label className="block text-sm font-medium text-neutral-700">ニーズのタイトル</label>
-              <input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full np-input px-3 py-2" placeholder="例: 地下室がある家を建てたい" />
+              <input 
+                required 
+                aria-required="true" 
+                placeholder="例: 社内研修プログラム開発"
+                className="mt-1 w-full np-input px-3 py-2" 
+                value={title} 
+                onChange={e=>setTitle(e.target.value)} 
+              />
+              {!titleOk && <p className="mt-1 text-sm text-red-600">4文字以上で入力してください</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-neutral-700">詳細説明</label>
-              <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={5} className="mt-1 w-full np-textarea px-3 py-2" placeholder="具体的な要望や条件など…"/>
+              <textarea 
+                required 
+                aria-required="true" 
+                className="mt-1 w-full np-textarea px-3 py-2"
+                placeholder="目的／範囲／成果物のイメージ（個人情報は書かない）"
+                rows={5} 
+                value={desc} 
+                onChange={e=>setDesc(e.target.value)} 
+              />
+              {!descOk && <p className="mt-1 text-sm text-red-600">20文字以上で概要を書いてください</p>}
             </div>
             <div className="flex justify-end">
-              <button onClick={()=>setStep(2)} className="btn btn-primary">次へ</button>
+              <button 
+                onClick={()=>setStep(2)} 
+                disabled={!canSubmit}
+                className={`btn btn-primary ${!canSubmit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                次へ
+              </button>
             </div>
           </div>
         )}

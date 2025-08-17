@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* iOS Safari でもフォームを常にライトにする */
-:root { color-scheme: light; }
+:root { color-scheme: light; } /* iOSの自動ダーク抑止 */
 html { text-size-adjust: 100%; }
 html,body { height: 100%; }
 body { @apply bg-white text-neutral-900 antialiased; }
@@ -12,8 +12,8 @@ body { @apply bg-white text-neutral-900 antialiased; }
 main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
  
  @layer components {
-   /* PCで横幅をしっかり使う */
-  .container { @apply mx-auto max-w-screen-xl px-4 sm:px-6; }
+   /* PCの横幅を広げる（視認性UP） */
+  .container { @apply mx-auto max-w-7xl px-3 sm:px-6; }
   .container-wide { @apply mx-auto max-w-[1400px] px-4 sm:px-6; }
   .text-balance { text-wrap: balance; }
    /* Yellow section (もうすぐ成立) アクセント */
@@ -133,6 +133,14 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   .np-card { @apply rounded-xl shadow-card border border-black/5 bg-white/90 dark:bg-white/5; }
   .np-badge { @apply rounded-full px-2.5 py-0.5 text-xs font-medium; }
   .np-progress { @apply h-2 rounded-full overflow-hidden; }
+
+  /* 画面遷移のスケルトンを黒→淡グレーに統一 */
+  .skeleton       { @apply bg-neutral-200 animate-pulse rounded; }
+  .skeleton-line  { @apply h-3 skeleton; }
+  .skeleton-btn   { @apply h-9 w-28 skeleton rounded-lg; }
+
+  /* モバイルの自然改行を強化 */
+  .text-balance { text-wrap: balance; }
   
   h1 { @apply text-2xl sm:text-3xl font-semibold tracking-tight; }
   h2 { @apply text-xl sm:text-2xl font-semibold tracking-tight; }

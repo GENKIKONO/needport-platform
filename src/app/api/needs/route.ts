@@ -17,6 +17,13 @@ export async function POST(req: Request) {
     agree,
   } = body ?? {};
 
+  // 必須チェック
+  const titleTrimmed = (title ?? '').trim();
+  const summaryTrimmed = (summary ?? '').trim();
+  if (titleTrimmed.length < 4 || summaryTrimmed.length < 20) {
+    return NextResponse.json({ ok: false, error: 'invalid_input' }, { status: 400 });
+  }
+
   if (!agree) return NextResponse.json({ ok: false, error: 'agree required' }, { status: 400 });
   if (!title || !summary || (scale !== 'personal' && scale !== 'community')) {
     return NextResponse.json({ ok: false, error: 'invalid input' }, { status: 400 });

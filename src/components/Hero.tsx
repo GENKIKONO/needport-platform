@@ -10,8 +10,8 @@ export default function Hero() {
         <h1 className="mt-2 text-4xl md:text-6xl font-extrabold leading-tight text-balance">
           NeedPort は「ニーズの港」
         </h1>
-        <p className="mt-4 text-[16px] sm:text-lg md:text-xl text-neutral-700 leading-relaxed text-balance">
-          投稿 → 提案 → 承認 → ルーム → 安全な支払い。ここで完結。
+        <p className="mt-4 text-lg md:text-xl text-neutral-600 text-balance">
+          投稿 → 提案 → 承認 → ルーム → 安全な支払いまで、ここで完結。
         </p>
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link href="/post" className="btn btn-primary h-11 text-base whitespace-nowrap btn-wave"><Anchor className="w-4 h-4 mr-2"/>ニーズを投稿</Link>
