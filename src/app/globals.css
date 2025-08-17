@@ -142,21 +142,18 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   /* モバイルの自然改行を強化 */
   .text-balance { text-wrap: balance; }
 
-  /* --- Port Animations --- */
-  @keyframes np-sail {
-    from { transform: translateX(-20vw) translateY(0) rotate(-0.5deg); }
-    to   { transform: translateX(120vw) translateY(-2px) rotate(1deg); }
-  }
-  @keyframes np-wake {
-    from { transform: translateX(-20vw); opacity:.0; }
-    10%  { opacity:.25; }
-    to   { transform: translateX(120vw); opacity:0; }
-  }
-  .np-ship { @apply pointer-events-none fixed left-0 bottom-[82px] z-[70] will-change-transform; animation: np-sail 1.8s ease-in-out both; }
-  .np-wake { @apply fixed left-0 bottom-[78px] z-[69] h-[2px] w-[18vw] bg-gradient-to-r from-cyan-300/70 via-white/30 to-transparent rounded-full blur-[2px] will-change-transform; animation: np-wake 1.8s ease-in-out both; }
-  @media (prefers-reduced-motion: reduce){
-    .np-ship,.np-wake { animation: none !important; opacity: 0; }
-  }
+  /* ==== Port Animations ==== */
+  @keyframes np-sail { from { transform:translateX(-20vw) rotate(-.5deg) } to { transform:translateX(120vw) rotate(.8deg) } }
+  @keyframes np-wake { from { transform:translateX(-20vw); opacity:0 } 10%{opacity:.28} to { transform:translateX(120vw); opacity:0 } }
+  .np-ship { @apply fixed left-0 bottom-[82px] z-[70] pointer-events-none will-change-transform; animation: np-sail 1.8s ease-in-out both; }
+  .np-wake { @apply fixed left-0 bottom-[78px] z-[69] h-[2px] w-[18vw] rounded-full
+                   bg-gradient-to-r from-cyan-300/70 via-white/30 to-transparent blur-[2px] will-change-transform;
+             animation: np-wake 1.8s ease-in-out both; }
+  @media (prefers-reduced-motion: reduce) { .np-ship,.np-wake { animation:none!important; opacity:0 } }
+
+  /* 横スクロールUIのスクロールバー非表示 */
+  .no-scrollbar { scrollbar-width:none }
+  .no-scrollbar::-webkit-scrollbar { display:none }
   
   h1 { @apply text-2xl sm:text-3xl font-semibold tracking-tight; }
   h2 { @apply text-xl sm:text-2xl font-semibold tracking-tight; }

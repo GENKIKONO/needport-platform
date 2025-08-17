@@ -26,10 +26,8 @@ export default function PostNeed(){
       arr.unshift({id:`local-${Date.now()}`, ...payload, progress:0, target:10, count:0});
       localStorage.setItem(key, JSON.stringify(arr));
       
-      // 船が横切る
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('np:post:success'))
-      }
+      // 次画面で船を走らせる
+      if (typeof window !== 'undefined') sessionStorage.setItem('np:sail','1')
       
       // 投稿成功時に船アニメーション
       setSail(true);
