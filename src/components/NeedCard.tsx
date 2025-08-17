@@ -387,7 +387,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
             {isLoading ? '処理中...' : cta}
           </button>
         ) : !shouldShowPayments() ? (
-          <Link href={`/signup?need=${need.id}`} className="btn btn-primary w-full sm:w-auto flex-1">
+          <Link href={`/post`} className="btn btn-primary w-full sm:w-auto flex-1">
             登録する
           </Link>
         ) : null}
