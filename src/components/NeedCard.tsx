@@ -59,11 +59,6 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
     process.env.NEXT_PUBLIC_ALLOW_DEMO_PROPOSALS === '1' && 
     isUnlocked;
   
-  // DEMO バッジ表示判定
-  const showDemoBadge = process.env.NEXT_PUBLIC_SHOW_DEMO === '1' && 
-                       showB2BFeatures() && 
-                       demoIds().includes(need.id);
-  
   // 承認制バッジ表示判定
   const modStatus = getStatus(need.id);
   const showModBadge = modStatus && modStatus !== 'approved';
@@ -79,7 +74,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
     if (modStatus === 'pending') {
       return { text: '審査中', className: 'bg-gray-100 text-gray-800', testId: 'badge-pending' };
     }
-    if (showDemoBadge) {
+    if (modStatus === 'demo') {
       return { text: 'DEMO', className: 'bg-orange-100 text-orange-800', testId: 'badge-demo' };
     }
     if (modStatus === 'approved') {

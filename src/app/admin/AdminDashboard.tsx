@@ -428,6 +428,13 @@ export default function AdminDashboard() {
                       Archive
                     </button>
                     <button
+                      onClick={() => updateProjectStatus(project.id, 'demo')}
+                      className="px-2 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700"
+                      data-testid="btn-demo"
+                    >
+                      DEMO
+                    </button>
+                    <button
                       onClick={async () => {
                         if (!confirm('この案件を削除します。よろしいですか？')) return;
                         
