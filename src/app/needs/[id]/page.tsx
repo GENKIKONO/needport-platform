@@ -8,6 +8,7 @@ import { FF_PUBLIC_ENTRY } from "@/lib/flags";
 import { Metadata } from "next";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import { SCALE_LABEL, isCommunity } from "@/lib/domain/need";
+import { findMockNeed, findMockOffers } from "@/lib/mock/needs";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   try {
@@ -122,11 +123,55 @@ export default async function NeedDetailPage({
         .single();
 
       if (needError) {
+        // Try mock data as fallback
+        const mockNeed = findMockNeed(id);
+        if (mockNeed) {
+          const mockOffers = findMockOffers(id);
+          const adoptedOffer = mockOffers.find(o => o.status === 'adopted');
+          
+          const needData: NeedWithOffer = {
+            id: mockNeed.id,
+            title: mockNeed.title,
+            summary: mockNeed.summary,
+            adopted_offer_id: adoptedOffer?.id || null,
+            min_people: adoptedOffer?.min_people || null,
+            deadline: adoptedOffer?.deadline || null,
+            recruitment_closed: false,
+            scale: 'personal',
+            vendor_name: adoptedOffer ? 'モック提供者' : null,
+            amount: adoptedOffer?.price_value || null,
+          };
+          
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+          const currentUrl = `${siteUrl}/needs/${id}`;
+          
+          return (
+            <div className="container space-y-4">
+              <h1 className="text-2xl font-semibold">{needData.title}</h1>
+              <ShareActions title={needData.title} url={currentUrl} />
+              
+              <div className="flex items-center gap-3">
+                <span className="rounded-md bg-emerald-600/20 px-3 py-1 text-sm text-emerald-300">
+                  {adoptedOffer ? '採用済み' : '未採用'}
+                </span>
+              </div>
+              
+              <div className="card p-4">
+                <p className="text-neutral-300">{mockNeed.body}</p>
+              </div>
+            </div>
+          );
+        }
+        
+        // No data found anywhere
         return (
-          <div className="p-6 text-red-500">
-            ニーズが見つかりませんでした。
-            <pre className="whitespace-pre-wrap text-xs mt-2">{needError.message}</pre>
-          </div>
+          <main className="container py-10">
+            <div className="card p-6">
+              <h2 className="text-lg font-semibold text-white">案件が見つかりませんでした</h2>
+              <p className="mt-2 text-neutral-300">URLが間違っている可能性があります。</p>
+              <a href="/" className="btn btn-primary mt-4">一覧に戻る</a>
+            </div>
+          </main>
         );
       }
 

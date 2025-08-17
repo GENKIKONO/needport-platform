@@ -387,7 +387,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
             {isLoading ? '処理中...' : cta}
           </button>
         ) : !shouldShowPayments() ? (
-          <Link href="/admin/login" className="btn btn-primary w-full sm:w-auto flex-1">
+          <Link href={`/signup?need=${need.id}`} className="btn btn-primary w-full sm:w-auto flex-1">
             登録する
           </Link>
         ) : null}
@@ -410,7 +410,7 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
         <Link
           href={`/needs/${need.id}`}
           onClick={handleCardClick}
-          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+          className="text-brand-600 underline-offset-4 hover:underline"
         >
           詳細を見る →
         </Link>
