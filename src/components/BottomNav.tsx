@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, List, SquarePen, UserRound } from 'lucide-react';
+import useMounted from './util/useMounted';
 
 const items = [
   { href: '/', label: 'ホーム', icon: Home },
@@ -11,7 +12,10 @@ const items = [
 ];
 
 export default function BottomNav() {
+  const mounted = useMounted();
   const pathname = usePathname();
+  
+  if (!mounted) return null; // ← 追加：マウントまで待つ
   return (
     <nav
       className="

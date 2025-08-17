@@ -2,12 +2,16 @@
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { Home, List, SquarePen, UserRound, Anchor, Map, ShieldCheck, Scale, Building2, MessageSquare } from 'lucide-react';
+import useMounted from './util/useMounted';
 
 export default function MobileMenu({
   open, onClose,
 }: { open:boolean; onClose:() => void }) {
+  const mounted = useMounted();
   const firstLinkRef = useRef<HTMLAnchorElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  
+  if (!mounted) return null; // ← 追加
 
   useEffect(() => {
     const onKey = (e:KeyboardEvent) => { 

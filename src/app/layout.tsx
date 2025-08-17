@@ -8,6 +8,8 @@ import { headers } from "next/headers";
 import { makeNonce } from "@/lib/security/csp";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
+import ErrorBoundary from '@/components/ErrorBoundary';
+import ClientErrorCatcher from '@/components/ClientErrorCatcher';
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -96,18 +98,21 @@ export default async function RootLayout({
         }} />
       </head>
       <body>
-        <AppHeader />
-        {children}
-        <BottomNav />
-        
-        {/* PWA Install Prompt */}
-        <PwaPrompt />
-        
-        {/* Demo Watermark */}
-        <DemoWatermark />
-        
-        {/* SEO JSON-LD for home page */}
-        <SeoJsonLd />
+        <ErrorBoundary>
+          <ClientErrorCatcher />
+          <AppHeader />
+          {children}
+          {process.env.NEXT_PUBLIC_DISABLE_BOTTOMNAV === '1' ? null : <BottomNav />}
+          
+          {/* PWA Install Prompt */}
+          <PwaPrompt />
+          
+          {/* Demo Watermark */}
+          <DemoWatermark />
+          
+          {/* SEO JSON-LD for home page */}
+          <SeoJsonLd />
+        </ErrorBoundary>
       </body>
     </html>
   );
