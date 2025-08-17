@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Icon from '@/components/Icon';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -40,6 +41,7 @@ export default function RoomPage() {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isApproved, setIsApproved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -50,11 +52,15 @@ export default function RoomPage() {
 
   const fetchData = async () => {
     try {
+      setError(null);
+      
       // メッセージ取得
       const messagesRes = await fetch(`/api/rooms/${roomId}/messages`);
       if (messagesRes.ok) {
         const messagesData = await messagesRes.json();
         setMessages(messagesData.reverse()); // 最新順に表示
+      } else if (messagesRes.status === 501) {
+        setError('本番DB接続時のみ利用可能です');
       }
 
       // マイルストーン取得
@@ -83,6 +89,7 @@ export default function RoomPage() {
 
     } catch (error) {
       console.error('Failed to fetch room data:', error);
+      setError('データの取得に失敗しました');
     } finally {
       setLoading(false);
     }
@@ -102,16 +109,24 @@ export default function RoomPage() {
 
       if (response.status === 201) {
         setNewMessage('');
-        fetchData(); // 再取得
-      } else if (response.status === 501) {
-        alert('本番DB接続時のみメッセージ送信可能です');
+        // メッセージリストを更新
+        const newMsg = {
+          id: Date.now().toString(),
+          user_ref: currentUser || 'unknown',
+          body: newMessage,
+          created_at: new Date().toISOString()
+        };
+        setMessages(prev => [newMsg, ...prev]);
       } else if (response.status === 403) {
-        alert('承認済みメンバーのみメッセージ送信可能です');
+        alert('承認されていないユーザーはメッセージを送信できません');
+      } else if (response.status === 501) {
+        alert('本番DB接続時のみ利用可能です');
       } else {
-        alert('送信エラー');
+        alert('メッセージの送信に失敗しました');
       }
     } catch (error) {
-      alert('送信エラー');
+      console.error('Failed to send message:', error);
+      alert('メッセージの送信に失敗しました');
     } finally {
       setSending(false);
     }
@@ -128,22 +143,31 @@ export default function RoomPage() {
         body: JSON.stringify({
           title: newMilestone.title,
           due_date: newMilestone.due_date || null,
-          amount_yen: newMilestone.amount_yen ? parseInt(newMilestone.amount_yen) : null,
+          amount_yen: newMilestone.amount_yen ? parseInt(newMilestone.amount_yen) : null
         }),
       });
 
       if (response.status === 201) {
+        const milestoneData = await response.json();
+        setMilestones(prev => [...prev, {
+          id: milestoneData.id,
+          title: newMilestone.title,
+          due_date: newMilestone.due_date || undefined,
+          amount_yen: newMilestone.amount_yen ? parseInt(newMilestone.amount_yen) : undefined,
+          status: 'planned'
+        }]);
         setNewMilestone({ title: '', due_date: '', amount_yen: '' });
-        fetchData();
-      } else if (response.status === 501) {
-        alert('本番DB接続時のみマイルストーン作成可能です');
+        alert('マイルストーンを作成しました');
       } else if (response.status === 403) {
-        alert('buyerまたはopsのみマイルストーン作成可能です');
+        alert('マイルストーンの作成権限がありません');
+      } else if (response.status === 501) {
+        alert('本番DB接続時のみ利用可能です');
       } else {
-        alert('作成エラー');
+        alert('マイルストーンの作成に失敗しました');
       }
     } catch (error) {
-      alert('作成エラー');
+      console.error('Failed to create milestone:', error);
+      alert('マイルストーンの作成に失敗しました');
     }
   };
 
@@ -153,28 +177,41 @@ export default function RoomPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount_yen: 10000, // 仮の金額
-          room_id: roomId,
+          amount_yen: 50000,
+          room_id: roomId
         }),
       });
 
-      if (response.status === 200) {
-        alert('与信を作成しました（ダミー）');
+      if (response.ok) {
+        const data = await response.json();
+        alert(`支払い予約を作成しました: ${data.id}`);
       } else if (response.status === 501) {
-        alert('Stripeが無効です（NEXT_PUBLIC_STRIPE_ENABLED=1で有効化）');
+        alert('Stripe機能は現在無効です');
       } else {
-        alert('与信作成エラー');
+        alert('支払い予約の作成に失敗しました');
       }
     } catch (error) {
-      alert('与信作成エラー');
+      console.error('Failed to create payment intent:', error);
+      alert('支払い予約の作成に失敗しました');
     }
   };
 
   if (loading) {
     return (
       <main className="section">
-        <div className="np-card p-6 text-center">
+        <div className="text-center py-12">
           <div className="text-gray-500">読み込み中...</div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="section">
+        <div className="text-center py-12">
+          <div className="text-red-500 mb-4">{error}</div>
+          <button onClick={fetchData} className="btn btn-primary">再試行</button>
         </div>
       </main>
     );
@@ -188,19 +225,15 @@ export default function RoomPage() {
           <div className="np-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-xl font-bold">メッセージ</h1>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2 text-sm">
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  isApproved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {isApproved ? '承認済み' : '承認待ち'}
+                </span>
                 {userRole && (
-                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    {userRole}
-                  </span>
-                )}
-                {isApproved ? (
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                    承認済み
-                  </span>
-                ) : (
-                  <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                    承認待ち
+                  <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                    {userRole === 'buyer' ? '発注者' : userRole === 'vendor' ? '提供者' : '運営'}
                   </span>
                 )}
               </div>
@@ -210,24 +243,34 @@ export default function RoomPage() {
             <div className="space-y-3 mb-4 max-h-96 overflow-y-auto">
               {messages.length === 0 ? (
                 <div className="text-center text-gray-500 py-8">
-                  まだメッセージはありません
+                  <Icon name="chat" className="size-8 mx-auto mb-2 text-gray-300" />
+                  <p>まだメッセージがありません</p>
                 </div>
               ) : (
-                messages.map(message => (
-                  <div key={message.id} className="border-l-4 border-blue-500 pl-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-sm">{message.user_ref}</span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(message.created_at).toLocaleString('ja-JP')}
-                      </span>
+                messages.map((message) => (
+                  <div key={message.id} className="flex gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Icon name="user" className="size-4 text-blue-600" />
+                      </div>
                     </div>
-                    <div className="text-gray-700">{message.body}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-sm">{message.user_ref}</span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(message.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        {message.body}
+                      </div>
+                    </div>
                   </div>
                 ))
               )}
             </div>
 
-            {/* 送信フォーム */}
+            {/* メッセージ送信フォーム */}
             <form onSubmit={sendMessage} className="flex gap-2">
               <input
                 type="text"
@@ -235,7 +278,7 @@ export default function RoomPage() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder={isApproved ? "メッセージを入力..." : "承認待ちのため送信できません"}
                 disabled={!isApproved || sending}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
               />
               <button
                 type="submit"
@@ -248,8 +291,38 @@ export default function RoomPage() {
           </div>
         </div>
 
-        {/* マイルストーン */}
-        <div className="lg:col-span-1">
+        {/* サイドバー */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* メンバー一覧 */}
+          <div className="np-card p-6">
+            <h2 className="text-lg font-semibold mb-4">メンバー</h2>
+            <div className="space-y-3">
+              {members.map((member) => (
+                <div key={member.user_ref} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Icon name="user" className="size-4 text-gray-600" />
+                    <span className="text-sm font-medium">{member.user_ref}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      member.role === 'buyer' ? 'bg-blue-100 text-blue-800' :
+                      member.role === 'vendor' ? 'bg-green-100 text-green-800' :
+                      'bg-purple-100 text-purple-800'
+                    }`}>
+                      {member.role === 'buyer' ? '発注者' : member.role === 'vendor' ? '提供者' : '運営'}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      member.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {member.approved ? '承認' : '待ち'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* マイルストーン */}
           <div className="np-card p-6">
             <h2 className="text-lg font-semibold mb-4">マイルストーン</h2>
             
@@ -257,24 +330,32 @@ export default function RoomPage() {
             <div className="space-y-3 mb-4">
               {milestones.length === 0 ? (
                 <div className="text-center text-gray-500 py-4">
-                  まだマイルストーンはありません
+                  <Icon name="category" className="size-6 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">マイルストーンがありません</p>
                 </div>
               ) : (
-                milestones.map(milestone => (
-                  <div key={milestone.id} className="border border-gray-200 rounded p-3">
-                    <div className="font-medium">{milestone.title}</div>
-                    {milestone.due_date && (
-                      <div className="text-sm text-gray-600">
-                        期限: {new Date(milestone.due_date).toLocaleDateString('ja-JP')}
-                      </div>
-                    )}
-                    {milestone.amount_yen && (
-                      <div className="text-sm text-gray-600">
-                        金額: ¥{milestone.amount_yen.toLocaleString()}
-                      </div>
-                    )}
-                    <div className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded mt-1 inline-block">
-                      {milestone.status}
+                milestones.map((milestone) => (
+                  <div key={milestone.id} className="border border-gray-200 rounded-lg p-3">
+                    <div className="font-medium text-sm mb-1">{milestone.title}</div>
+                    <div className="flex items-center justify-between text-xs text-gray-600">
+                      {milestone.due_date && (
+                        <span>期限: {milestone.due_date}</span>
+                      )}
+                      {milestone.amount_yen && (
+                        <span>¥{milestone.amount_yen.toLocaleString()}</span>
+                      )}
+                    </div>
+                    <div className="mt-2">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        milestone.status === 'planned' ? 'bg-blue-100 text-blue-800' :
+                        milestone.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                        milestone.status === 'done' ? 'bg-green-100 text-green-800' :
+                        'bg-purple-100 text-purple-800'
+                      }`}>
+                        {milestone.status === 'planned' ? '予定' :
+                         milestone.status === 'in_progress' ? '進行中' :
+                         milestone.status === 'done' ? '完了' : '支払済'}
+                      </span>
                     </div>
                   </div>
                 ))
@@ -291,36 +372,37 @@ export default function RoomPage() {
                   placeholder="マイルストーン名"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <input
-                  type="date"
-                  value={newMilestone.due_date}
-                  onChange={(e) => setNewMilestone(prev => ({ ...prev, due_date: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  type="number"
-                  value={newMilestone.amount_yen}
-                  onChange={(e) => setNewMilestone(prev => ({ ...prev, amount_yen: e.target.value }))}
-                  placeholder="金額（円）"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="date"
+                    value={newMilestone.due_date}
+                    onChange={(e) => setNewMilestone(prev => ({ ...prev, due_date: e.target.value }))}
+                    placeholder="期限"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="number"
+                    value={newMilestone.amount_yen}
+                    onChange={(e) => setNewMilestone(prev => ({ ...prev, amount_yen: e.target.value }))}
+                    placeholder="金額"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
                 <button
                   type="submit"
                   disabled={!newMilestone.title.trim()}
-                  className="btn btn-primary w-full disabled:opacity-50"
+                  className="btn btn-secondary w-full disabled:opacity-50"
                 >
-                  マイルストーン作成
+                  マイルストーンを追加
                 </button>
               </form>
             )}
 
-            {/* Stripeボタン */}
+            {/* Stripe支払い予約ボタン */}
             {process.env.NEXT_PUBLIC_STRIPE_ENABLED === '1' && (
               <div className="mt-4 pt-4 border-t">
-                <button
-                  onClick={createPaymentIntent}
-                  className="btn btn-secondary w-full"
-                >
+                <button onClick={createPaymentIntent} className="btn btn-secondary w-full">
+                  <Icon name="category" className="size-4 mr-2" />
                   支払い予約を作成
                 </button>
               </div>
