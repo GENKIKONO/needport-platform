@@ -22,9 +22,9 @@ export default function PostNeed(){
     }
   }
   return (
-    <main className="container py-8 space-y-6">
+    <main className="section space-y-6">
       <h1 className="text-2xl font-bold">ニーズ投稿</h1>
-      <div className="card space-y-4">
+      <div className="np-card p-6 space-y-4">
         <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
           <div className="h-full bg-blue-500" style={{width:`${step===1?50:100}%`}}/>
         </div>

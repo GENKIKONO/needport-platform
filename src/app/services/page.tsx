@@ -3,11 +3,11 @@ export const revalidate = 0;
 
 export default function ServicesPage() {
   return (
-    <main className="container py-8 space-y-6">
+    <main className="section space-y-6">
       <h1 className="text-2xl font-bold">企業の「できる」</h1>
       
       {/* Empty State */}
-      <div className="card text-center py-12">
+      <div className="np-card p-12 text-center">
         <div className="text-4xl mb-4">🏢</div>
         <h2 className="text-lg font-semibold mb-2">サービス・商品一覧</h2>
         <p className="text-sm text-gray-600 mb-6">0件のサービス・商品があります</p>
@@ -15,7 +15,7 @@ export default function ServicesPage() {
       </div>
 
       {/* Search */}
-      <div className="card">
+      <div className="np-card p-6">
         <input 
           placeholder="サービス・商品を検索..." 
           className="w-full rounded-lg border px-4 py-3 bg-white/70" 

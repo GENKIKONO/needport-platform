@@ -11,7 +11,7 @@ export default {
       colors: {
         brand: {
           50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',
-          400:'#818cf8',500:'#6366f1',600:'#3b82f6',700:'#4338ca',
+          400:'#818cf8',500:'#6366f1',600:'#2563eb',700:'#4338ca',
           800:'#3730a3',900:'#312e81',
         },
         blue: {
@@ -32,6 +32,9 @@ export default {
       },
       borderRadius: {
         xl: '14px',
+      },
+      boxShadow: {
+        card: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 0 0 1px rgb(0 0 0 / 0.05)',
       },
       container: {
         center: true,

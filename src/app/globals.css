@@ -15,6 +15,13 @@ body { @apply bg-neutral-950 text-neutral-100 antialiased; }
   .chip { @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/10 border border-white/20; }
   .progress { @apply w-full h-2 bg-white/10 rounded-full overflow-hidden; }
   .progress-bar { @apply h-full bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full transition-all duration-300; }
+  
+  /* Readdy UI Tokens */
+  .section { @apply container py-12; }
+  .np-card { @apply rounded-xl shadow-card border border-black/5 bg-white/90 dark:bg-white/5; }
+  .np-badge { @apply rounded-full px-2.5 py-0.5 text-xs font-medium; }
+  .np-progress { @apply h-2 rounded-full overflow-hidden; }
+  
   h1 { @apply text-2xl sm:text-3xl font-semibold tracking-tight; }
   h2 { @apply text-xl sm:text-2xl font-semibold tracking-tight; }
   p  { @apply leading-7 text-neutral-300; }

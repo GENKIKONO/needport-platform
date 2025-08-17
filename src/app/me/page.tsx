@@ -3,11 +3,11 @@ export const revalidate = 0;
 
 export default function MePage() {
   return (
-    <main className="container py-8 space-y-6">
+    <main className="section space-y-6">
       <h1 className="text-2xl font-bold">マイページ</h1>
       
       {/* Profile Card */}
-      <div className="card">
+      <div className="np-card p-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
             デ
@@ -22,22 +22,22 @@ export default function MePage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="card text-center">
+        <div className="np-card p-4 text-center">
           <div className="text-2xl font-bold text-blue-600">2</div>
           <div className="text-sm text-gray-600">投稿</div>
         </div>
-        <div className="card text-center">
+        <div className="np-card p-4 text-center">
           <div className="text-2xl font-bold text-green-600">3</div>
           <div className="text-sm text-gray-600">興味表明</div>
         </div>
-        <div className="card text-center">
+        <div className="np-card p-4 text-center">
           <div className="text-2xl font-bold text-purple-600">1</div>
           <div className="text-sm text-gray-600">マッチング</div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="card">
+      <div className="np-card p-6">
         <h3 className="font-semibold mb-4">クイックアクション</h3>
         <div className="grid gap-3">
           <a href="/post" className="btn btn-primary">新しいニーズを投稿</a>

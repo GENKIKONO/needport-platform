@@ -10,7 +10,7 @@ export default function AppHeader(){
         </Link>
         <nav className="hidden md:flex items-center gap-2">
           <Link className="btn btn-ghost" href="/needs">みんなの「欲しい」</Link>
-          <Link className="btn btn-ghost" href="/services">企業の「できる」</Link>
+          <Link className="btn btn-ghost" href="/company/new">企業の「できる」</Link>
           <Link className="btn btn-ghost" href="/guide">サービス航海図</Link>
         </nav>
       </div>
