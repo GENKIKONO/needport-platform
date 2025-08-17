@@ -54,6 +54,21 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
      height: 10px;
    }
    .np-buoy { @apply inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[12px] font-medium bg-buoy-500/10 text-buoy-500; }
+   
+   /* --- Nautical visuals ------------------------------------ */
+   /* 空→海の淡グラデ + 薄い枠 */
+   .hero-ocean { @apply bg-gradient-to-b from-sky-100 via-cyan-50 to-white ring-1 ring-black/5 rounded-2xl; }
+
+   /* セクション下端の白波。SVGを使うので土台だけ用意 */
+   .wave-holder { @apply relative overflow-hidden rounded-2xl; }
+   .wave-svg { position:absolute; left:0; right:0; bottom:-1px; width:100%; height:48px; }
+
+   /* ステップカード（白面＋淡影＋大きめ字間） */
+   .step-card { @apply surface-soft p-5 sm:p-6 text-neutral-700; }
+   .step-kicker { @apply text-sm font-medium text-blue-700 inline-flex items-center gap-2; }
+
+   /* モチーフは全部飾り。読み上げ防止 */
+   .decoration { pointer-events:none; }
    .card { @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4 shadow-lg; }
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg h-11 px-4 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-offset-2 focus:ring-brand-500; }
   .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-500 focus:ring-brand-500; }
