@@ -92,6 +92,14 @@ export default function MobileMenu({
 
           <div className="my-4 h-px bg-neutral-200" />
 
+          <div className="np-card p-3 flex items-center gap-3 text-neutral-500">
+            <span className="text-lg">💬</span>
+            <div>
+              <div className="font-medium">案件ルーム</div>
+              <div className="text-sm text-neutral-400">近日対応</div>
+            </div>
+          </div>
+
           <Link 
             className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
             href="/info" 

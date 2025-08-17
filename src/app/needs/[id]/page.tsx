@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getNeedByIdSafe } from "@/lib/demo/data";
 import NeedInterestMeter from "@/components/NeedInterestMeter";
 import OffersList from "@/components/OffersList";
+import OfferForm from "@/components/OfferForm";
 import InterestDialog from "@/components/InterestDialog";
 
 export default function NeedDetail({params}:{params:{id:string}}){
@@ -89,9 +90,23 @@ export default function NeedDetail({params}:{params:{id:string}}){
         </div>
       </div>
 
+      {/* 提案する */}
+      <section className="section">
+        <div className="np-card p-6">
+          <h3 className="font-semibold mb-4">提案する</h3>
+          <OfferForm needId={params.id} onSuccess={() => {
+            // 提案一覧を再取得
+            const offersList = document.querySelector('[data-offers-list]') as any;
+            if (offersList?.fetchOffers) {
+              offersList.fetchOffers();
+            }
+          }} />
+        </div>
+      </section>
+
       {/* 提案一覧 */}
       <section className="section">
-        <OffersList needId={params.id} />
+        <OffersList needId={params.id} isOwner={need.owner_ref === 'demo_user'} />
       </section>
 
       {openDialog && need && (
