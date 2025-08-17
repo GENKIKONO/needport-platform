@@ -392,9 +392,9 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
             {isLoading ? '処理中...' : cta}
           </button>
         ) : !shouldShowPayments() ? (
-          <div className="flex-1 px-4 py-2 bg-gray-100 text-gray-500 rounded-md text-center min-h-[44px] flex items-center justify-center">
-            {label('ComingSoon')}
-          </div>
+          <Link href="/admin/login" className="btn btn-primary w-full sm:w-auto flex-1">
+            登録する
+          </Link>
         ) : null}
       </div>
 
