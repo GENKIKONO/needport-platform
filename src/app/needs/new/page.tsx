@@ -13,6 +13,7 @@ export default function NewNeedPage() {
   const [feeHint, setFeeHint] = useState('');
   const [useFreq, setUseFreq] = useState('');
   const [areaHint, setAreaHint] = useState('');
+  const [step, setStep] = useState(1);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -49,7 +50,20 @@ export default function NewNeedPage() {
 
   return (
     <main className="container max-w-3xl space-y-6">
-      <h1 className="text-2xl font-bold">ニーズを投稿</h1>
+      {/* Progress */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-white">ニーズを投稿</h1>
+          <span className="text-sm text-neutral-400">ステップ {step}/2</span>
+        </div>
+        <div className="progress">
+          <div 
+            className="progress-bar" 
+            style={{ width: `${(step / 2) * 100}%` }}
+          />
+        </div>
+      </div>
+
       <NeedApprovalNote />
 
       <form onSubmit={onSubmit} className="space-y-4">
@@ -83,10 +97,12 @@ export default function NewNeedPage() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">ニーズの種類 <span className="text-red-500">*</span></label>
-          <div className="flex gap-4">
-            <label className="inline-flex items-center gap-2">
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-white">ニーズの種類 <span className="text-red-500">*</span></label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className={`card p-4 cursor-pointer transition-colors ${
+              scale === 'personal' ? 'border-brand-500 bg-brand-500/10' : 'border-white/20 hover:border-white/40'
+            }`}>
               <input 
                 type="radio" 
                 name="scale" 
@@ -94,10 +110,21 @@ export default function NewNeedPage() {
                 checked={scale==='personal'} 
                 onChange={()=>setScale('personal')} 
                 required
+                className="sr-only"
               />
-              <span>わたしごと（personal）</span>
+              <div className="flex items-center gap-3">
+                <div className={`w-4 h-4 rounded-full border-2 ${
+                  scale === 'personal' ? 'border-brand-500 bg-brand-500' : 'border-white/40'
+                }`} />
+                <div>
+                  <div className="font-medium text-white">個人・小規模</div>
+                  <div className="text-sm text-neutral-400">個人や小規模チーム向け</div>
+                </div>
+              </div>
             </label>
-            <label className="inline-flex items-center gap-2">
+            <label className={`card p-4 cursor-pointer transition-colors ${
+              scale === 'community' ? 'border-brand-500 bg-brand-500/10' : 'border-white/20 hover:border-white/40'
+            }`}>
               <input 
                 type="radio" 
                 name="scale" 
@@ -105,8 +132,17 @@ export default function NewNeedPage() {
                 checked={scale==='community'} 
                 onChange={()=>setScale('community')} 
                 required
+                className="sr-only"
               />
-              <span>みんなごと（community）</span>
+              <div className="flex items-center gap-3">
+                <div className={`w-4 h-4 rounded-full border-2 ${
+                  scale === 'community' ? 'border-brand-500 bg-brand-500' : 'border-white/40'
+                }`} />
+                <div>
+                  <div className="font-medium text-white">企業・大規模</div>
+                  <div className="text-sm text-neutral-400">企業や大規模プロジェクト向け</div>
+                </div>
+              </div>
             </label>
           </div>
         </div>

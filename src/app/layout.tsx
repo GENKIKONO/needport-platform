@@ -6,6 +6,8 @@ import SeoJsonLd from "@/components/SeoJsonLd";
 import PwaPrompt from "@/components/PwaPrompt";
 import { headers } from "next/headers";
 import { makeNonce } from "@/lib/security/csp";
+import Header from "@/components/layout/Header";
+import BottomNav from "@/components/layout/BottomNav";
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -94,9 +96,13 @@ export default async function RootLayout({
         }} />
       </head>
       <body>
-        <div id="content">
-          {children}
-        </div>
+        <Header />
+        <main className="min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-5rem)]">
+          <div id="content">
+            {children}
+          </div>
+        </main>
+        <BottomNav />
         
         {/* PWA Install Prompt */}
         <PwaPrompt />

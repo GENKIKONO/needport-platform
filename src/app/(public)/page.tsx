@@ -7,8 +7,8 @@ import { supabaseServer } from '@/lib/server/supabase';
 import { formatDate } from '@/lib/format';
 import { headers } from 'next/headers';
 import { DB_ENABLED, DEMO_VISIBLE } from '@/lib/flags';
-import Header from '@/components/Header';
-import Hero from '@/components/Hero';
+import HeroSlider from '@/components/home/HeroSlider';
+import { getSampleNeeds } from '@/lib/sampleNeeds';
 
 export const revalidate = 60; // 1 minute cache
 
@@ -402,27 +402,108 @@ export default async function Page({
     return { need, adoptedOffer, membership };
   });
 
+  // Get sample needs for fallback
+  const sampleNeeds = getSampleNeeds();
+  
   return (
     <>
-      <Header />
-      <Hero />
-      <main id="needs" className="container py-8">
-        {DEMO_VISIBLE && !DB_ENABLED ? (
-          <div className="mb-4 text-xs text-amber-300">
-            データベースが空のためモック表示中（投稿すると自動でDBの値に切り替わります）
+      <HeroSlider />
+      
+      {/* もうすぐ成立セクション */}
+      <section className="container py-12">
+        <div className="card bg-amber-500/10 border-amber-500/20 p-6">
+          <h2 className="text-xl font-semibold text-amber-300 mb-4">もうすぐ成立</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {sampleNeeds.filter(need => need.currentPeople > 0).slice(0, 3).map((need) => (
+              <div key={need.id} className="card p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="chip text-amber-600 bg-amber-100/20">
+                    あと{need.targetPeople - need.currentPeople}人
+                  </span>
+                  <span className="text-xs text-neutral-400">
+                    {new Date(need.deadline).toLocaleDateString()}
+                  </span>
+                </div>
+                <h3 className="font-medium text-white mb-2">{need.title}</h3>
+                <div className="progress">
+                  <div 
+                    className="progress-bar" 
+                    style={{ width: `${(need.currentPeople / need.targetPeople) * 100}%` }}
+                  />
+                </div>
+                <p className="text-xs text-neutral-400 mt-2">
+                  {need.currentPeople}/{need.targetPeople}人
+                </p>
+              </div>
+            ))}
           </div>
-        ) : null}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {needsWithOffers.map(({ need, adoptedOffer, membership }) => (
-            <NeedCard
-              key={need.id}
-              need={need}
-              adoptedOffer={adoptedOffer}
-              membership={membership}
-            />
+        </div>
+      </section>
+
+      {/* カテゴリーセクション */}
+      <section className="container py-12">
+        <h2 className="text-xl font-semibold text-white mb-6">カテゴリー</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {['Webデザイン', 'システム開発', '動画制作', '翻訳', '研修', 'イベント', 'マーケティング', 'その他'].map((category) => (
+            <div key={category} className="card p-4 text-center hover:bg-white/10 transition-colors cursor-pointer">
+              <div className="text-2xl mb-2">📁</div>
+              <div className="text-sm font-medium text-white">{category}</div>
+            </div>
           ))}
         </div>
-      </main>
+      </section>
+
+      {/* 注目のニーズセクション */}
+      <section className="container py-12">
+        <h2 className="text-xl font-semibold text-white mb-6">注目のニーズ</h2>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {sampleNeeds.slice(0, 6).map((need) => {
+            const needData: Need = {
+              id: need.id,
+              title: need.title,
+              summary: need.description,
+              body: '',
+              tags: [need.category],
+              area: need.area,
+              mode: 'pooled',
+              adopted_offer_id: null,
+              prejoin_count: need.currentPeople,
+              attachments: [],
+              scale: 'personal',
+              macro_fee_hint: null,
+              macro_use_freq: null,
+              macro_area_hint: null,
+            };
+
+            const adoptedOffer: Offer | null = need.targetPeople > 1 ? {
+              id: 'temp-offer-id',
+              needId: need.id,
+              min_people: need.targetPeople,
+              max_people: null,
+              deadline: need.deadline,
+              price_type: 'fixed',
+              price_value: 0,
+              note: '',
+              status: 'adopted',
+            } : null;
+
+            const membership: Membership = {
+              isGuest: true,
+              isUserMember: false,
+              isProMember: false,
+            };
+
+            return (
+              <NeedCard
+                key={need.id}
+                need={needData}
+                adoptedOffer={adoptedOffer}
+                membership={membership}
+              />
+            );
+          })}
+        </div>
+      </section>
     </>
   );
 }
