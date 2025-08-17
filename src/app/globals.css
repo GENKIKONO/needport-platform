@@ -70,6 +70,41 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
    /* モチーフは全部飾り。読み上げ防止 */
    .decoration { pointer-events:none; }
    .card { @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4 shadow-lg; }
+   
+   /* Boat micro-interaction -------------------------------------------------- */
+   @keyframes np-boat-sail {
+     0%   { transform: translateX(0) translateY(0) rotate(0deg); }
+     20%  { transform: translateX(20vw) translateY(-2px) rotate(-1deg); }
+     40%  { transform: translateX(40vw) translateY(1px)  rotate(1deg); }
+     60%  { transform: translateX(65vw) translateY(-1px) rotate(-.5deg); }
+     80%  { transform: translateX(90vw) translateY(1px)  rotate(.5deg); }
+     100% { transform: translateX(120vw) translateY(0) rotate(0deg); }
+   }
+   @keyframes np-boat-wake {
+     0%   { stroke-opacity:.9; filter: blur(0px); }
+     60%  { stroke-opacity:.5; filter: blur(1px); }
+     100% { stroke-opacity:0;  filter: blur(2px); }
+   }
+   .np-boat { animation: np-boat-sail var(--dur,2.8s) ease-in-out forwards; }
+   .np-wake { animation: np-boat-wake var(--dur,2.8s) ease-out forwards; }
+   
+   /* 低モーション配慮 */
+   @media (prefers-reduced-motion: reduce) {
+     .np-boat, .np-wake { animation: none !important; display: none; }
+   }
+   
+   /* 軽い港味のマイクロ演出 */
+   @keyframes np-bob { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-2px) } }
+   .bob { animation: np-bob 3s ease-in-out infinite; transform-origin: 50% 100%; }
+   
+   /* ボタンのさざ波クリック */
+   .btn-wave { position: relative; overflow: hidden; }
+   .btn-wave:after {
+     content:""; position:absolute; inset:auto; left:50%; top:50%;
+     width:0; height:0; background:rgba(59,130,246,.25); border-radius:9999px;
+     transform:translate(-50%,-50%); pointer-events:none;
+   }
+   .btn-wave:active:after { width:220%; height:220%; transition: width .35s ease, height .35s ease, opacity .6s ease; opacity:0; }
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg h-11 px-4 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-offset-2 focus:ring-brand-500; }
   .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-500 focus:ring-brand-500; }
   .btn-ghost { @apply btn bg-white/5 hover:bg-white/10 focus:ring-white/20; }

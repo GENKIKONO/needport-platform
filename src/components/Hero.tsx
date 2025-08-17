@@ -11,7 +11,7 @@ export default function Hero() {
           需要が見えるから、安心して提供できる。確実なニーズに基づくサービス創造
         </p>
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link href="/post" className="btn btn-primary h-11 text-base whitespace-nowrap"><Anchor className="w-4 h-4 mr-2"/>ニーズを投稿</Link>
+          <Link href="/post" className="btn btn-primary h-11 text-base whitespace-nowrap btn-wave"><Anchor className="w-4 h-4 mr-2"/>ニーズを投稿</Link>
           <Link href="/needs" className="btn btn-ghost h-11 text-base whitespace-nowrap">みんなの「欲しい」</Link>
         </div>
       </div>

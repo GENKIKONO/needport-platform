@@ -1,12 +1,16 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+const BoatSail = dynamic(() => import("@/components/BoatSail"), { ssr: false });
+
 export default function PostNeed(){
   const [step,setStep]=useState(1);
   const [title,setTitle]=useState("");
   const [desc,setDesc]=useState("");
   const [area,setArea]=useState("");
   const [category,setCategory]=useState("");
+  const [sail, setSail] = useState(false);
   const router=useRouter();
   async function submit(){
     const payload={title, description:desc, area, category};
@@ -17,13 +21,21 @@ export default function PostNeed(){
       const arr=JSON.parse(localStorage.getItem(key)||"[]");
       arr.unshift({id:`local-${Date.now()}`, ...payload, progress:0, target:10, count:0});
       localStorage.setItem(key, JSON.stringify(arr));
-    }finally{
+      
+      // 投稿成功時に船アニメーション
+      setSail(true);
+      setTimeout(() => {
+        setSail(false);
+        router.push("/needs");
+      }, 3000);
+    }catch{
       router.push("/needs");
     }
   }
   return (
-    <main className="section space-y-6">
-      <h1 className="text-2xl font-bold">ニーズ投稿</h1>
+    <>
+      <main className="section space-y-6">
+        <h1 className="text-2xl font-bold">ニーズ投稿</h1>
       <div className="np-card p-6 space-y-4">
         <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
           <div className="h-full bg-blue-500" style={{width:`${step===1?50:100}%`}}/>
@@ -63,5 +75,7 @@ export default function PostNeed(){
         )}
       </div>
     </main>
+    {sail && <BoatSail onDone={() => setSail(false)} />}
+    </>
   );
 }
