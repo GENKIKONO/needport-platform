@@ -428,9 +428,25 @@ export default function AdminDashboard() {
                     <button
                       onClick={async () => {
                         if (!confirm('この案件を削除します。よろしいですか？')) return;
-                        const res = await fetch(`/api/admin/needs/${project.id}/delete`, { method: 'POST' });
-                        if (res.ok) location.reload();
-                        else alert('削除に失敗しました');
+                        
+                        // 楽観更新: リストから即時削除
+                        const originalProjects = [...projects];
+                        setProjects(projects.filter(p => p.id !== project.id));
+                        
+                        try {
+                          const res = await fetch(`/api/admin/needs/${project.id}/delete`, { method: 'POST' });
+                          if (res.ok) {
+                            showToast('案件を削除しました');
+                          } else {
+                            // 失敗時は元に戻す
+                            setProjects(originalProjects);
+                            showToast('削除に失敗しました');
+                          }
+                        } catch (error) {
+                          // エラー時も元に戻す
+                          setProjects(originalProjects);
+                          showToast('削除に失敗しました');
+                        }
                       }}
                       className="btn btn-ghost text-red-300"
                     >

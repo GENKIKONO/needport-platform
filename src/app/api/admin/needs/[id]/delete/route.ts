@@ -4,19 +4,30 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const revalidate = 0;
 
-function requireServiceRole() {
-  const key = process.env.SUPABASE_SERVICE_ROLE;
-  if (!key) throw new Error('SUPABASE_SERVICE_ROLE is not set');
-  return key;
+function requireAuth() {
+  const serviceRole = process.env.SUPABASE_SERVICE_ROLE;
+  const adminKey = process.env.ADMIN_UI_KEY;
+  
+  if (!serviceRole) {
+    throw new Error('SUPABASE_SERVICE_ROLE is not set');
+  }
+  if (!adminKey) {
+    throw new Error('ADMIN_UI_KEY is not set');
+  }
+  
+  return { serviceRole, adminKey };
 }
 
-// 認可: 既存の管理ログイン cookie を検査するヘルパがあれば使ってOK。
-// ここでは簡易に service role 有無で縛る（UIは管理画面からのみ叩く前提）
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
-  requireServiceRole();
+  try {
+    requireAuth();
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
   const id = params.id;
 
   // Supabase Admin SDK が無ければfetch RPCでもOK。ここは擬似コード。
