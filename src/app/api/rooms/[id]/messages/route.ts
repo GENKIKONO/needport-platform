@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sbSrv, sbAnon } from '@/lib/sb';
-import { getUserHandle } from '@/lib/user-handle';
+import { getOrCreateHandle } from '@/lib/user-handle';
 
 export const dynamic='force-dynamic'; 
 export const revalidate=0; 
@@ -17,7 +17,7 @@ export async function POST(req:Request,{params}:{params:{id:string}}){
   const body = await req.json(); 
   const { text } = body||{};
   if(!text) return NextResponse.json({error:'text required'},{status:400});
-  const who = await getUserHandle();
+      const who = await getOrCreateHandle();
   const { error } = await sbSrv().from('messages').insert({
     room_id: params.id, user_ref: who, body: String(text).slice(0,1000)
   });

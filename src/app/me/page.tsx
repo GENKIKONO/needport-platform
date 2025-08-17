@@ -1,20 +1,18 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export const dynamic = 'force-dynamic';
 
 export default function MePage() {
   const [deleting, setDeleting] = useState<string | null>(null);
-  
-  // ダミーデータ（実際はAPIから取得）
-  const myNeeds = [
+  const [myNeeds, setMyNeeds] = useState([
     { id: 'need-001', title: '地下室がある家を建てたい', interest_count: 0 },
     { id: 'need-002', title: '手作り家具のワークショップ', interest_count: 2 },
-  ];
+  ]);
 
   const handleDelete = async (needId: string, interestCount: number) => {
     if (interestCount > 0) {
-      alert('すでに賛同があるため削除できません');
+      alert('賛同者がいるため削除できません');
       return;
     }
     
@@ -22,12 +20,18 @@ export default function MePage() {
     
     setDeleting(needId);
     try {
-      const r = await fetch(`/api/needs/${needId}/delete-if-clear`, { method: 'DELETE' });
+      const r = await fetch(`/api/needs/${needId}/delete-if-clear`, { method: 'POST' });
+      
       if (r.status === 204) {
-        // 楽観更新: listから除去（実際は再取得）
+        // 楽観更新: listから除去
+        setMyNeeds(prev => prev.filter(n => n.id !== needId));
         alert('削除しました');
       } else if (r.status === 409) {
-        alert('すでに賛同があるため削除できません');
+        alert('賛同者がいるため削除できません');
+      } else if (r.status === 501) {
+        alert('本番DB接続時のみ削除可能です（環境変数を設定してください）');
+      } else if (r.status === 403) {
+        alert('この投稿を削除する権限がありません');
       } else {
         alert('削除エラー');
       }
@@ -82,13 +86,30 @@ export default function MePage() {
                 <h4 className="font-medium">{need.title}</h4>
                 <p className="text-sm text-gray-600">賛同: {need.interest_count}件</p>
               </div>
-              <button
-                disabled={need.interest_count > 0 || deleting === need.id}
-                onClick={() => handleDelete(need.id, need.interest_count)}
-                className="btn btn-ghost disabled:opacity-50 text-sm"
-              >
-                {deleting === need.id ? '削除中...' : '削除'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  className="btn btn-ghost text-sm"
+                  title="編集（近日実装）"
+                >
+                  編集
+                </button>
+                <button
+                  disabled={need.interest_count > 0 || deleting === need.id}
+                  onClick={() => handleDelete(need.id, need.interest_count)}
+                  className={`btn text-sm ${
+                    need.interest_count > 0 
+                      ? 'btn-ghost disabled:opacity-50' 
+                      : 'btn-primary'
+                  }`}
+                  title={
+                    need.interest_count > 0 
+                      ? '賛同者がいるため削除できません' 
+                      : 'この投稿を削除する'
+                  }
+                >
+                  {deleting === need.id ? '削除中...' : '削除'}
+                </button>
+              </div>
             </div>
           ))}
         </div>
