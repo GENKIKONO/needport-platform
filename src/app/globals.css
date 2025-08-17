@@ -154,6 +154,29 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   /* 横スクロールUIのスクロールバー非表示 */
   .no-scrollbar { scrollbar-width:none }
   .no-scrollbar::-webkit-scrollbar { display:none }
+
+  /* FlowRail 船アニメーション */
+  .ship-track { position: relative; height: 100%; }
+  .ship-icon {
+    width: 26px; height: 26px; color: #2563eb; /* blue-600 */
+    position: absolute; top: 22px; left: -26px; filter: drop-shadow(0 2px 6px rgba(37,99,235,.25));
+  }
+  .ship-track.play .ship-icon {
+    animation: sail 4.8s ease-in-out 0.2s forwards;
+  }
+  @keyframes sail {
+    from { transform: translateX(0); }
+    to   { transform: translateX(calc(100vw - 48px)); } /* SPは画面幅に合わせる */
+  }
+  @media (min-width: 768px){
+    .ship-track.play .ship-icon { animation: sail-pc 5.2s ease-in-out 0.2s forwards; }
+    @keyframes sail-pc {
+      from { transform: translateX(16px); }
+      to   { transform: translateX(calc(100% - 64px)); } /* カード内の端から端へ */
+    }
+  }
+  /* 横スクロール用 */
+  .scrollbar-none::-webkit-scrollbar { display: none; }
   
   h1 { @apply text-2xl sm:text-3xl font-semibold tracking-tight; }
   h2 { @apply text-xl sm:text-2xl font-semibold tracking-tight; }

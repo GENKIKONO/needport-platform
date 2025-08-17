@@ -2,13 +2,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import KochiSelect from '@/components/KochiSelect';
 const BoatSail = dynamic(() => import("@/components/BoatSail"), { ssr: false });
 
 export default function PostNeed(){
   const [step,setStep]=useState(1);
   const [title,setTitle]=useState("");
   const [desc,setDesc]=useState("");
-  const [area,setArea]=useState("");
+  const [area,setArea]=useState<{type:'list'|'other', area:string}>({type:'list', area:''});
   const [category,setCategory]=useState("");
   const [sail, setSail] = useState(false);
   const router=useRouter();
@@ -17,7 +18,7 @@ export default function PostNeed(){
   const descOk = desc.trim().length >= 20;
   const canSubmit = titleOk && descOk;
   async function submit(){
-    const payload={title, description:desc, area, category};
+    const payload={title, description:desc, area: area.area, area_type: area.type, category};
     try{
       // DBが有効ならAPIを叩く（既存の /api/needs などがあれば差し替え。無ければlocal保存）
       if(process.env.NEXT_PUBLIC_SUPABASE_URL){ /* ここではUIのみ。APIは既存のを使う想定 */ }
@@ -88,10 +89,7 @@ export default function PostNeed(){
         {step===2 && (
           <div className="grid gap-4">
             <div className="grid sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700">エリア</label>
-                <input value={area} onChange={e=>setArea(e.target.value)} className="mt-1 w-full np-input px-3 py-2" placeholder="例: 高知市" />
-              </div>
+              <KochiSelect value={area} onChange={setArea} />
               <div>
                 <label className="block text-sm font-medium text-neutral-700">カテゴリー</label>
                 <input value={category} onChange={e=>setCategory(e.target.value)} className="mt-1 w-full np-input px-3 py-2" placeholder="例: 住宅・建築" />
