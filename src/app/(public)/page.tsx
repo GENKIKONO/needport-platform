@@ -6,6 +6,7 @@ import HomeCategories from "@/components/HomeCategories";
 import HomeFeatured from "@/components/HomeFeatured";
 import FlowCarousel from "@/components/FlowCarousel";
 import VisionCard from "@/components/VisionCard";
+import FlowRail from "@/components/FlowRail";
 
 export const dynamic = "force-dynamic"; 
 export const revalidate = 0;
@@ -18,22 +19,9 @@ export default async function Home(){
         <HeroPorts />
       </section>
 
-      {/* 流れ（クラファンと誤解されないように直感表示） */}
+      {/* 流れ：視認性の高い5ステップ */}
       <section className="section pt-0">
-        <div className="mx-auto max-w-4xl np-card p-4 sm:p-6">
-          <div className="flex items-center gap-3 text-blue-600 font-medium mb-2">
-            <span className="i-lucide-anchor w-5 h-5" />
-            <span>ニーズの港 NeedPort の流れ</span>
-          </div>
-          <div className="grid grid-cols-5 gap-2 text-center text-sm text-neutral-600">
-            <div><div className="i-lucide-file-text mx-auto w-6 h-6 mb-1" />投稿</div>
-            <div><div className="i-lucide-handshake mx-auto w-6 h-6 mb-1" />提案</div>
-            <div><div className="i-lucide-shield-check mx-auto w-6 h-6 mb-1" />承認</div>
-            <div><div className="i-lucide-square mx-auto w-6 h-6 mb-1" />ルーム</div>
-            <div><div className="i-lucide-credit-card mx-auto w-6 h-6 mb-1" />支払い</div>
-          </div>
-          <p className="mt-3 text-center text-neutral-500 text-sm">良い提案だけを承認して前進。</p>
-        </div>
+        <FlowRail />
       </section>
 
       {/* 新規：サービスの流れ（横カルーセル） */}

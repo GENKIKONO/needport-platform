@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from 'next/link';
+import ToastShip from '@/components/ToastShip';
 import DemoWatermark from "@/components/DemoWatermark";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import PwaPrompt from "@/components/PwaPrompt";
@@ -113,6 +114,9 @@ export default async function RootLayout({
           
           {/* SEO JSON-LD for home page */}
           <SeoJsonLd />
+          
+          {/* 投稿成功の港アニメ */}
+          <ToastShip />
         </ErrorBoundary>
       </body>
     </html>
