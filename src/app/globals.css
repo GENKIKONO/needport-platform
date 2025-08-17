@@ -27,7 +27,7 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
    .np-textarea { @apply np-input min-h-[120px]; }
    /* テキストバランス */
    .text-balance { text-wrap: balance; }
-   .content-wrap { @apply break-words; }
+   .content-wrap { word-break: break-word; overflow-wrap: anywhere; }
    /* 入力を常に白に（iOSの自動ダーク無効化） */
    .np-input { @apply bg-white text-neutral-900 placeholder:text-neutral-400 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600; }
    .np-textarea { @apply np-input min-h-[120px]; }
