@@ -9,7 +9,7 @@ export const revalidate = 0;
 
 export default async function Home(){
   return (
-    <main className="space-y-12">
+    <main className="space-y-12 bg-white">
       {/* Hero */}
       <section className="section">
         <Hero />

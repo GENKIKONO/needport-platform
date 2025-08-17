@@ -6,7 +6,7 @@ export default async function HomeSoon() {
   const hot = needs.filter(n => (n.progress ?? 0) >= 0.8).slice(0, 3);
   
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 bg-white">
       {hot.map(n => (
         <article key={n.id} className="np-card p-6">
           <header className="flex items-start justify-between gap-3 mb-3">

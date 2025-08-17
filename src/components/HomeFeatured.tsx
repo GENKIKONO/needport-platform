@@ -5,7 +5,7 @@ export default async function HomeFeatured() {
   const needs = await getNeedsSafe();
   
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 bg-white">
       {needs.slice(0, 3).map(n => (
         <article key={n.id} className="np-card overflow-hidden">
           {/* Image placeholder */}

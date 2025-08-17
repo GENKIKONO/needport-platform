@@ -4,7 +4,7 @@
 
 :root { color-scheme: light dark; }
 html,body { height: 100%; }
-body { @apply bg-neutral-950 text-neutral-100 antialiased; }
+body { @apply bg-white text-neutral-900 antialiased; }
 
 @layer components {
   .container { @apply mx-auto max-w-5xl px-4 sm:px-6; }
@@ -17,7 +17,7 @@ body { @apply bg-neutral-950 text-neutral-100 antialiased; }
   .progress-bar { @apply h-full bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full transition-all duration-300; }
   
   /* Readdy UI Tokens */
-  .section { @apply container py-12; }
+  .section { @apply container py-12 bg-white; }
   .np-card { @apply rounded-xl shadow-card border border-black/5 bg-white/90 dark:bg-white/5; }
   .np-badge { @apply rounded-full px-2.5 py-0.5 text-xs font-medium; }
   .np-progress { @apply h-2 rounded-full overflow-hidden; }
