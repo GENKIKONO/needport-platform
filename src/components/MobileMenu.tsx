@@ -52,11 +52,11 @@ export default function MobileMenu({
         style={!mounted ? {pointerEvents:'none', opacity:.001} : undefined}
       >
         <div className="flex items-center justify-between mb-4">
-          <div className="text-2xl font-semibold text-neutral-900">NeedPort</div>
+          <div className="text-xl font-bold text-neutral-900">NeedPort</div>
           <button 
             ref={closeButtonRef}
             onClick={onClose}
-            className="btn btn-ghost h-9 w-9 rounded-full p-0"
+            className="btn btn-ghost text-neutral-700 hover:bg-neutral-100"
             aria-label="メニューを閉じる"
           >
             ×
@@ -147,50 +147,17 @@ export default function MobileMenu({
             </div>
           </div>
 
-          <Link 
-            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
-            href="/info" 
-            onClick={onClose}
-          >
-            <Map className="w-5 h-5 text-neutral-600" />
-            <div className="font-medium">サイト情報</div>
-          </Link>
-          
-          <Link 
-            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
-            href="/info/privacy" 
-            onClick={onClose}
-          >
-            <ShieldCheck className="w-5 h-5 text-neutral-600" />
-            <div className="font-medium">プライバシーポリシー</div>
-          </Link>
-          
-          <Link 
-            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
-            href="/info/terms" 
-            onClick={onClose}
-          >
-            <Scale className="w-5 h-5 text-neutral-600" />
-            <div className="font-medium">利用規約</div>
-          </Link>
-          
-          <Link 
-            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
-            href="/info/company" 
-            onClick={onClose}
-          >
-            <Building2 className="w-5 h-5 text-neutral-600" />
-            <div className="font-medium">運営会社</div>
-          </Link>
-          
-          <Link 
-            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
-            href="/info/tokusho" 
-            onClick={onClose}
-          >
-            <Scale className="w-5 h-5 text-neutral-600" />
-            <div className="font-medium">特定商取引法</div>
-          </Link>
+          <details className="np-card p-0 overflow-hidden">
+            <summary className="flex items-center gap-2 p-3 cursor-pointer select-none text-neutral-700 hover:bg-neutral-50">
+              <Map className="w-5 h-5"/><span>サイト情報</span>
+            </summary>
+            <div className="border-t border-neutral-100">
+              <Link className="flex items-center gap-3 p-3 hover:bg-neutral-50" href="/info/privacy"><ShieldCheck className="w-5 h-5"/><span>プライバシーポリシー</span></Link>
+              <Link className="flex items-center gap-3 p-3 hover:bg-neutral-50" href="/info/terms"><Scale className="w-5 h-5"/><span>利用規約</span></Link>
+              <Link className="flex items-center gap-3 p-3 hover:bg-neutral-50" href="/info/company"><Building2 className="w-5 h-5"/><span>運営会社</span></Link>
+              <Link className="flex items-center gap-3 p-3 hover:bg-neutral-50" href="/info/tokusho"><Scale className="w-5 h-5"/><span>特定商取引法</span></Link>
+            </div>
+          </details>
         </nav>
       </div>
     </div>

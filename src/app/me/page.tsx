@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { MessageSquare } from 'lucide-react';
+import RoomsJoined from './RoomsJoined';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,6 +68,12 @@ export default function MePage() {
   return (
     <main className="section space-y-6">
       <h1 className="text-2xl font-bold">マイページ</h1>
+      
+      {/* あなたの案件ルーム */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">あなたの案件ルーム</h2>
+        <RoomsJoined />
+      </section>
       
       {/* Profile Card */}
       <div className="np-card p-6">

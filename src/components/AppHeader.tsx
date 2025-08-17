@@ -10,21 +10,21 @@ export default function AppHeader(){
   
   return (
     <>
-      <header className="sticky top-0 z-40 backdrop-blur bg-white/70 dark:bg-neutral-900/60 border-b border-black/5">
-        <div className="container flex items-center justify-between h-14">
-          <Logo className="text-xl" />
-          <nav className="hidden md:flex items-center gap-2">
-            <Link className="btn btn-ghost" href="/needs">みんなの「欲しい」</Link>
-            <Link className="btn btn-ghost" href="/services">企業の「できる」</Link>
-            <Link className="btn btn-ghost" href="/guide">サービス航海図</Link>
-          </nav>
-          <button
-            onClick={() => setMenuOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg p-2 hover:bg-neutral-100"
-            aria-label="Open menu"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
+      <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white">
+        <div className="container flex items-center py-3">
+          <Link href="/" className="flex items-center gap-2">
+            <Logo />
+            <span className="font-semibold text-neutral-900">NeedPort</span>
+          </Link>
+          <div className="ml-auto">
+            <button
+              onClick={() => setMenuOpen(true)}
+              className="inline-flex items-center justify-center rounded-lg p-2 text-neutral-700 hover:bg-neutral-100"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
         </div>
       </header>
 

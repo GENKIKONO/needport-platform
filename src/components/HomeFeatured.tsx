@@ -40,8 +40,8 @@ export default function HomeFeatured() {
             
             {/* Content */}
             <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">{n.title}</h3>
-              <p className="text-sm text-gray-600 line-clamp-3 mb-4">{n.description}</p>
+              <h3 className="np-title text-base md:text-lg line-clamp-2 mb-2">{n.title}</h3>
+              <p className="np-text text-sm md:text-[15px] line-clamp-3 mb-4">{n.description}</p>
               
               {/* Meta info */}
               <div className="flex items-center gap-2 mb-4">

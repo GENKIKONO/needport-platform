@@ -36,7 +36,7 @@ export default function HomeSoon() {
         {hot.map(n => (
           <article key={n.id} className="np-card p-6">
             <header className="flex items-start justify-between gap-3 mb-3">
-              <h3 className="font-semibold text-gray-900">{n.title}</h3>
+              <h3 className="np-title text-base md:text-lg line-clamp-2">{n.title}</h3>
               <span className="np-badge bg-red-100 text-red-600">
                 あと{Math.max(1, Math.ceil((n.target ?? 10) - (n.count ?? 0)))}人
               </span>

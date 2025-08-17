@@ -15,8 +15,8 @@ export default async function Home(){
         <Hero />
       </section>
 
-      {/* もうすぐ成立 */}
-      <section className="section">
+      {/* もうすぐ成立 (黄色アクセント) */}
+      <section className="section--emphasis">
         <PageHeader 
           title="もうすぐ成立" 
           description="あと少しで実現！今すぐ参加しよう"
