@@ -1,6 +1,5 @@
 import Hero from '@/components/Hero';
 import ServiceFlow from '@/components/ServiceFlow';
-import ServiceFlowCompact from '@/components/ServiceFlowCompact';
 import HomeSoon from '@/components/HomeSoon';
 import HomeCategories from '@/components/HomeCategories';
 import HomeFeatured from '@/components/HomeFeatured';
@@ -16,10 +15,9 @@ export default async function Home(){
         <Hero />
       </section>
 
-      {/* Flow (mobile compact / desktop full) */}
+      {/* Flow：ここに集約（スマホ=カルーセル、PC=6カード+船） */}
       <section className="section">
-        <div className="md:hidden"><ServiceFlowCompact/></div>
-        <div className="hidden md:block"><ServiceFlow/></div>
+        <ServiceFlow />
       </section>
 
       {/* 既存セクション（必要に応じて見出しだけ少しだけ調整） */}

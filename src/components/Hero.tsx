@@ -26,7 +26,7 @@ export default function Hero() {
           <span>ニーズの港 NeedPort</span>
         </div>
 
-        <h1 className="text-3xl md:text-6xl font-extrabold tracking-tight text-neutral-900">
+        <h1 className="text-3xl md:text-[56px] font-extrabold tracking-[-0.02em] text-neutral-900 md:whitespace-nowrap">
           欲しい暮らし、10人で叶える。
         </h1>
         <p className="mt-6 text-base md:text-lg text-neutral-600">
