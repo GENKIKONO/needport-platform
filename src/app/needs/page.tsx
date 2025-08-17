@@ -1,10 +1,18 @@
-export const dynamic="force-dynamic"; 
-export const revalidate=0;
+"use client";
+import { useState } from "react";
 import Link from "next/link";
 import { getNeedsSafe } from "@/lib/demo/data";
+import InterestDialog from "@/components/InterestDialog";
 
-export default async function Needs(){
-  const needs = await getNeedsSafe();
+export default function Needs(){
+  const [needs, setNeeds] = useState<any[]>([]);
+  const [openDialog, setOpenDialog] = useState<{open: boolean, need: any}>({open: false, need: null});
+
+  // データ取得
+  useState(() => {
+    getNeedsSafe().then(setNeeds);
+  });
+
   return (
     <main className="section space-y-6">
       <h1 className="text-2xl font-bold">みんなの「欲しい」</h1>
@@ -56,13 +64,25 @@ export default async function Needs(){
               <Link href={`/needs/${n.id}`} className="btn btn-primary flex-1">
                 詳細を見る
               </Link>
-              <Link href="/post" className="btn btn-ghost flex-1">
+              <button 
+                type="button" 
+                className="btn btn-ghost flex-1" 
+                onClick={() => setOpenDialog({open: true, need: n})}
+              >
                 賛同する
-              </Link>
+              </button>
             </div>
           </article>
         ))}
       </div>
+
+      {openDialog.open && (
+        <InterestDialog
+          open={openDialog.open}
+          onClose={() => setOpenDialog({open: false, need: null})}
+          need={openDialog.need}
+        />
+      )}
     </main>
   );
 }
