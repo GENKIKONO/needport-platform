@@ -3,37 +3,34 @@ import { useState } from "react";
 import Link from "next/link";
 
 const steps = [
-  { key:"post",    label:"投稿",   href:"/post" },
-  { key:"offer",   label:"提案",   href:"/needs" },
-  { key:"approve", label:"承認",   href:"/guide#approve" },
-  { key:"room",    label:"ルーム", href:"/guide#room" },
-  { key:"pay",     label:"支払い", href:"/guide#pay" },
+  { label:"投稿",   href:"/post" },
+  { label:"提案",   href:"/needs" },
+  { label:"承認",   href:"/guide#approve" },
+  { label:"ルーム", href:"/guide#room" },
+  { label:"支払い", href:"/guide#pay" },
 ];
 
 export default function FlowStrip({ initial = 0 }: { initial?: number }) {
   const [active, setActive] = useState(initial);
   return (
     <div className="relative rounded-2xl border border-black/5 bg-gradient-to-r from-sky-50 to-indigo-50 p-4 shadow-card">
-      {/* 航路（トラック） */}
+      {/* 航路 */}
       <div className="relative h-2 bg-sky-100 rounded-full">
-        {/* 船（center基準） */}
         <div
           aria-hidden
-          className="absolute -top-3 size-6 transition-[left] duration-500 ease-out"
+          className="absolute -top-3 w-6 h-6 transition-[left] duration-500 ease-out"
           style={{ left: `calc(${(active * 100) / 4}% - 12px)` }}
         >
-          {/* 船アイコン（シンプルSVG） */}
           <svg viewBox="0 0 24 24" className="w-6 h-6 text-sky-600 drop-shadow">
             <path fill="currentColor" d="M3 13l9-8 9 8h-3v6H6v-6H3z" />
           </svg>
         </div>
       </div>
-
-      {/* ラベル群 */}
+      {/* ステップ */}
       <div className="mt-4 grid grid-cols-5 gap-2 text-sm">
         {steps.map((s, i) => (
           <button
-            key={s.key}
+            key={s.label}
             onMouseEnter={() => setActive(i)}
             onFocus={() => setActive(i)}
             onClick={() => setActive(i)}

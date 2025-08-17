@@ -35,10 +35,15 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
    .np-input { @apply bg-white text-neutral-900 placeholder:text-neutral-400 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600; }
    .np-textarea { @apply np-input min-h-[120px]; }
    .text-balance { text-wrap: balance; }
-   /* 港トーンの面 */
-   .hero-harbor { @apply bg-gradient-to-b from-foam-50 to-white ring-1 ring-black/5; }
-   .hero-sky    { @apply bg-gradient-to-br from-sky-100 via-indigo-50 to-white ring-1 ring-black/5; }
-   .surface-soft { @apply rounded-2xl bg-white/95 shadow-card border border-black/5; }
+     /* 港トーンの面 */
+  .hero-harbor { @apply bg-gradient-to-b from-foam-50 to-white ring-1 ring-black/5; }
+  .hero-harbor::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(60% 60% at 20% 20%, rgba(14,165,233,.10), transparent 60%),
+               radial-gradient(60% 60% at 80% 30%, rgba(79,70,229,.08), transparent 60%);
+  }
+  .hero-sky    { @apply bg-gradient-to-br from-sky-100 via-indigo-50 to-white ring-1 ring-black/5; }
+  .surface-soft { @apply rounded-2xl bg-white/95 shadow-card border border-black/5; }
       .kicker { @apply inline-flex items-center gap-2 text-sm font-medium text-blue-700; }
    
    /* うっすら波パターン（パフォーマンス軽いCSS） */
@@ -49,13 +54,12 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
        radial-gradient(70% 120% at 50% 120%, var(--c2), transparent 60%),
        linear-gradient(to bottom, #fff, #fff);
    }
-   /* セクション区切りの"さざ波" */
-   .wave-divider {
-     -webkit-mask: radial-gradient(55% 12px at 10px 12px,#0000 98%,#000) 0 0/20px 100%;
-             mask: radial-gradient(55% 12px at 10px 12px,#0000 98%,#000) 0 0/20px 100%;
-     background: linear-gradient(to right, rgba(20,184,166,.18), rgba(37,99,235,.18));
-     height: 10px;
-   }
+     /* セクション区切りの"さざ波" */
+  .wave-divider {
+    height:20px; background:linear-gradient(to right, rgba(14,165,233,.15), rgba(79,70,229,.15));
+    -webkit-mask:radial-gradient(8px at 8px 10px,#000 98%,transparent 102%) repeat-x; 
+    mask:radial-gradient(8px at 8px 10px,#000 98%,transparent 102%) repeat-x;
+  }
    .np-buoy { @apply inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[12px] font-medium bg-buoy-500/10 text-buoy-500; }
    
    /* --- Nautical visuals ------------------------------------ */
