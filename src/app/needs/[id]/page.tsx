@@ -3,6 +3,7 @@ export const revalidate=0;
 import Link from "next/link";
 import { getNeedByIdSafe } from "@/lib/demo/data";
 import NeedInterestMeter from "@/components/NeedInterestMeter";
+import OffersList from "@/components/OffersList";
 
 export default async function NeedDetail({params}:{params:{id:string}}){
   const need = await getNeedByIdSafe(params.id);
@@ -56,6 +57,34 @@ export default async function NeedDetail({params}:{params:{id:string}}){
           </Link>
         </div>
       </div>
+
+      {/* 提案する（企業向け） */}
+      <section className="section">
+        <div className="np-card p-5">
+          <h2 className="text-lg font-semibold mb-3">このニーズに提案する</h2>
+          <form action={async (formData:FormData) => {
+            'use server';
+            const needId = params.id;
+            await fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/api/offers`, {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({
+                need_id: needId,
+                price_yen: Number(formData.get('price')||0)||null,
+                memo: String(formData.get('memo')||''),
+              }),
+            });
+          }}>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <input name="price" type="number" placeholder="提案金額(円)" className="input input-bordered" />
+              <input name="memo" placeholder="提案メモ（任意）" className="input input-bordered" />
+            </div>
+            <button className="btn btn-primary mt-3">提案を送る</button>
+          </form>
+        </div>
+
+        {/* 提案一覧 */}
+        <OffersList needId={params.id} />
+      </section>
     </main>
   );
 }
