@@ -16,13 +16,15 @@ export default async function Home(){
       </section>
 
       {/* もうすぐ成立 (黄色アクセント) */}
-      <section className="section--emphasis">
-        <PageHeader 
-          title="もうすぐ成立" 
-          description="あと少しで実現！今すぐ参加しよう"
-          badge="HOT"
-        />
-        <HomeSoon />
+      <section className="bg-gradient-to-b from-amber-50 to-white rounded-2xl p-1">
+        <div className="section">
+          <PageHeader 
+            title="もうすぐ成立" 
+            description="あと少しで実現！今すぐ参加しよう"
+            badge="HOT"
+          />
+          <HomeSoon />
+        </div>
       </section>
 
       {/* カテゴリー */}

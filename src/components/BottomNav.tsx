@@ -40,10 +40,10 @@ export default function BottomNav() {
                   href={href}
                   aria-label={label}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex-1 flex flex-col items-center justify-center gap-1 text-xs
+                  className={`flex-1 flex flex-col items-center justify-center gap-1 text-[12px]
                     ${active ? 'text-brand-600 font-medium' : 'text-neutral-500 hover:text-neutral-800'}`}
                 >
-                  <Icon className={`w-5 h-5 ${active ? 'text-brand-600' : ''}`} />
+                  <Icon className={`w-[22px] h-[22px] ${active ? 'text-brand-600' : ''}`} />
                   {label}
                 </Link>
               </li>

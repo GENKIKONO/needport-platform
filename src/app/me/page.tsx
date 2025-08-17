@@ -144,37 +144,7 @@ export default function MePage() {
         </div>
       </div>
 
-      {/* Your Rooms */}
-      {!loadingRooms && rooms.length > 0 && (
-        <div className="np-card p-6">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5" />
-            あなたの案件ルーム
-          </h3>
-          <div className="space-y-3">
-            {rooms.map((room) => (
-              <a 
-                key={room.id} 
-                href={`/rooms/${room.id}`} 
-                className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div>
-                  <div className="font-medium">{room.title}</div>
-                  <div className="text-xs text-neutral-500">
-                    role: {room.role === 'buyer' ? '発注者' : room.role === 'vendor' ? '提供者' : '運営'} / 
-                    {room.approved ? '承認済み' : '承認待ち'}
-                  </div>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  room.approved ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                }`}>
-                  {room.approved ? '参加中' : '承認待ち'}
-                </span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+      
 
       {/* Quick Actions */}
       <div className="np-card p-6">

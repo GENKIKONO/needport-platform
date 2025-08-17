@@ -31,12 +31,12 @@ export default function PostNeed(){
         {step===1 && (
           <div className="grid gap-4">
             <div>
-              <label className="block text-sm font-medium">ニーズのタイトル</label>
-              <input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="例: 地下室がある家を建てたい" />
+              <label className="block text-sm font-medium text-neutral-700">ニーズのタイトル</label>
+              <input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full np-input px-3 py-2" placeholder="例: 地下室がある家を建てたい" />
             </div>
             <div>
-              <label className="block text-sm font-medium">詳細説明</label>
-              <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={5} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="具体的な要望や条件など…"/>
+              <label className="block text-sm font-medium text-neutral-700">詳細説明</label>
+              <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={5} className="mt-1 w-full np-textarea px-3 py-2" placeholder="具体的な要望や条件など…"/>
             </div>
             <div className="flex justify-end">
               <button onClick={()=>setStep(2)} className="btn btn-primary">次へ</button>
@@ -47,12 +47,12 @@ export default function PostNeed(){
           <div className="grid gap-4">
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium">エリア</label>
-                <input value={area} onChange={e=>setArea(e.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="例: 高知市" />
+                <label className="block text-sm font-medium text-neutral-700">エリア</label>
+                <input value={area} onChange={e=>setArea(e.target.value)} className="mt-1 w-full np-input px-3 py-2" placeholder="例: 高知市" />
               </div>
               <div>
-                <label className="block text-sm font-medium">カテゴリー</label>
-                <input value={category} onChange={e=>setCategory(e.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="例: 住宅・建築" />
+                <label className="block text-sm font-medium text-neutral-700">カテゴリー</label>
+                <input value={category} onChange={e=>setCategory(e.target.value)} className="mt-1 w-full np-input px-3 py-2" placeholder="例: 住宅・建築" />
               </div>
             </div>
             <div className="flex items-center gap-2 justify-end">

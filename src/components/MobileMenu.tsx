@@ -139,23 +139,15 @@ export default function MobileMenu({
 
           <div className="my-4 h-px bg-neutral-200" />
 
-          <div className="np-card p-3 flex items-center gap-3 text-neutral-500">
-            <MessageSquare className="w-5 h-5 text-neutral-500" />
-            <div>
-              <div className="font-medium">案件ルーム</div>
-              <div className="text-sm text-neutral-400">近日対応</div>
-            </div>
-          </div>
-
           <details className="np-card p-0 overflow-hidden">
-            <summary className="flex items-center gap-2 p-3 cursor-pointer select-none text-neutral-700 hover:bg-neutral-50">
-              <Map className="w-5 h-5"/><span>サイト情報</span>
+            <summary className="flex items-center gap-3 py-3 px-3 cursor-pointer select-none text-neutral-700 hover:bg-neutral-50 min-h-[48px]">
+              <Map className="w-5 h-5 text-neutral-600"/><span className="text-[17px] font-medium">サイト情報</span>
             </summary>
             <div className="border-t border-neutral-100">
-              <Link className="flex items-center gap-3 p-3 hover:bg-neutral-50" href="/info/privacy"><ShieldCheck className="w-5 h-5"/><span>プライバシーポリシー</span></Link>
-              <Link className="flex items-center gap-3 p-3 hover:bg-neutral-50" href="/info/terms"><Scale className="w-5 h-5"/><span>利用規約</span></Link>
-              <Link className="flex items-center gap-3 p-3 hover:bg-neutral-50" href="/info/company"><Building2 className="w-5 h-5"/><span>運営会社</span></Link>
-              <Link className="flex items-center gap-3 p-3 hover:bg-neutral-50" href="/info/tokusho"><Scale className="w-5 h-5"/><span>特定商取引法</span></Link>
+              <Link className="flex items-center gap-3 py-3 px-3 hover:bg-neutral-50 min-h-[48px]" href="/info/privacy" onClick={onClose}><ShieldCheck className="w-5 h-5 text-neutral-600"/><span className="text-[17px] font-medium">プライバシーポリシー</span></Link>
+              <Link className="flex items-center gap-3 py-3 px-3 hover:bg-neutral-50 min-h-[48px]" href="/info/terms" onClick={onClose}><Scale className="w-5 h-5 text-neutral-600"/><span className="text-[17px] font-medium">利用規約</span></Link>
+              <Link className="flex items-center gap-3 py-3 px-3 hover:bg-neutral-50 min-h-[48px]" href="/info/company" onClick={onClose}><Building2 className="w-5 h-5 text-neutral-600"/><span className="text-[17px] font-medium">運営会社</span></Link>
+              <Link className="flex items-center gap-3 py-3 px-3 hover:bg-neutral-50 min-h-[48px]" href="/info/tokusho" onClick={onClose}><Scale className="w-5 h-5 text-neutral-600"/><span className="text-[17px] font-medium">特定商取引法</span></Link>
             </div>
           </details>
         </nav>
