@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Icon from '../Icon';
 
 interface Attachment {
   id: string;
@@ -138,7 +139,7 @@ export default function AttachmentUploader({
   const getFileIcon = (mimeType: string): string => {
     if (mimeType === 'application/pdf') return '📄';
     if (mimeType.startsWith('image/')) return '🖼️';
-    return '📎';
+    return 'attachment';
   };
 
   const getFileTypeLabel = (mimeType: string): string => {
@@ -172,7 +173,8 @@ export default function AttachmentUploader({
             </>
           ) : (
             <>
-              📎 ファイルを選択
+              <Icon name="category" className="size-4 mr-2" />
+              ファイルを選択
             </>
           )}
         </button>
@@ -223,7 +225,9 @@ export default function AttachmentUploader({
         </div>
       ) : (
         <div className="text-center py-8 text-gray-500">
-          <div className="text-4xl mb-2">📎</div>
+          <div className="mb-2 flex justify-center">
+            <Icon name="category" className="size-12 text-gray-400" />
+          </div>
           <p>添付ファイルがありません</p>
         </div>
       )}

@@ -1,3 +1,5 @@
+import Icon from '@/components/Icon';
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -8,7 +10,9 @@ export default function ServicesPage() {
       
       {/* Empty State */}
       <div className="np-card p-12 text-center">
-        <div className="text-4xl mb-4">🏢</div>
+        <div className="mb-4 flex justify-center">
+          <Icon name="company" className="size-12 text-gray-600" />
+        </div>
         <h2 className="text-lg font-semibold mb-2">サービス・商品一覧</h2>
         <p className="text-sm text-gray-600 mb-6">0件のサービス・商品があります</p>
         <a href="/company/register" className="btn btn-primary">サービス・商品を登録</a>
@@ -24,7 +28,9 @@ export default function ServicesPage() {
 
       {/* No Results */}
       <div className="text-center py-8">
-        <div className="text-6xl mb-4 opacity-30">🔍</div>
+        <div className="mb-4 flex justify-center">
+          <Icon name="search" className="size-16 text-gray-400 opacity-30" />
+        </div>
         <h3 className="text-lg font-semibold mb-2">該当するサービス・商品が見つかりません</h3>
         <p className="text-sm text-gray-600">別のキーワードで検索してみてください</p>
       </div>

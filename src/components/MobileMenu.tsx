@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
+import Icon from './Icon';
 
 export default function MobileMenu({
   open, onClose,
@@ -59,7 +60,7 @@ export default function MobileMenu({
             href="/needs" 
             onClick={onClose}
           >
-            <span className="text-lg">🔍</span>
+            <Icon name="needs" className="size-5 text-neutral-600" />
             <div>
               <div className="font-medium">みんなの「欲しい」</div>
               <div className="text-sm text-neutral-500">ユーザーのお願い</div>
@@ -71,7 +72,7 @@ export default function MobileMenu({
             href="/services" 
             onClick={onClose}
           >
-            <span className="text-lg">🏢</span>
+            <Icon name="company" className="size-5 text-neutral-600" />
             <div>
               <div className="font-medium">企業の「できる」</div>
               <div className="text-sm text-neutral-500">企業のサービス</div>
@@ -83,7 +84,7 @@ export default function MobileMenu({
             href="/guide" 
             onClick={onClose}
           >
-            <span className="text-lg">🗺️</span>
+            <Icon name="map" className="size-5 text-neutral-600" />
             <div>
               <div className="font-medium">サービス航海図</div>
               <div className="text-sm text-neutral-500">使い方ガイド</div>
@@ -93,7 +94,7 @@ export default function MobileMenu({
           <div className="my-4 h-px bg-neutral-200" />
 
           <div className="np-card p-3 flex items-center gap-3 text-neutral-500">
-            <span className="text-lg">💬</span>
+            <Icon name="chat" className="size-5 text-neutral-500" />
             <div>
               <div className="font-medium">案件ルーム</div>
               <div className="text-sm text-neutral-400">近日対応</div>
@@ -105,7 +106,7 @@ export default function MobileMenu({
             href="/info" 
             onClick={onClose}
           >
-            <span className="text-lg">ℹ️</span>
+            <Icon name="info" className="size-5 text-neutral-600" />
             <div className="font-medium">サイト情報</div>
           </Link>
           
@@ -114,7 +115,7 @@ export default function MobileMenu({
             href="/info/privacy" 
             onClick={onClose}
           >
-            <span className="text-lg">🔒</span>
+            <Icon name="shield" className="size-5 text-neutral-600" />
             <div className="font-medium">プライバシーポリシー</div>
           </Link>
           
@@ -123,7 +124,7 @@ export default function MobileMenu({
             href="/info/terms" 
             onClick={onClose}
           >
-            <span className="text-lg">📋</span>
+            <Icon name="terms" className="size-5 text-neutral-600" />
             <div className="font-medium">利用規約</div>
           </Link>
           
@@ -132,7 +133,7 @@ export default function MobileMenu({
             href="/info/company" 
             onClick={onClose}
           >
-            <span className="text-lg">🏢</span>
+            <Icon name="company" className="size-5 text-neutral-600" />
             <div className="font-medium">運営会社</div>
           </Link>
           
@@ -141,7 +142,7 @@ export default function MobileMenu({
             href="/info/tokusho" 
             onClick={onClose}
           >
-            <span className="text-lg">📄</span>
+            <Icon name="terms" className="size-5 text-neutral-600" />
             <div className="font-medium">特定商取引法</div>
           </Link>
         </nav>

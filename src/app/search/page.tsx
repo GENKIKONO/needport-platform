@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import NeedCard from "@/components/NeedCard";
+import Icon from '@/components/Icon';
 
 interface SearchResult {
   id: string;
@@ -128,7 +129,9 @@ export default function SearchPage() {
           </div>
         ) : query && results.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔍</div>
+            <div className="mb-4 flex justify-center">
+              <Icon name="search" className="size-16 text-gray-400" />
+            </div>
             <h3 className="text-xl font-semibold mb-2">検索結果が見つかりません</h3>
             <p className="text-gray-400 mb-6">
               「{query}」に一致するニーズが見つかりませんでした。
@@ -174,7 +177,9 @@ export default function SearchPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔍</div>
+            <div className="mb-4 flex justify-center">
+              <Icon name="search" className="size-16 text-gray-400" />
+            </div>
             <h3 className="text-xl font-semibold mb-2">検索を開始</h3>
             <p className="text-gray-400">
               キーワードを入力して、ニーズを検索してください。

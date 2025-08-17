@@ -1,26 +1,27 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Icon from '../Icon';
 
 const slides = [
   {
     id: 1,
     title: 'ニーズ起点で、安心して出会える',
     subtitle: '困りごとから始まるマッチングOS',
-    icon: '🚀',
+    iconName: 'home',
     gradient: 'from-blue-600 to-emerald-600',
   },
   {
     id: 2,
     title: '最小摩擦で、最大の価値を',
     subtitle: '発注と受注をつなぐプラットフォーム',
-    icon: '⚡',
+    iconName: 'search',
     gradient: 'from-emerald-600 to-amber-600',
   },
   {
     id: 3,
     title: '信頼できるパートナーと',
     subtitle: '安全にビジネスを加速',
-    icon: '🤝',
+    iconName: 'company',
     gradient: 'from-amber-600 to-blue-600',
   },
 ];
@@ -49,7 +50,9 @@ export default function HeroSlider() {
           <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />
           <div className="relative h-full flex items-center justify-center text-center text-white">
             <div className="max-w-4xl mx-auto px-6">
-              <div className="text-6xl md:text-8xl mb-6">{slide.icon}</div>
+              <div className="mb-6 flex justify-center">
+                <Icon name={slide.iconName} className="size-16 md:size-20 text-white" />
+              </div>
               <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">
                 {slide.title}
               </h1>

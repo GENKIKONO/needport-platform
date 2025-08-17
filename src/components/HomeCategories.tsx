@@ -1,12 +1,13 @@
 import Link from "next/link";
+import Icon from "./Icon";
 
 const categories = [
-  { name: "住まい", icon: "🏠", href: "/needs?category=住まい" },
-  { name: "モノづくり", icon: "⚙️", href: "/needs?category=モノづくり" },
-  { name: "飲食", icon: "🍽️", href: "/needs?category=飲食" },
-  { name: "健康", icon: "💊", href: "/needs?category=健康" },
-  { name: "ビジネス相談", icon: "💼", href: "/needs?category=ビジネス相談" },
-  { name: "その他", icon: "📦", href: "/needs?category=その他" },
+  { name: "住まい", iconName: "house", href: "/needs?category=住まい" },
+  { name: "モノづくり", iconName: "craft", href: "/needs?category=モノづくり" },
+  { name: "飲食", iconName: "food", href: "/needs?category=飲食" },
+  { name: "健康", iconName: "category", href: "/needs?category=健康" },
+  { name: "ビジネス相談", iconName: "company", href: "/needs?category=ビジネス相談" },
+  { name: "その他", iconName: "category", href: "/needs?category=その他" },
 ];
 
 export default function HomeCategories() {
@@ -18,7 +19,9 @@ export default function HomeCategories() {
           href={category.href} 
           className="np-card p-4 text-center hover:shadow-lg transition-shadow"
         >
-          <div className="text-2xl mb-2">{category.icon}</div>
+          <div className="mb-2 flex justify-center">
+            <Icon name={category.iconName || 'category'} className="size-8 text-neutral-600" />
+          </div>
           <div className="text-sm font-medium text-gray-900">{category.name}</div>
         </Link>
       ))}
