@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { Ship, ShieldCheck, Handshake } from "lucide-react";
-import FlowStrip from "@/components/FlowStrip";
 
 export default function HeroMarketing(){
   return (
@@ -25,10 +24,6 @@ export default function HeroMarketing(){
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link href="/post" className="btn btn-primary h-11 text-base">無料ではじめる</Link>
           <Link href="/guide" className="btn btn-ghost h-11 text-base text-white hover:bg-white/10">流れを見る</Link>
-        </div>
-        {/* 直感フロー（クラファン否定を言葉にしない） */}
-        <div className="mt-6">
-          <FlowStrip />
         </div>
       </div>
     </section>

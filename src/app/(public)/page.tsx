@@ -1,5 +1,6 @@
 import Hero from '@/components/Hero';
 import ServiceFlow from '@/components/ServiceFlow';
+import FlowStrip from '@/components/FlowStrip';
 import HomeSoon from '@/components/HomeSoon';
 import HomeCategories from '@/components/HomeCategories';
 import HomeFeatured from '@/components/HomeFeatured';
@@ -13,6 +14,13 @@ export default async function Home(){
       {/* Hero */}
       <section className="section">
         <Hero />
+      </section>
+
+      {/* 船アニメ航路（港雰囲気強化） */}
+      <section className="section pt-0">
+        <div className="max-w-4xl mx-auto">
+          <FlowStrip />
+        </div>
       </section>
 
       {/* Flow */}
