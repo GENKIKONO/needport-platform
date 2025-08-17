@@ -1,30 +1,26 @@
-"use client";
 import FlowStrip from "./FlowStrip";
 
-const flowPills = [
-  { icon: "📝", text: "困りごと投稿", desc: "個人情報は書かない" },
-  { icon: "👍", text: "賛同・提案", desc: "業者から見積もり" },
-  { icon: "✅", text: "良い提案承認", desc: "前進する提案だけ" },
-  { icon: "💬", text: "承認制チャット", desc: "運営同席で詰める" },
-  { icon: "💳", text: "安全な決済", desc: "Stripeで受け渡し" },
+const pills = [
+  { emoji: "📝", t: "困りごと投稿", d: "個人情報は書かない" },
+  { emoji: "👍", t: "賛同・提案", d: "業者から見積もり" },
+  { emoji: "✅", t: "承認", d: "運営と安全に進行" },
+  { emoji: "💬", t: "ルーム", d: "関係者だけでやり取り" },
+  { emoji: "💳", t: "支払い", d: "Stripeで安全に" },
 ];
 
 export default function ServiceFlowCompact() {
   return (
     <div className="space-y-4">
-      {/* 船アニメーション */}
       <FlowStrip />
-      
-      {/* 横スクロール説明ピル */}
       <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
         <div className="flex gap-2 min-w-max px-1">
-          {flowPills.map((pill, i) => (
-            <div key={i} className="flex-shrink-0 bg-white rounded-full border border-sky-200 px-3 py-2 text-xs">
-              <div className="flex items-center gap-1.5">
-                <span className="text-base">{pill.icon}</span>
+          {pills.map((p, i) => (
+            <div key={i} className="flex-shrink-0 bg-white rounded-full border border-sky-200 px-3 py-2">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-base">{p.emoji}</span>
                 <div>
-                  <div className="font-medium text-sky-700">{pill.text}</div>
-                  <div className="text-neutral-500">{pill.desc}</div>
+                  <div className="font-medium text-sky-700">{p.t}</div>
+                  <div className="text-neutral-500">{p.d}</div>
                 </div>
               </div>
             </div>

@@ -1,13 +1,12 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 
 const steps = [
-  { label:"投稿",   href:"/post" },
-  { label:"提案",   href:"/needs" },
-  { label:"承認",   href:"/guide#approve" },
-  { label:"ルーム", href:"/guide#room" },
-  { label:"支払い", href:"/guide#pay" },
+  { key: "post",   label: "投稿" },
+  { key: "proposal", label: "提案" },
+  { key: "approve",  label: "承認" },
+  { key: "room",     label: "ルーム" },
+  { key: "pay",      label: "支払い" },
 ];
 
 export default function FlowStrip({ initial = 0 }: { initial?: number }) {
@@ -21,24 +20,28 @@ export default function FlowStrip({ initial = 0 }: { initial?: number }) {
           className="absolute -top-2.5 sm:-top-3 w-6 h-6 transition-[left] duration-500 ease-out"
           style={{ left: `calc(${(active * 100) / 4}% - 12px)` }}
         >
+          {/* 船アイコン */}
           <svg viewBox="0 0 24 24" className="w-6 h-6 text-sky-600 drop-shadow">
             <path fill="currentColor" d="M3 11h3l2-4h8l2 4h3l-9 8-9-8z"/>
           </svg>
         </div>
       </div>
-      {/* ステップ */}
-      <div className="mt-4 grid grid-cols-5 gap-2 text-sm">
+
+      {/* ステップ（**遷移させない** / 押すとアニメだけ変わる） */}
+      <div className="mt-3 sm:mt-4 grid grid-cols-5 gap-2 text-sm">
         {steps.map((s, i) => (
           <button
-            key={s.label}
+            key={s.key}
+            type="button"
+            onClick={() => setActive(i)}
             onMouseEnter={() => setActive(i)}
             onFocus={() => setActive(i)}
-            onClick={() => setActive(i)}
-            className={`rounded-xl py-2 sm:py-3 font-normal sm:font-medium transition-colors ${
-              i === active ? "bg-white text-sky-700 shadow" : "text-neutral-500 hover:bg-white/70"
+            className={`rounded-xl py-2 sm:py-3 transition-colors ${
+              i === active ? "bg-white text-sky-700 shadow font-medium" : "text-neutral-500 hover:bg-white/70"
             }`}
+            aria-pressed={i === active}
           >
-            <Link href={s.href} className="block w-full h-full">{s.label}</Link>
+            {s.label}
           </button>
         ))}
       </div>
