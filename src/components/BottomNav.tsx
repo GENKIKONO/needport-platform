@@ -12,10 +12,12 @@ const items = [
 ];
 
 export default function BottomNav() {
-  const mounted = useMounted();
+  // ✅ すべての hooks は常に同じ順序で呼ぶ
   const pathname = usePathname();
+  const mounted = useMounted();
   
-  if (!mounted) return null; // ← 追加：マウントまで待つ
+  // 初回は非活性表示にしておき、return null は避ける（hooks 数を揃える）
+  const disabled = !mounted;
   return (
     <nav
       className="
@@ -25,6 +27,8 @@ export default function BottomNav() {
         pb-[env(safe-area-inset-bottom)]
       "
       role="navigation" aria-label="Primary"
+      aria-disabled={disabled}
+      style={disabled ? {pointerEvents:'none', opacity:.001}:undefined}
     >
       <div className="container">
         <ul className="grid grid-cols-4 h-14">

@@ -1,17 +1,16 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Home, List, SquarePen, UserRound, Anchor, Map, ShieldCheck, Scale, Building2, MessageSquare } from 'lucide-react';
 import useMounted from './util/useMounted';
 
 export default function MobileMenu({
   open, onClose,
 }: { open:boolean; onClose:() => void }) {
-  const mounted = useMounted();
+  // ✅ すべての hooks は先頭で宣言
   const firstLinkRef = useRef<HTMLAnchorElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  
-  if (!mounted) return null; // ← 追加
+  const mounted = useMounted();
 
   useEffect(() => {
     const onKey = (e:KeyboardEvent) => { 
@@ -32,7 +31,10 @@ export default function MobileMenu({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  // 初回は描画だけ行い、操作は不可に（hooks 数を一定に維持）
+  if (!open) {
+    return <div aria-hidden className="fixed inset-0 pointer-events-none opacity-0" />;
+  }
 
   return (
     <div aria-modal="true" role="dialog" className="fixed inset-0 z-50">
@@ -44,7 +46,11 @@ export default function MobileMenu({
       />
       
       {/* panel - 右からスライドイン */}
-      <div className="absolute right-0 top-0 h-full w-[86%] max-w-[360px] bg-white shadow-2xl rounded-l-2xl p-4 space-y-1 overflow-y-auto">
+      <div 
+        className="absolute right-0 top-0 h-full w-[86%] max-w-[360px] bg-white shadow-2xl rounded-l-2xl p-4 space-y-1 overflow-y-auto"
+        aria-disabled={!mounted}
+        style={!mounted ? {pointerEvents:'none', opacity:.001} : undefined}
+      >
         <div className="flex items-center justify-between mb-4">
           <div className="text-2xl font-semibold text-neutral-900">NeedPort</div>
           <button 
