@@ -29,12 +29,19 @@ export default {
           400: '#fbbf24', 500: '#f59e0b', 600: '#d97706', 700: '#b45309',
           800: '#92400e', 900: '#78350f',
         },
+        harbor:  { 600: '#1E3A8A', 500: '#2646AD', 400: '#3A67E3' },   // 港の深い青
+        sea:     { 600: '#0E7490', 500: '#14B8A6', 100: '#E6FFFB' },   // 海〜ターコイズ
+        foam:    { 50:  '#F6FBFF' },                                   // 波の泡・薄白
+        sand:    { 50:  '#FFF6E6' },                                   // 砂浜の薄ベージュ
+        buoy:    { 500: '#F97316' },                                   // ブイのオレンジ
+        light:   { 500: '#F43F5E' },                                   // 灯台の赤
       },
       borderRadius: {
         xl: '14px',
       },
       boxShadow: {
         card: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 0 0 1px rgb(0 0 0 / 0.05)',
+        port: '0 10px 30px -10px rgba(14,116,144,.15), 0 2px 8px rgba(0,0,0,.04)',
       },
       container: {
         center: true,

@@ -15,13 +15,13 @@ export default async function Home(){
         <Hero />
       </section>
 
-            {/* もうすぐ成立 (黄色アクセント) */}
-      <section className="rounded-2xl bg-gradient-to-b from-amber-50 to-white">
+            {/* Soon (灯台カラーを少し入れる) */}
+      <section className="rounded-2xl bg-gradient-to-b from-sand-50 to-white">
         <div className="section">
           <PageHeader
             title="もうすぐ成立"
             description="あと少しで実現！今すぐ参加しよう"
-            badge="HOT"
+            badge="灯台"
           />
           <HomeSoon />
         </div>

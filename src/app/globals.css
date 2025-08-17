@@ -32,12 +32,29 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
    .np-input { @apply bg-white text-neutral-900 placeholder:text-neutral-400 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600; }
    .np-textarea { @apply np-input min-h-[120px]; }
    .text-balance { text-wrap: balance; }
-   /* 視認性トークン追加 */
-   .hero-mint { @apply bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-50 ring-1 ring-black/5; }
-   .hero-sky  { @apply bg-gradient-to-br from-sky-100 via-indigo-50 to-white ring-1 ring-black/5; }
+   /* 港トーンの面 */
+   .hero-harbor { @apply bg-gradient-to-b from-foam-50 to-white ring-1 ring-black/5; }
+   .hero-sky    { @apply bg-gradient-to-br from-sky-100 via-indigo-50 to-white ring-1 ring-black/5; }
    .surface-soft { @apply rounded-2xl bg-white/95 shadow-card border border-black/5; }
-   .kicker { @apply inline-flex items-center gap-2 text-sm font-medium text-blue-700; }
-  .card { @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4 shadow-lg; }
+      .kicker { @apply inline-flex items-center gap-2 text-sm font-medium text-blue-700; }
+   
+   /* うっすら波パターン（パフォーマンス軽いCSS） */
+   .sea-waves {
+     --c1: rgba(20,184,166,.08); --c2: rgba(37,99,235,.06);
+     background:
+       radial-gradient(60% 100% at 50% 120%, var(--c1), transparent 60%),
+       radial-gradient(70% 120% at 50% 120%, var(--c2), transparent 60%),
+       linear-gradient(to bottom, #fff, #fff);
+   }
+   /* セクション区切りの"さざ波" */
+   .wave-divider {
+     -webkit-mask: radial-gradient(55% 12px at 10px 12px,#0000 98%,#000) 0 0/20px 100%;
+             mask: radial-gradient(55% 12px at 10px 12px,#0000 98%,#000) 0 0/20px 100%;
+     background: linear-gradient(to right, rgba(20,184,166,.18), rgba(37,99,235,.18));
+     height: 10px;
+   }
+   .np-buoy { @apply inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[12px] font-medium bg-buoy-500/10 text-buoy-500; }
+   .card { @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4 shadow-lg; }
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg h-11 px-4 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-offset-2 focus:ring-brand-500; }
   .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-500 focus:ring-brand-500; }
   .btn-ghost { @apply btn bg-white/5 hover:bg-white/10 focus:ring-white/20; }
