@@ -1,8 +1,8 @@
 "use client";
 import { useState } from 'react';
-import Link from "next/link";
+import { Menu } from 'lucide-react';
+import Logo from './Logo';
 import MobileMenu from './MobileMenu';
-import Icon from './Icon';
 
 export default function AppHeader(){
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,26 +11,18 @@ export default function AppHeader(){
     <>
       <header className="sticky top-0 z-40 backdrop-blur bg-white/70 dark:bg-neutral-900/60 border-b border-black/5">
         <div className="container flex items-center justify-between h-14">
-          <Link href="/" className="flex items-center gap-2 text-xl font-semibold">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white">
-              <Icon name="home" className="size-4 text-white" />
-            </span>
-            NeedPort
-          </Link>
+          <Logo className="text-xl" />
           <nav className="hidden md:flex items-center gap-2">
             <Link className="btn btn-ghost" href="/needs">みんなの「欲しい」</Link>
             <Link className="btn btn-ghost" href="/services">企業の「できる」</Link>
             <Link className="btn btn-ghost" href="/guide">サービス航海図</Link>
           </nav>
           <button
-            className="ml-auto rounded-xl p-2 hover:bg-neutral-100 md:hidden"
-            aria-label="メニュー"
             onClick={() => setMenuOpen(true)}
+            className="inline-flex items-center justify-center rounded-lg p-2 hover:bg-neutral-100"
+            aria-label="Open menu"
           >
-            {/* 3本線 */}
-            <span className="block w-6 h-0.5 bg-neutral-800 mb-1" />
-            <span className="block w-6 h-0.5 bg-neutral-800 mb-1" />
-            <span className="block w-6 h-0.5 bg-neutral-800" />
+            <Menu className="w-6 h-6" />
           </button>
         </div>
       </header>

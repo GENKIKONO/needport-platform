@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
-import Icon from './Icon';
+import { Home, List, SquarePen, UserRound, Anchor, Map, ShieldCheck, Scale, Building2, MessageSquare } from 'lucide-react';
 
 export default function MobileMenu({
   open, onClose,
@@ -57,10 +57,22 @@ export default function MobileMenu({
           <Link 
             ref={firstLinkRef}
             className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/" 
+            onClick={onClose}
+          >
+            <Home className="w-5 h-5 text-neutral-600" />
+            <div>
+              <div className="font-medium">ホーム</div>
+              <div className="text-sm text-neutral-500">トップページ</div>
+            </div>
+          </Link>
+          
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
             href="/needs" 
             onClick={onClose}
           >
-            <Icon name="needs" className="size-5 text-neutral-600" />
+            <List className="w-5 h-5 text-neutral-600" />
             <div>
               <div className="font-medium">みんなの「欲しい」</div>
               <div className="text-sm text-neutral-500">ユーザーのお願い</div>
@@ -69,10 +81,34 @@ export default function MobileMenu({
           
           <Link 
             className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/post" 
+            onClick={onClose}
+          >
+            <SquarePen className="w-5 h-5 text-neutral-600" />
+            <div>
+              <div className="font-medium">投稿する</div>
+              <div className="text-sm text-neutral-500">新しいニーズを投稿</div>
+            </div>
+          </Link>
+          
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/me" 
+            onClick={onClose}
+          >
+            <UserRound className="w-5 h-5 text-neutral-600" />
+            <div>
+              <div className="font-medium">マイページ</div>
+              <div className="text-sm text-neutral-500">あなたの情報</div>
+            </div>
+          </Link>
+          
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
             href="/services" 
             onClick={onClose}
           >
-            <Icon name="company" className="size-5 text-neutral-600" />
+            <Building2 className="w-5 h-5 text-neutral-600" />
             <div>
               <div className="font-medium">企業の「できる」</div>
               <div className="text-sm text-neutral-500">企業のサービス</div>
@@ -84,7 +120,7 @@ export default function MobileMenu({
             href="/guide" 
             onClick={onClose}
           >
-            <Icon name="map" className="size-5 text-neutral-600" />
+            <Anchor className="w-5 h-5 text-neutral-600" />
             <div>
               <div className="font-medium">サービス航海図</div>
               <div className="text-sm text-neutral-500">使い方ガイド</div>
@@ -94,7 +130,7 @@ export default function MobileMenu({
           <div className="my-4 h-px bg-neutral-200" />
 
           <div className="np-card p-3 flex items-center gap-3 text-neutral-500">
-            <Icon name="chat" className="size-5 text-neutral-500" />
+            <MessageSquare className="w-5 h-5 text-neutral-500" />
             <div>
               <div className="font-medium">案件ルーム</div>
               <div className="text-sm text-neutral-400">近日対応</div>
@@ -106,7 +142,7 @@ export default function MobileMenu({
             href="/info" 
             onClick={onClose}
           >
-            <Icon name="info" className="size-5 text-neutral-600" />
+            <Map className="w-5 h-5 text-neutral-600" />
             <div className="font-medium">サイト情報</div>
           </Link>
           
@@ -115,7 +151,7 @@ export default function MobileMenu({
             href="/info/privacy" 
             onClick={onClose}
           >
-            <Icon name="shield" className="size-5 text-neutral-600" />
+            <ShieldCheck className="w-5 h-5 text-neutral-600" />
             <div className="font-medium">プライバシーポリシー</div>
           </Link>
           
@@ -124,7 +160,7 @@ export default function MobileMenu({
             href="/info/terms" 
             onClick={onClose}
           >
-            <Icon name="terms" className="size-5 text-neutral-600" />
+            <Scale className="w-5 h-5 text-neutral-600" />
             <div className="font-medium">利用規約</div>
           </Link>
           
@@ -133,7 +169,7 @@ export default function MobileMenu({
             href="/info/company" 
             onClick={onClose}
           >
-            <Icon name="company" className="size-5 text-neutral-600" />
+            <Building2 className="w-5 h-5 text-neutral-600" />
             <div className="font-medium">運営会社</div>
           </Link>
           
@@ -142,7 +178,7 @@ export default function MobileMenu({
             href="/info/tokusho" 
             onClick={onClose}
           >
-            <Icon name="terms" className="size-5 text-neutral-600" />
+            <Scale className="w-5 h-5 text-neutral-600" />
             <div className="font-medium">特定商取引法</div>
           </Link>
         </nav>
