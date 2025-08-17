@@ -11,7 +11,7 @@ const steps = [
 
 export default function ServiceFlow() {
   return (
-    <section className="bg-white">
+    <section className="bg-white hidden md:block">
       <div className="section">
         <div className="text-center mb-6">
           <h2 className="text-xl md:text-2xl font-bold text-neutral-900">サービスの流れ</h2>

@@ -13,16 +13,16 @@ const steps = [
 export default function FlowStrip({ initial = 0 }: { initial?: number }) {
   const [active, setActive] = useState(initial);
   return (
-    <div className="relative rounded-2xl border border-black/5 bg-gradient-to-r from-sky-50 to-indigo-50 p-4 shadow-card">
+    <div className="relative rounded-2xl border border-black/5 bg-gradient-to-r from-sky-50 to-indigo-50 p-3 sm:p-4 shadow-card">
       {/* 航路 */}
-      <div className="relative h-2 bg-sky-100 rounded-full">
+      <div className="relative h-1.5 sm:h-2 bg-sky-100 rounded-full">
         <div
           aria-hidden
-          className="absolute -top-3 w-6 h-6 transition-[left] duration-500 ease-out"
+          className="absolute -top-2.5 sm:-top-3 w-6 h-6 transition-[left] duration-500 ease-out"
           style={{ left: `calc(${(active * 100) / 4}% - 12px)` }}
         >
           <svg viewBox="0 0 24 24" className="w-6 h-6 text-sky-600 drop-shadow">
-            <path fill="currentColor" d="M3 13l9-8 9 8h-3v6H6v-6H3z" />
+            <path fill="currentColor" d="M3 11h3l2-4h8l2 4h3l-9 8-9-8z"/>
           </svg>
         </div>
       </div>
@@ -34,7 +34,7 @@ export default function FlowStrip({ initial = 0 }: { initial?: number }) {
             onMouseEnter={() => setActive(i)}
             onFocus={() => setActive(i)}
             onClick={() => setActive(i)}
-            className={`rounded-xl py-3 font-medium transition-colors ${
+            className={`rounded-xl py-2 sm:py-3 font-normal sm:font-medium transition-colors ${
               i === active ? "bg-white text-sky-700 shadow" : "text-neutral-500 hover:bg-white/70"
             }`}
           >

@@ -133,7 +133,7 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   .progress-bar { @apply h-full bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full transition-all duration-300; }
   
   /* Readdy UI Tokens */
-  .section { @apply container py-12 bg-white; }
+  .section { @apply container py-10 sm:py-12 bg-white; }
   .np-card { @apply rounded-xl shadow-card border border-black/5 bg-white/90 dark:bg-white/5; }
   .np-badge { @apply rounded-full px-2.5 py-0.5 text-xs font-medium; }
   .np-progress { @apply h-2 rounded-full overflow-hidden; }

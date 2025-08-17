@@ -1,6 +1,6 @@
 import Hero from '@/components/Hero';
 import ServiceFlow from '@/components/ServiceFlow';
-import FlowStrip from '@/components/FlowStrip';
+import ServiceFlowCompact from '@/components/ServiceFlowCompact';
 import HomeSoon from '@/components/HomeSoon';
 import HomeCategories from '@/components/HomeCategories';
 import HomeFeatured from '@/components/HomeFeatured';
@@ -16,15 +16,11 @@ export default async function Home(){
         <Hero />
       </section>
 
-      {/* 船アニメ航路（港雰囲気強化） */}
-      <section className="section pt-0">
-        <div className="max-w-4xl mx-auto">
-          <FlowStrip />
-        </div>
+      {/* Flow (mobile compact / desktop full) */}
+      <section className="section">
+        <div className="md:hidden"><ServiceFlowCompact/></div>
+        <div className="hidden md:block"><ServiceFlow/></div>
       </section>
-
-      {/* Flow */}
-      <ServiceFlow />
 
       {/* 既存セクション（必要に応じて見出しだけ少しだけ調整） */}
       <section className="section">
