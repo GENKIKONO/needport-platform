@@ -8,6 +8,7 @@ import FlowCarousel from "@/components/FlowCarousel";
 import VisionCard from "@/components/VisionCard";
 import FlowRail from "@/components/FlowRail";
 import Hero from "@/components/Hero";
+import FlowStrip from "@/components/FlowStrip";
 
 export const dynamic = "force-dynamic"; 
 export const revalidate = 0;
@@ -18,8 +19,12 @@ export default async function Home(){
       {/* Hero with interactive ports */}
       <section className="section">
         <Hero />
-        <div className="mt-6 max-w-3xl mx-auto">
-          <FlowRail />
+      </section>
+
+      {/* 船アニメ航路（説明はアイコンのみ） */}
+      <section className="section pt-0">
+        <div className="max-w-4xl mx-auto">
+          <FlowStrip />
         </div>
       </section>
 

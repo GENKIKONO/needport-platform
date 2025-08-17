@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import KochiSelect from '@/components/KochiSelect';
+import { KOCHI_MUNICIPALITIES } from '@/lib/geo';
 const BoatSail = dynamic(() => import("@/components/BoatSail"), { ssr: false });
 
 export default function PostNeed(){
@@ -11,14 +12,18 @@ export default function PostNeed(){
   const [desc,setDesc]=useState("");
   const [area,setArea]=useState<{type:'list'|'other', area:string}>({type:'list', area:''});
   const [category,setCategory]=useState("");
+  const [city, setCity] = useState<string>('高知市');
+  const [otherCity, setOtherCity] = useState('');
   const [sail, setSail] = useState(false);
   const router=useRouter();
   
   const titleOk = title.trim().length >= 4;
   const descOk = desc.trim().length >= 20;
-  const canSubmit = titleOk && descOk;
+  const selectedCity = city === 'その他' ? otherCity.trim() : city;
+  const cityOk = selectedCity === '' || selectedCity.length >= 2;
+  const canSubmit = titleOk && descOk && cityOk;
   async function submit(){
-    const payload={title, description:desc, area: area.area, area_type: area.type, category};
+    const payload={title, description:desc, area: area.area, area_type: area.type, category, city: selectedCity || null};
     try{
       // DBが有効ならAPIを叩く（既存の /api/needs などがあれば差し替え。無ければlocal保存）
       if(process.env.NEXT_PUBLIC_SUPABASE_URL){ /* ここではUIのみ。APIは既存のを使う想定 */ }
@@ -89,7 +94,20 @@ export default function PostNeed(){
         {step===2 && (
           <div className="grid gap-4">
             <div className="grid sm:grid-cols-2 gap-3">
-              <KochiSelect value={area} onChange={setArea} />
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mt-6">エリア（高知県）</label>
+                <div className="mt-1 flex gap-2">
+                  <select className="np-input px-3 py-2 w-60" value={city} onChange={e=>setCity(e.target.value)}>
+                    {KOCHI_MUNICIPALITIES.map(n => <option key={n} value={n}>{n}</option>)}
+                    <option value="その他">その他</option>
+                  </select>
+                  {city === 'その他' && (
+                    <input className="np-input px-3 py-2 flex-1" placeholder="市町村名を入力（例：○○町）"
+                           value={otherCity} onChange={e=>setOtherCity(e.target.value)} />
+                  )}
+                </div>
+                {!cityOk && <p className="text-sm text-red-600 mt-1">市町村名を入力してください。</p>}
+              </div>
               <div>
                 <label className="block text-sm font-medium text-neutral-700">カテゴリー</label>
                 <input value={category} onChange={e=>setCategory(e.target.value)} className="mt-1 w-full np-input px-3 py-2" placeholder="例: 住宅・建築" />

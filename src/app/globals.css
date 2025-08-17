@@ -177,6 +177,17 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   }
   /* 横スクロール用 */
   .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  /* FlowStrip 船アニメーション */
+  @keyframes sail { from{transform:translateX(0)} to{transform:translateX(calc(100% - 1.75rem))} }
+  @keyframes wave { from{transform:translateX(-28%)} to{transform:translateX(28%)} }
+
+  .route-boat { animation: sail 14s ease-in-out infinite; }
+  .route-water { background: linear-gradient(90deg, #bae6fd33, #38bdf833, #bae6fd33);
+                 animation: wave 5s ease-in-out infinite alternate; }
+  @media (prefers-reduced-motion: reduce) {
+    .route-boat, .route-water { animation: none; }
+  }
   
   h1 { @apply text-2xl sm:text-3xl font-semibold tracking-tight; }
   h2 { @apply text-xl sm:text-2xl font-semibold tracking-tight; }

@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getNeedsSafe } from "@/lib/demo/data";
 import InterestDialog from "@/components/InterestDialog";
+import { KOCHI_MUNICIPALITIES } from '@/lib/geo';
 
 export default function Needs(){
   const [needs, setNeeds] = useState<any[]>([]);
   const [openDialog, setOpenDialog] = useState<{open: boolean, need: any}>({open: false, need: null});
+  const [city, setCity] = useState<string>('すべて');
 
   // データ取得
   useState(() => {
@@ -41,11 +43,10 @@ export default function Needs(){
         
         {/* Filters */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <select className="rounded-lg border px-3 py-2 bg-white">
-            <option>エリア: すべて</option>
-            <option>高知市</option>
-            <option>三戸町</option>
-            <option>久万高原町</option>
+          <select className="rounded-lg border px-3 py-2 bg-white"
+                  value={city} onChange={e=>setCity(e.target.value)}>
+            <option value="すべて">エリア: すべて</option>
+            {KOCHI_MUNICIPALITIES.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
           <select className="rounded-lg border px-3 py-2 bg-white">
             <option>カテゴリ: すべて</option>
@@ -64,7 +65,7 @@ export default function Needs(){
       
       {/* Results */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {needs.map(n=>(
+        {(city === 'すべて' ? needs : needs.filter(n => (n.city ?? '') === city)).map(n=>(
           <article key={n.id} className="np-card p-6">
             <h3 className="font-semibold text-gray-900 mb-2">{n.title}</h3>
             <p className="text-sm text-gray-600 line-clamp-4 mb-4">{n.description}</p>
