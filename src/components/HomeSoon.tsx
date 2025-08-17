@@ -34,7 +34,7 @@ export default function HomeSoon() {
     <>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 bg-white">
         {hot.map(n => (
-          <article key={n.id} className="np-card p-6">
+          <article key={n.id} className="np-card p-6 card-hover card-press">
             <header className="flex items-start justify-between gap-3 mb-3">
               <h3 className="np-title text-base md:text-lg line-clamp-2">{n.title}</h3>
               <span className="np-badge bg-red-100 text-red-600">

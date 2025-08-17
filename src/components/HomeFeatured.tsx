@@ -32,7 +32,7 @@ export default function HomeFeatured() {
     <>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 bg-white">
         {needs.slice(0, 3).map(n => (
-          <article key={n.id} className="np-card overflow-hidden">
+          <article key={n.id} className="np-card overflow-hidden card-hover card-press">
             {/* Image placeholder */}
             <div className="aspect-[4/3] bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
               <div className="text-4xl opacity-50">📋</div>

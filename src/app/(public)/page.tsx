@@ -1,4 +1,5 @@
-import Hero from "@/components/Hero";
+import HeroPorts from "@/components/HeroPorts";
+import ServiceFlowCarousel from "@/components/ServiceFlowCarousel";
 import PageHeader from "@/components/PageHeader";
 import HomeSoon from "@/components/HomeSoon";
 import HomeCategories from "@/components/HomeCategories";
@@ -12,24 +13,20 @@ export const revalidate = 0;
 export default async function Home(){
   return (
     <main className="space-y-12 bg-white">
-      {/* Hero */}
+      {/* Hero with interactive ports */}
       <section className="section">
-        <Hero />
-        {/* ヒーロー直下で"クラファンではない"を軽く補足 */}
-        <p className="mt-4 text-center text-neutral-500 text-sm">
-          ※ NeedPortはクラウドファンディングではありません。人数は需要の可視化です。
-        </p>
+        <HeroPorts />
       </section>
 
       {/* 新規：サービスの流れ（横カルーセル） */}
-      <FlowCarousel />
+      <ServiceFlowCarousel />
 
-            {/* 既存：いま動き出しているニーズ（旧 もうすぐ成立） */}
+            {/* 既存：提案が集まっているニーズ */}
       <section className="rounded-2xl bg-gradient-to-b from-amber-50 to-white">
         <div className="section">
           <PageHeader
-            title="いま動き出しているニーズ"
-            description="関心が集まってきている投稿です"
+            title="提案が集まっているニーズ"
+            description="業者からの提案が届いている投稿です"
             badge="HOT"
           />
           <HomeSoon />

@@ -105,6 +105,19 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
      transform:translate(-50%,-50%); pointer-events:none;
    }
    .btn-wave:active:after { width:220%; height:220%; transition: width .35s ease, height .35s ease, opacity .6s ease; opacity:0; }
+   
+   /* カードの"持ち上がり"＋"軽い押し込み" */
+   .card-hover { transition: transform .15s ease, box-shadow .15s ease; }
+   .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.06) }
+   .card-press:active { transform: translateY(0) scale(.98) }
+   
+   /* "タップできるヒント"のパルス */
+   .pulse-dot::after{
+     content:""; display:inline-block; width:6px; height:6px; margin-left:.35rem;
+     border-radius:9999px; background:#3b82f6; box-shadow:0 0 0 0 rgba(59,130,246,.6);
+     animation: pulse 1.8s cubic-bezier(.66,0,0,1) infinite;
+   }
+   @keyframes pulse{100%{box-shadow:0 0 0 10px rgba(59,130,246,0)}}
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg h-11 px-4 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-offset-2 focus:ring-brand-500; }
   .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-500 focus:ring-brand-500; }
   .btn-ghost { @apply btn bg-white/5 hover:bg-white/10 focus:ring-white/20; }
