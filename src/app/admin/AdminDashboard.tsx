@@ -426,11 +426,15 @@ export default function AdminDashboard() {
                       Archive
                     </button>
                     <button
-                      onClick={() => deleteProject(project.id)}
-                      className="px-2 py-1 bg-red-800 text-white text-xs rounded hover:bg-red-900"
-                      data-testid="btn-delete"
+                      onClick={async () => {
+                        if (!confirm('この案件を削除します。よろしいですか？')) return;
+                        const res = await fetch(`/api/admin/needs/${project.id}/delete`, { method: 'POST' });
+                        if (res.ok) location.reload();
+                        else alert('削除に失敗しました');
+                      }}
+                      className="btn btn-ghost text-red-300"
                     >
-                      Delete
+                      🗑️ Delete
                     </button>
                     <button
                       onClick={() => setShowComments(showComments === project.id ? null : project.id)}

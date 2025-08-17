@@ -6,6 +6,7 @@ import type { Need, Offer, Membership } from '@/lib/mock/types';
 import { supabaseServer } from '@/lib/server/supabase';
 import { formatDate } from '@/lib/format';
 import { headers } from 'next/headers';
+import { DB_ENABLED, DEMO_VISIBLE } from '@/lib/flags';
 
 export const revalidate = 60; // 1 minute cache
 
@@ -401,11 +402,11 @@ export default async function Page({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      {source === 'mock' && (
-        <p className="mb-4 text-sm text-yellow-400/90">
+      {DEMO_VISIBLE && !DB_ENABLED ? (
+        <div className="mb-4 text-xs text-amber-300">
           データベースが空のためモック表示中（投稿すると自動でDBの値に切り替わります）
-        </p>
-      )}
+        </div>
+      ) : null}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {needsWithOffers.map(({ need, adoptedOffer, membership }) => (
           <NeedCard

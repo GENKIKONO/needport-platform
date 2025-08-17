@@ -15,3 +15,9 @@ export const paymentsEnabled = () => process.env.PAYMENTS_ENABLED === '1';
 // 複合フラグ（よく使う組み合わせ）
 // 関数合成で明示的に表現（読みやすさ向上）
 export const showB2BFeatures = () => b2bEnabled() && noindexEnabled();
+
+export const DB_ENABLED =
+  !!process.env.SUPABASE_URL && !!process.env.SUPABASE_ANON_KEY;
+
+export const DEMO_VISIBLE =
+  process.env.NEXT_PUBLIC_SHOW_DEMO === '1'; // 既定: 非表示（未設定はfalse）
