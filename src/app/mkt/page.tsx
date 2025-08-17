@@ -2,7 +2,6 @@ import MktHeader from "@/mkt/components/MktHeader";
 import HeroMarketing from "@/mkt/components/HeroMarketing";
 import ValueGrid from "@/mkt/components/ValueGrid";
 import StepsStrip from "@/mkt/components/StepsStrip";
-import CompareNotCrowd from "@/mkt/components/CompareNotCrowd";
 import SocialProof from "@/mkt/components/SocialProof";
 import CTAbar from "@/mkt/components/CTAbar";
 import MktFooter from "@/mkt/components/MktFooter";
@@ -20,7 +19,6 @@ export default function MarketingPage() {
         <HeroMarketing />
         <ValueGrid />
         <StepsStrip />
-        <CompareNotCrowd />
         <SocialProof />
       </main>
       <MktFooter />

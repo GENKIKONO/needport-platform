@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Ship, ShieldCheck, Handshake } from "lucide-react";
+import FlowStrip from "@/components/FlowStrip";
 
 export default function HeroMarketing(){
   return (
@@ -15,33 +16,19 @@ export default function HeroMarketing(){
           <Ship className="w-4 h-4" /> ニーズの港 NeedPort
         </div>
         <h1 className="mt-4 text-4xl md:text-6xl font-extrabold leading-tight text-balance">
-          投稿 → 提案 → 承認 → ルーム → <span className="whitespace-nowrap">安全な支払い</span>
+          NeedPort は「ニーズの港」
         </h1>
-        <p className="mt-4 text-lg md:text-xl/8 text-white/90 text-balance">
-          クラファンではなく、<strong>リアルなニーズと業者の提案を安全に成立</strong>させるためのプラットフォーム。
+        <p className="mt-4 text-[16px] sm:text-lg md:text-xl text-white/90 text-balance">
+          投稿 → 提案 → 承認 → ルーム → 安全な支払い。ここで完結。
         </p>
-
-        {/* ミニデモ枠（後で動画/アニメ差替） */}
-        <div className="mt-8 mx-auto max-w-3xl rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur p-4">
-          <div className="grid grid-cols-3 gap-3 text-left text-sm">
-            <div className="rounded-xl bg-white/90 p-3 text-neutral-800">
-              <Handshake className="w-4 h-4 text-sky-600" /> 提案が集まる
-            </div>
-            <div className="rounded-xl bg-white/90 p-3 text-neutral-800">
-              <ShieldCheck className="w-4 h-4 text-sky-600" /> 承認制ルーム
-            </div>
-            <div className="rounded-xl bg-white/90 p-3 text-neutral-800">
-              <span className="inline-flex items-center gap-1">
-                <svg width="16" height="16"><circle cx="8" cy="8" r="8" fill="#0ea5e9"/></svg>
-                安全な受け渡し
-              </span>
-            </div>
-          </div>
-        </div>
 
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link href="/post" className="btn btn-primary h-11 text-base">無料ではじめる</Link>
-          <Link href="/mkt/how-it-works" className="btn btn-ghost h-11 text-base text-white hover:bg-white/10">流れを見る</Link>
+          <Link href="/guide" className="btn btn-ghost h-11 text-base text-white hover:bg-white/10">流れを見る</Link>
+        </div>
+        {/* 直感フロー（クラファン否定を言葉にしない） */}
+        <div className="mt-6">
+          <FlowStrip />
         </div>
       </div>
     </section>
