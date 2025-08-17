@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Home, List, SquarePen, UserRound, Anchor, Map, ShieldCheck, Scale, Building2, MessageSquare } from 'lucide-react';
+import { Home, List, SquarePen, UserRound, Anchor, Map, ShieldCheck, Scale, Building2, MessageSquare, Info } from 'lucide-react';
 import useMounted from './util/useMounted';
 
 export default function MobileMenu({
@@ -139,9 +139,13 @@ export default function MobileMenu({
 
           <div className="my-4 h-px bg-neutral-200" />
 
+          {/* 案件ルームは /me に集約。グローバルメニューからは非表示 */}
+
+          {/* サイト情報（折りたたみ） */}
           <details className="np-card p-0 overflow-hidden">
             <summary className="flex items-center gap-3 py-3 px-3 cursor-pointer select-none text-neutral-700 hover:bg-neutral-50 min-h-[48px]">
-              <Map className="w-5 h-5 text-neutral-600"/><span className="text-[17px] font-medium">サイト情報</span>
+              <Info className="w-5 h-5 text-neutral-600"/>
+              <span className="text-[17px] font-medium">サイト情報</span>
             </summary>
             <div className="border-t border-neutral-100">
               <Link className="flex items-center gap-3 py-3 px-3 hover:bg-neutral-50 min-h-[48px]" href="/info/privacy" onClick={onClose}><ShieldCheck className="w-5 h-5 text-neutral-600"/><span className="text-[17px] font-medium">プライバシーポリシー</span></Link>

@@ -40,12 +40,12 @@ export default function GuidePage() {
       {/* Hero */}
       <section className="text-center mb-16">
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-emerald-600 rounded-3xl opacity-10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-cyan-50 to-emerald-50 rounded-3xl border border-neutral-100" />
           <div className="relative p-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-6 drop-shadow-none">
               サービス航海図
             </h1>
-            <p className="text-xl text-neutral-300 max-w-3xl mx-auto">
+            <p className="text-xl text-neutral-700 leading-relaxed max-w-3xl mx-auto">
               NeedPort でのサービス利用から完了まで、5つのステップで安全・安心なビジネス体験を提供します
             </p>
           </div>
