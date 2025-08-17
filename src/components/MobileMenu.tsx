@@ -1,14 +1,30 @@
 'use client';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function MobileMenu({
   open, onClose,
 }: { open:boolean; onClose:() => void }) {
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
-    const onKey = (e:KeyboardEvent)=>{ if(e.key==='Escape') onClose(); };
-    if (open) window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const onKey = (e:KeyboardEvent) => { 
+      if(e.key === 'Escape') onClose(); 
+    };
+    
+    if (open) {
+      window.addEventListener('keydown', onKey);
+      // スクロールロック
+      document.body.style.overflow = 'hidden';
+      // フォーカスを最初のリンクへ
+      setTimeout(() => firstLinkRef.current?.focus(), 100);
+    }
+    
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -16,45 +32,110 @@ export default function MobileMenu({
   return (
     <div aria-modal="true" role="dialog" className="fixed inset-0 z-50">
       {/* backdrop */}
-      <button aria-label="close menu" onClick={onClose}
-        className="absolute inset-0 bg-black/40" />
-      {/* panel */}
-      <div className="absolute left-0 top-0 h-full w-[86%] max-w-sm bg-white shadow-xl p-5 overflow-y-auto">
+      <button 
+        aria-label="close menu" 
+        onClick={onClose}
+        className="absolute inset-0 bg-black/40" 
+      />
+      
+      {/* panel - 右からスライドイン */}
+      <div className="absolute right-0 top-0 h-full w-[86%] max-w-[360px] bg-white shadow-2xl rounded-l-2xl p-4 space-y-1 overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <div className="text-2xl font-semibold text-brand-700">NeedPort</div>
-          <button onClick={onClose}
-            className="rounded-xl bg-blue-50 text-blue-600 px-3 py-1.5">×</button>
+          <div className="text-2xl font-semibold text-neutral-900">NeedPort</div>
+          <button 
+            ref={closeButtonRef}
+            onClick={onClose}
+            className="btn btn-ghost h-9 w-9 rounded-full p-0"
+            aria-label="メニューを閉じる"
+          >
+            ×
+          </button>
         </div>
 
-        <nav className="space-y-2">
-          <Link className="block rounded-xl border border-black/5 p-4 hover:bg-blue-50"
-                href="/needs" onClick={onClose}>
-            <div className="font-medium">みんなの「欲しい」</div>
-            <div className="text-sm text-neutral-500">ユーザーのお願い</div>
+        <nav className="space-y-1">
+          <Link 
+            ref={firstLinkRef}
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/needs" 
+            onClick={onClose}
+          >
+            <span className="text-lg">🔍</span>
+            <div>
+              <div className="font-medium">みんなの「欲しい」</div>
+              <div className="text-sm text-neutral-500">ユーザーのお願い</div>
+            </div>
           </Link>
-          <Link className="block rounded-xl border border-black/5 p-4 hover:bg-blue-50"
-                href="/services" onClick={onClose}>
-            <div className="font-medium">企業の「できる」</div>
-            <div className="text-sm text-neutral-500">企業のサービス</div>
+          
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/services" 
+            onClick={onClose}
+          >
+            <span className="text-lg">🏢</span>
+            <div>
+              <div className="font-medium">企業の「できる」</div>
+              <div className="text-sm text-neutral-500">企業のサービス</div>
+            </div>
           </Link>
-          <Link className="block rounded-xl border border-black/5 p-4 hover:bg-blue-50"
-                href="/guide" onClick={onClose}>
-            <div className="font-medium">サービス航海図</div>
-            <div className="text-sm text-neutral-500">使い方ガイド</div>
+          
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/guide" 
+            onClick={onClose}
+          >
+            <span className="text-lg">🗺️</span>
+            <div>
+              <div className="font-medium">サービス航海図</div>
+              <div className="text-sm text-neutral-500">使い方ガイド</div>
+            </div>
           </Link>
 
           <div className="my-4 h-px bg-neutral-200" />
 
-          <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50"
-                href="/info" onClick={onClose}>サイト情報</Link>
-          <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50"
-                href="/info/privacy" onClick={onClose}>プライバシーポリシー</Link>
-          <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50"
-                href="/info/terms" onClick={onClose}>利用規約</Link>
-          <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50"
-                href="/info/company" onClick={onClose}>運営会社</Link>
-          <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50"
-                href="/info/tokusho" onClick={onClose}>特定商取引法</Link>
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/info" 
+            onClick={onClose}
+          >
+            <span className="text-lg">ℹ️</span>
+            <div className="font-medium">サイト情報</div>
+          </Link>
+          
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/info/privacy" 
+            onClick={onClose}
+          >
+            <span className="text-lg">🔒</span>
+            <div className="font-medium">プライバシーポリシー</div>
+          </Link>
+          
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/info/terms" 
+            onClick={onClose}
+          >
+            <span className="text-lg">📋</span>
+            <div className="font-medium">利用規約</div>
+          </Link>
+          
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/info/company" 
+            onClick={onClose}
+          >
+            <span className="text-lg">🏢</span>
+            <div className="font-medium">運営会社</div>
+          </Link>
+          
+          <Link 
+            className="np-card p-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors"
+            href="/info/tokusho" 
+            onClick={onClose}
+          >
+            <span className="text-lg">📄</span>
+            <div className="font-medium">特定商取引法</div>
+          </Link>
         </nav>
       </div>
     </div>
