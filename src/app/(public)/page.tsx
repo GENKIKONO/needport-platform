@@ -1,14 +1,8 @@
-import HeroPorts from "@/components/HeroPorts";
-import ServiceFlowCarousel from "@/components/ServiceFlowCarousel";
-import PageHeader from "@/components/PageHeader";
-import HomeSoon from "@/components/HomeSoon";
-import HomeCategories from "@/components/HomeCategories";
-import HomeFeatured from "@/components/HomeFeatured";
-import FlowCarousel from "@/components/FlowCarousel";
-import VisionCard from "@/components/VisionCard";
-import FlowRail from "@/components/FlowRail";
-import Hero from "@/components/Hero";
-import FlowStrip from "@/components/FlowStrip";
+import Hero from '@/components/Hero';
+import ServiceFlow from '@/components/ServiceFlow';
+import HomeSoon from '@/components/HomeSoon';
+import HomeCategories from '@/components/HomeCategories';
+import HomeFeatured from '@/components/HomeFeatured';
 
 export const dynamic = "force-dynamic"; 
 export const revalidate = 0;
@@ -16,53 +10,38 @@ export const revalidate = 0;
 export default async function Home(){
   return (
     <main className="space-y-12 bg-white">
-      {/* Hero with interactive ports */}
+      {/* Hero */}
       <section className="section">
         <Hero />
       </section>
 
-      {/* 船アニメ航路（説明はアイコンのみ） */}
-      <section className="section pt-0">
-        <div className="max-w-4xl mx-auto">
-          <FlowStrip />
-        </div>
-      </section>
+      {/* Flow */}
+      <ServiceFlow />
 
-      {/* 新規：サービスの流れ（横カルーセル） */}
-      <ServiceFlowCarousel />
-
-            {/* 既存：提案が集まっているニーズ */}
-      <section className="rounded-2xl bg-gradient-to-b from-amber-50 to-white">
-        <div className="section">
-          <PageHeader
-            title="提案が集まっているニーズ"
-            description="業者からの提案が届いている投稿です"
-            badge="HOT"
-          />
-          <HomeSoon />
-        </div>
-      </section>
-
-      {/* カテゴリー */}
+      {/* 既存セクション（必要に応じて見出しだけ少しだけ調整） */}
       <section className="section">
-        <PageHeader 
-          title="どんなニーズがありますか？" 
-          description="カテゴリーからニーズを探す"
-        />
+        <header className="mb-4">
+          <h2 className="text-xl md:text-2xl font-bold text-neutral-900">もうすぐ成立</h2>
+          <p className="text-neutral-600">あと少しで実現！いま参加しよう</p>
+        </header>
+        <HomeSoon />
+      </section>
+
+      <section className="section">
+        <header className="mb-4">
+          <h2 className="text-xl md:text-2xl font-bold text-neutral-900">どんなニーズがありますか？</h2>
+          <p className="text-neutral-600">カテゴリーから探す</p>
+        </header>
         <HomeCategories />
       </section>
 
-      {/* 既存：注目ニーズ */}
       <section className="section">
-        <PageHeader 
-          title="注目のニーズ" 
-          description="最新のニーズをご紹介"
-        />
+        <header className="mb-4">
+          <h2 className="text-xl md:text-2xl font-bold text-neutral-900">注目のニーズ</h2>
+          <p className="text-neutral-600">関心が高い投稿をピックアップ</p>
+        </header>
         <HomeFeatured />
       </section>
-
-      {/* 新規：ビジョンカード（青グラデ） */}
-      <VisionCard />
     </main>
   );
 }
