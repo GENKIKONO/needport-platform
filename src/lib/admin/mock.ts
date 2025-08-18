@@ -90,6 +90,7 @@ export function toRows(needs: NeedDetail[]): NeedRow[] {
     id: n.id,
     title: n.title,
     ownerMasked: n.ownerMasked,
+    ownerUserId: n.ownerUserId,
     stage: n.stage,
     supporters: n.supporters,
     proposals: n.proposals,

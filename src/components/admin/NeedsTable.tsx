@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { type NeedRow, type Stage } from "@/lib/admin/types";
 import { StageBadge, PaymentBadge } from "./StatusBadge";
 import StageStepper from "./StageStepper";
+import TrustBadge from "./TrustBadge";
 import { yen, timeAgo } from "@/lib/admin/format";
 
 export function NeedsTable() {
@@ -86,6 +87,7 @@ export function NeedsTable() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">タイトル</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ユーザー</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">信頼</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステージ</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">賛同</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提案</th>
@@ -98,13 +100,13 @@ export function NeedsTable() {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={10} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={11} className="px-6 py-4 text-center text-gray-500">
                   読み込み中...
                 </td>
               </tr>
             ) : needs.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={11} className="px-6 py-4 text-center text-gray-500">
                   データが見つかりません
                 </td>
               </tr>
@@ -123,6 +125,9 @@ export function NeedsTable() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {need.ownerMasked}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <TrustBadge userId={(need as any).ownerUserId} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StageBadge stage={need.stage} />
@@ -186,18 +191,33 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
 
   async function mutateStage(id: string, next: Stage) {
     // 楽観更新: 先に UI を反映、その後 API で確定
+    const prev = need;
     setNeed(n => n ? { ...n, stage: next } : n);
     try {
-      await fetch(`/api/admin/needs/${id}/stage`, {
+      const response = await fetch(`/api/admin/needs/${id}/stage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stage: next }),
       });
+      
+      if (!response.ok) {
+        // 409: 紹介が必要
+        if (response.status === 409) {
+          const j = await response.json().catch(() => ({}));
+          alert(j?.message || "紹介が必要です。紹介URLを発行してユーザに共有してください。");
+        } else {
+          alert("更新に失敗しました");
+        }
+        setNeed(prev); // 楽観反映を戻す
+        return;
+      }
+      
       // 再フェッチで正値に整える
       fetchNeed();
     } catch (error) {
       console.error("Stage update failed:", error);
-      alert("ステージ更新に失敗しました");
+      setNeed(prev); // 楽観反映を戻す
+      alert("通信エラーが発生しました");
     }
   }
 
@@ -282,10 +302,14 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">信頼情報</h3>
             <div className="space-y-2">
-              {need.trust.anchorName && (
+              <div className="flex items-center gap-2">
+                <span>ユーザー: {need.ownerMasked}</span>
+                <TrustBadge userId={(need as any).ownerUserId} />
+              </div>
+              {need.trust?.anchorName && (
                 <div>紹介者: {need.trust.anchorName}</div>
               )}
-              {need.trust.anchorReputation && (
+              {need.trust?.anchorReputation && (
                 <div>
                   評価: {need.trust.anchorReputation}/100
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
@@ -296,8 +320,8 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
                   </div>
                 </div>
               )}
-              <div>専門家チェック: {need.trust.expertVerified ? "済み" : "未"}</div>
-              <div>運営保留: {need.trust.creditHold ? "あり" : "なし"}</div>
+              <div>専門家チェック: {need.trust?.expertVerified ? "済み" : "未"}</div>
+              <div>運営保留: {need.trust?.creditHold ? "あり" : "なし"}</div>
             </div>
           </div>
 

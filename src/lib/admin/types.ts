@@ -22,6 +22,7 @@ export type NeedRow = {
   id: string;
   title: string;
   ownerMasked: string;           // 例: "u***53"
+  ownerUserId?: string;          // 投稿ユーザID
   stage: Stage;
   supporters: number;
   proposals: number;

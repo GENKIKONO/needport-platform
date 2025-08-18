@@ -115,3 +115,44 @@ export async function computeTrust(userId: string): Promise<TrustScore> {
   const raw = Math.max(0, Math.min(100, ref+endo+comp+pen));
   return { value: raw, bands: raw>=70 ? "high" : raw>=35 ? "mid" : "low", breakdown:{ref,endorse:endo,completed:comp,penalty:pen} };
 }
+
+// 擬似実装例：実ストレージのキー/構造に合わせて取得し、{ rows, total } を返す
+export async function listUsersWithTrust({ page = 1, pageSize = 200 } = {}) {
+  if (HAS_KV) {
+    // KVから全ユーザを取得
+    const allUsers: UserProfile[] = [];
+    const pattern = "user:*";
+    const keys = await kv.scan(0, { match: pattern, count: 1000 });
+    
+    for (const key of keys) {
+      if (key.startsWith("user:") && !key.includes(":email:")) {
+        const userId = key.replace("user:", "");
+        const user = await kv.get<UserProfile>(key);
+        if (user) {
+          const score = await computeTrust(userId);
+          allUsers.push({ ...user, trust: score });
+        }
+      }
+    }
+    
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const rows = allUsers.slice(start, end);
+    
+    return { rows, total: allUsers.length };
+  } else {
+    // メモリから全ユーザを取得
+    const allUsers: (UserProfile & { trust: TrustScore })[] = [];
+    
+    for (const [userId, user] of mem.users) {
+      const score = await computeTrust(userId);
+      allUsers.push({ ...user, trust: score });
+    }
+    
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const rows = allUsers.slice(start, end);
+    
+    return { rows, total: allUsers.length };
+  }
+}
