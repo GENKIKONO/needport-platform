@@ -3,6 +3,7 @@ import { createNeed, listPublicNeeds } from "@/lib/admin/store";
 import { getOrCreateUserByEmail } from "@/lib/trust/store";
 import { getFlags } from "@/lib/admin/flags";
 import { randomUUID } from "crypto";
+import { KOCHI_MUNICIPALITIES } from "@/lib/geo/kochi";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,7 +65,10 @@ export async function GET(req: NextRequest) {
   
   // 地域フィルタ（optional: need.region があるもののみ対象）
   if (region) {
-    items = items.filter(need => (need as any).region && (need as any).region === region);
+    // 高知県市町村の値検証
+    if (KOCHI_MUNICIPALITIES.includes(region as any)) {
+      items = items.filter(need => (need as any).region && (need as any).region === region);
+    }
   }
   
   // ソート

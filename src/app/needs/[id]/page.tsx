@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
 import LockedActionGuard from "@/components/LockedActionGuard";
 import { SupportMeter } from "@/components/needs/SupportMeter";
+import { guardedFetch } from "@/lib/auth/guard-client";
 
 type NeedDetail = {
   id: string;
@@ -32,15 +33,15 @@ function Actions({ id, supportsCount: initial, flagsRequireAccount }: { id: stri
   async function support(on: boolean) {
     setLoading(true);
     try {
-      const r = await fetch(`/api/needs/${id}/support`, { method: on ? "POST" : "DELETE" });
-      if (!r.ok) { 
-        toast("賛同に失敗しました", "error");
-        return; 
-      }
+      const r = await guardedFetch(`/api/needs/${id}/support`, { method: on ? "POST" : "DELETE" });
       const j = await r.json(); 
       setCount(j.supportsCount ?? count);
       toast(on ? "賛同しました" : "賛同を解除しました", "success");
     } catch (error) {
+      if (error instanceof Error && error.message === "Unauthorized") {
+        // ガード関数で既に処理済み
+        return;
+      }
       toast("賛同に失敗しました", "error");
     } finally {
       setLoading(false);
@@ -50,18 +51,18 @@ function Actions({ id, supportsCount: initial, flagsRequireAccount }: { id: stri
   async function favorite(on: boolean) {
     setLoading(true);
     try {
-      const r = await fetch(`/api/needs/${id}/favorite`, { 
+      const r = await guardedFetch(`/api/needs/${id}/favorite`, { 
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify({ on }) 
       });
-      if (!r.ok) { 
-        toast("お気に入りに失敗しました", "error");
-        return; 
-      }
       setFav(on); 
       toast(on ? "お気に入りに追加しました" : "お気に入りを解除しました", on ? "success" : "info");
     } catch (error) {
+      if (error instanceof Error && error.message === "Unauthorized") {
+        // ガード関数で既に処理済み
+        return;
+      }
       toast("お気に入りに失敗しました", "error");
     } finally {
       setLoading(false);
@@ -205,6 +206,11 @@ export default function NeedDetailPage() {
           </button>
         </div>
         
+        {/* SupportMeterをタイトル直下に配置 */}
+        <div className="mb-4">
+          <SupportMeter current={need.supportsCount ?? 0} goal={10} />
+        </div>
+        
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
           <span>投稿者: {need.ownerMasked}</span>
           <span>•</span>
@@ -219,10 +225,6 @@ export default function NeedDetailPage() {
               <span>予算: ¥{need.estimateYen.toLocaleString()}</span>
             </>
           )}
-        </div>
-
-        <div className="mt-4">
-          <SupportMeter current={need.supportsCount ?? 0} goal={10} />
         </div>
 
         {need.body && (

@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/Toast";
+import { guardedFetch } from "@/lib/auth/guard-client";
 
 export default function NewNeedPage() {
   const [title,setTitle]=useState("");
@@ -10,6 +12,8 @@ export default function NewNeedPage() {
   const [introToken,setIntroToken]=useState("");
   const [saving,setSaving]=useState(false);
   const router = useRouter();
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -27,36 +31,47 @@ export default function NewNeedPage() {
     }).catch(()=>{});
   }
 
-  async function submit(e:React.FormEvent){
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    try{
+    if (loading) return;
+
+    setLoading(true);
+    try {
       // 紹介確定を先に実行
       if (email) await ensureReferral(email);
       
-      const res = await fetch("/api/needs",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ 
-          title, 
-          body, 
-          estimateYen: yen===""?undefined:Number(yen),
-          ownerEmail: email || undefined
-        })
+      const res = await guardedFetch("/api/needs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          body,
+          estimateYen: yen === "" ? undefined : Number(yen),
+          ownerEmail: email || undefined,
+        }),
       });
-      if(!res.ok) throw new Error(await res.text());
-      alert("投稿を受け付けました。公開前に管理者が確認します。");
-      router.push("/"); // or /needs
-    }catch(e:any){
-      alert("投稿失敗: "+e.message);
-    }finally{
-      setSaving(false);
+
+      if (res.ok) {
+        toast("投稿が完了しました！", "success");
+        router.push("/me");
+      } else {
+        toast("投稿に失敗しました", "error");
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message === "Unauthorized") {
+        toast("本人確認が必要です。マイページから引き継ぎしてください。", "info");
+        router.push("/me");
+        return;
+      }
+      toast("投稿に失敗しました", "error");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
   return (
     <main className="container max-w-2xl py-10">
       <h1 className="text-2xl font-bold mb-4">ニーズを投稿</h1>
-      <form className="space-y-4" onSubmit={submit}>
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <label className="block">
           <div className="text-sm text-gray-600">タイトル *</div>
           <input required className="mt-1 w-full rounded border px-3 py-2"
@@ -82,8 +97,8 @@ export default function NewNeedPage() {
           <input className="mt-1 w-full rounded border px-3 py-2"
             value={introToken} onChange={(e)=>setIntroToken(e.target.value)} placeholder="referral token" />
         </label>
-        <button className="rounded bg-sky-600 text-white px-4 py-2 disabled:opacity-50" disabled={saving}>
-          {saving?"送信中...":"送信"}
+        <button className="rounded bg-sky-600 text-white px-4 py-2 disabled:opacity-50" disabled={loading}>
+          {loading?"送信中...":"送信"}
         </button>
       </form>
     </main>

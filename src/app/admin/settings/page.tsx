@@ -10,6 +10,7 @@ type FeatureFlags = {
   vendorEditEnabled: boolean;
   requireAccountForEngagement: boolean;
   marketingHeroEnabled: boolean;
+  marketingBottomHeroEnabled: boolean;
 };
 
 export default function AdminSettingsPage() {
@@ -174,12 +175,30 @@ export default function AdminSettingsPage() {
               onClick={() => saveFlags({ marketingHeroEnabled: !flags?.marketingHeroEnabled })}
               disabled={saving}
               className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
-                flags?.marketingHeroEnabled !== false
+                flags?.marketingHeroEnabled
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >
-              {flags?.marketingHeroEnabled !== false ? "有効" : "無効"}
+              {flags?.marketingHeroEnabled ? "有効" : "無効"}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">下部ヒーロー（CTA）を表示</div>
+              <div className="text-sm text-gray-500">一覧末尾のCTAセクションを表示</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ marketingBottomHeroEnabled: !flags?.marketingBottomHeroEnabled })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.marketingBottomHeroEnabled
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.marketingBottomHeroEnabled ? "有効" : "無効"}
             </button>
           </div>
           

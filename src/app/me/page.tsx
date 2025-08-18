@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import MeEmpty from "@/components/me/MeEmpty";
 import Link from "next/link";
 import { NeedCard } from "@/components/needs/NeedCard";
+import { guardedFetch } from "@/lib/auth/guard-client";
 
 type Flags = { userEditEnabled: boolean; userDeleteEnabled: boolean; };
 type Need = { id: string; title: string; description?: string; estimateYen?: number; updatedAt?: string; deletedAt?: string | null; };
@@ -42,34 +43,25 @@ export default function MePage() {
     const patch = editing[id]; if (!patch) return;
     try {
       setLoading(true);
-      const res = await fetch(`/api/me/needs/${id}`, { 
+      const res = await guardedFetch(`/api/me/needs/${id}`, { 
         method: "PUT", 
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify(patch) 
       });
       
-      if (res.status === 423) { 
-        alert("管理設定で編集が無効です"); 
-        return; 
-      }
-      if (res.status === 401) {
-        alert("投稿者としてログインが必要です（/needs/new で投稿してください）");
-        return;
-      }
-      if (res.status === 403) {
-        alert("この投稿を編集する権限がありません");
-        return;
-      }
-      if (!res.ok) { 
-        alert("保存に失敗しました"); 
-        return; 
-      }
-      
       alert("保存しました");
       await load(); 
       cancelEdit(id);
     } catch (error) {
-      alert("処理に失敗しました");
+      if (error instanceof Error && error.message === "Unauthorized") {
+        alert("投稿者としてログインが必要です（/needs/new で投稿してください）");
+        return;
+      }
+      if (error instanceof Error && error.message === "Locked") {
+        alert("管理設定で編集が無効です");
+        return;
+      }
+      alert("保存に失敗しました");
     } finally {
       setLoading(false);
     }
@@ -79,30 +71,21 @@ export default function MePage() {
     if (!confirm("この投稿を削除します。よろしいですか？")) return;
     try {
       setLoading(true);
-      const res = await fetch(`/api/me/needs/${id}`, { method: "DELETE" });
-      
-      if (res.status === 423) { 
-        alert("管理設定で削除が無効です"); 
-        return; 
-      }
-      if (res.status === 401) {
-        alert("投稿者としてログインが必要です（/needs/new で投稿してください）");
-        return;
-      }
-      if (res.status === 403) {
-        alert("この投稿を削除する権限がありません");
-        return;
-      }
-      if (!res.ok) { 
-        alert("削除に失敗しました"); 
-        return; 
-      }
+      const res = await guardedFetch(`/api/me/needs/${id}`, { method: "DELETE" });
       
       setLastDeletedId(id);
       alert("削除しました（元に戻す）");
       await load();
     } catch (error) {
-      alert("処理に失敗しました");
+      if (error instanceof Error && error.message === "Unauthorized") {
+        alert("投稿者としてログインが必要です（/needs/new で投稿してください）");
+        return;
+      }
+      if (error instanceof Error && error.message === "Locked") {
+        alert("管理設定で削除が無効です");
+        return;
+      }
+      alert("削除に失敗しました");
     } finally {
       setLoading(false);
     }

@@ -132,7 +132,7 @@ export default async function RootLayout({
           <ToastProvider>
             <AppHeader />
             {/* コンテンツ領域：下ナビとノッチに負けない余白 */}
-            <div className="min-h-screen pb-24 md:pb-0 [padding-bottom:env(safe-area-inset-bottom)]">
+            <div className="min-h-screen pb-24 md:pb-0 [padding-bottom:env(safe-area-inset-bottom)]" style={{ paddingBottom: 'var(--page-bottom-safe)' }}>
               {children}
             </div>
             {process.env.NEXT_PUBLIC_DISABLE_BOTTOMNAV === '1' ? null : <BottomNav />}

@@ -17,7 +17,7 @@ export default async function Home(){
   return (
     <main className="space-y-12 bg-white">
       {/* Marketing Hero (フラグでON/OFF) */}
-      {flags.marketingHeroEnabled !== false && (
+      {flags.marketingHeroEnabled && (
         <>
           <MarketingHero />
           <QuickLinks />
@@ -60,7 +60,7 @@ export default async function Home(){
       </section>
 
       {/* 下部ヒーローCTA */}
-      <BottomHeroCTA />
+      {flags.marketingBottomHeroEnabled && <BottomHeroCTA />}
     </main>
   );
 }

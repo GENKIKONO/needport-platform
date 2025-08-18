@@ -6,6 +6,7 @@ export type FeatureFlags = {
   sampleVisible: boolean;
   requireAccountForEngagement: boolean;
   marketingHeroEnabled?: boolean;
+  marketingBottomHeroEnabled?: boolean;
 };
 
 export const DEFAULT_FLAGS: FeatureFlags = {
@@ -16,6 +17,7 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   sampleVisible: true,
   requireAccountForEngagement: true,
   marketingHeroEnabled: true,
+  marketingBottomHeroEnabled: true,
 };
 
 const KV_KEY = "flags:global";

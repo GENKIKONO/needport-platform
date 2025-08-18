@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { prefectures } from "@/lib/geo/prefectures";
+import { KOCHI_MUNICIPALITIES } from "@/lib/geo/kochi";
 
 type NeedRow = {
   id: string;
@@ -134,7 +134,7 @@ export default function PublicNeedsList() {
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">すべての地域</option>
-            {prefectures.map((p) => <option key={p} value={p}>{p}</option>)}
+            {KOCHI_MUNICIPALITIES.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
           <select
             value={sortBy}

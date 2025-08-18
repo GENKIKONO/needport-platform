@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --section-y: 56px;
+  --page-bottom-safe: 88px; /* タブ+余白 */
+}
+
+/* セクション余白のユーティリティ（必要箇所で使用） */
+.section { 
+  padding-block: var(--section-y); 
+}
+
 /* iOS Safari でもフォームを常にライトにする */
 :root { color-scheme: light; } /* iOSの自動ダーク抑止 */
 html { text-size-adjust: 100%; }
