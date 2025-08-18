@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 type NeedDetail = {
   id: string;
@@ -70,6 +71,11 @@ export default function NeedDetailPage() {
   if (!need) {
     return (
       <main className="container max-w-4xl py-10">
+        <div className="mb-4">
+          <Link href="/needs" className="text-sm text-blue-600 hover:underline">
+            ← 一覧へ戻る
+          </Link>
+        </div>
         <h1 className="text-2xl font-bold text-red-600">ニーズが見つかりません</h1>
         <p className="mt-2 text-gray-600">このニーズは存在しないか、非公開になっています。</p>
       </main>
@@ -78,6 +84,12 @@ export default function NeedDetailPage() {
 
   return (
     <main className="container max-w-4xl py-10">
+      <div className="mb-4">
+        <Link href="/needs" className="text-sm text-blue-600 hover:underline">
+          ← 一覧へ戻る
+        </Link>
+      </div>
+      
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h1 className="text-3xl font-bold mb-4">{need.title}</h1>
         

@@ -1,134 +1,139 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getNeedsSafe } from "@/lib/demo/data";
-import InterestDialog from "@/components/InterestDialog";
-import { KOCHI_MUNICIPALITIES } from '@/lib/geo';
 
-export default function Needs(){
-  const [needs, setNeeds] = useState<any[]>([]);
-  const [openDialog, setOpenDialog] = useState<{open: boolean, need: any}>({open: false, need: null});
-  const [city, setCity] = useState<string>('すべて');
+type NeedRow = {
+  id: string;
+  title: string;
+  description?: string;
+  stage: string;
+  supporters: number;
+  proposals: number;
+  estimateYen?: number | null;
+  updatedAt: string;
+};
 
-  // データ取得
-  useState(() => {
-    getNeedsSafe().then(setNeeds);
-  });
+type Resp = {
+  items: NeedRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
 
-  function handleDone(needId: string, newCounts?: Record<string,number>) {
-    // 賛同済み状態を保存
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`np_endorsed_${needId}`, "1");
-    }
-    // カウント更新（楽観的更新）
-    if (newCounts) {
-      setNeeds(prev => prev.map(n => 
-        n.id === needId 
-          ? { ...n, counts: newCounts }
-          : n
-      ));
+export default function PublicNeedsList() {
+  const [data, setData] = useState<Resp | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function load(p = page) {
+    try {
+      setLoading(true);
+      setErr(null);
+      const res = await fetch(`/api/needs?page=${p}&pageSize=${pageSize}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json() as Resp;
+      setData(json);
+      setPage(json.page);
+    } catch (e:any) {
+      setErr(e?.message ?? "failed");
+    } finally {
+      setLoading(false);
     }
   }
 
+  useEffect(() => { load(1); }, []);
+
+  const items = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+
+  const go = (p:number) => {
+    const clamped = Math.max(1, Math.min(pageCount, p));
+    if (clamped !== page) load(clamped);
+  };
+
   return (
-    <main className="section space-y-6">
-      <h1 className="text-2xl font-bold">みんなの「欲しい」</h1>
-      
-      {/* Search */}
-      <div className="np-card p-6">
-        <input 
-          placeholder="どんな『欲しい』を探しますか…" 
-          className="w-full rounded-xl border px-4 py-3 bg-white/70 mb-4" 
-        />
-        
-        {/* Filters */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <select className="rounded-lg border px-3 py-2 bg-white"
-                  value={city} onChange={e=>setCity(e.target.value)}>
-            <option value="すべて">エリア: すべて</option>
-            {KOCHI_MUNICIPALITIES.map(n => <option key={n} value={n}>{n}</option>)}
-          </select>
-          <select className="rounded-lg border px-3 py-2 bg-white">
-            <option>カテゴリ: すべて</option>
-            <option>住宅・建築</option>
-            <option>モノづくり</option>
-            <option>健康</option>
-          </select>
-          <select className="rounded-lg border px-3 py-2 bg-white">
-            <option>並び替え: 新着</option>
-            <option>人気順</option>
-            <option>締切順</option>
-          </select>
-          <button className="btn btn-primary">検索</button>
+    <main className="container py-8">
+      <div className="mb-6 flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-neutral-900">ニーズ一覧</h1>
+          <p className="text-sm text-neutral-500 mt-1">公開中のニーズを表示しています</p>
+        </div>
+        <div className="text-xs text-neutral-500">
+          {data ? <>Page {page} / {pageCount}</> : null}
         </div>
       </div>
-      
-      {/* Results */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {(city === 'すべて' ? needs : needs.filter(n => (n.city ?? '') === city)).map(n=>(
-          <article key={n.id} className="np-card p-6">
-            <h3 className="font-semibold text-gray-900 mb-2">{n.title}</h3>
-            <p className="text-sm text-gray-600 line-clamp-4 mb-4">{n.description}</p>
-            
-            {/* Meta info */}
-            <div className="flex items-center gap-2 mb-4">
-              <span className="np-badge bg-blue-100 text-blue-800">{n.category}</span>
-              <span className="np-badge bg-gray-100 text-gray-600">{n.area}</span>
-            </div>
-            
-            <div className="flex gap-2">
-              <Link href={`/needs/${n.id}`} className="btn btn-primary flex-1">
-                詳細を見る
-              </Link>
-              <EndorseButton 
-                need={n} 
-                onOpen={() => setOpenDialog({open: true, need: n})}
-                onDone={(counts) => handleDone(n.id, counts)}
-              />
-            </div>
-          </article>
-        ))}
+
+      {err ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-rose-800 text-sm">
+          読み込みに失敗しました（{err}）
+          <button onClick={() => load(page)} className="ml-3 underline">再試行</button>
+        </div>
+      ) : null}
+
+      {loading && !data ? (
+        <div className="text-sm text-neutral-500">読み込み中...</div>
+      ) : null}
+
+      {!loading && data && items.length === 0 ? (
+        <div className="rounded-xl border border-black/5 bg-white p-6 text-neutral-600">
+          現在、公開中のニーズはありません。
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((n) => {
+          const excerpt = (n.description ?? "").replace(/\s+/g, " ").slice(0, 120);
+          const meta = [
+            new Date(n.updatedAt).toLocaleDateString(),
+            `賛同 ${n.supporters}`,
+            `提案 ${n.proposals}`,
+            n.estimateYen ? `目安 ¥${n.estimateYen.toLocaleString()}` : undefined,
+          ].filter(Boolean).join("・");
+
+          const stageColor =
+            n.stage === "approved" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+            n.stage === "proposed" ? "bg-amber-50 text-amber-800 border-amber-200" :
+            n.stage === "in_progress" ? "bg-sky-50 text-sky-700 border-sky-200" :
+            "bg-slate-50 text-slate-700 border-slate-200";
+
+          return (
+            <article key={n.id} className="rounded-2xl border border-black/5 shadow-card bg-white p-4 hover:shadow-md transition">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${stageColor}`}>
+                  {n.stage}
+                </span>
+              </div>
+              <h3 className="text-base font-semibold text-neutral-900 line-clamp-2">
+                <Link href={`/needs/${n.id}`} aria-label={`「${n.title}」の詳細を見る`} className="hover:underline">
+                  {n.title}
+                </Link>
+              </h3>
+              {excerpt && (
+                <p className="mt-2 text-sm text-neutral-600 line-clamp-3">{excerpt}{(n.description ?? "").length > 120 ? "…" : ""}</p>
+              )}
+              <div className="mt-3 text-xs text-neutral-500">{meta}</div>
+              <div className="mt-4">
+                <Link href={`/needs/${n.id}`} className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm hover:bg-neutral-50">
+                  詳細を見る
+                </Link>
+              </div>
+            </article>
+          );
+        })}
       </div>
 
-      {openDialog.open && (
-        <InterestDialog
-          open={openDialog.open}
-          onClose={() => setOpenDialog({open: false, need: null})}
-          onDone={(counts) => handleDone(openDialog.need.id, counts)}
-          need={openDialog.need}
-        />
+      {data && pageCount > 1 && (
+        <div className="mt-8 flex items-center justify-center gap-2">
+          <button onClick={() => go(1)}    disabled={page<=1} className="rounded border px-3 py-1 text-sm disabled:opacity-50">≪ 最初</button>
+          <button onClick={() => go(page-1)} disabled={page<=1} className="rounded border px-3 py-1 text-sm disabled:opacity-50">‹ 前へ</button>
+          <span className="text-xs text-neutral-500 px-2">Page {page} / {pageCount}</span>
+          <button onClick={() => go(page+1)} disabled={page>=pageCount} className="rounded border px-3 py-1 text-sm disabled:opacity-50">次へ ›</button>
+          <button onClick={() => go(pageCount)} disabled={page>=pageCount} className="rounded border px-3 py-1 text-sm disabled:opacity-50">最後 ≫</button>
+        </div>
       )}
     </main>
-  );
-}
-
-// 賛同ボタンコンポーネント
-function EndorseButton({ need, onOpen, onDone }: { 
-  need: any; 
-  onOpen: () => void; 
-  onDone: (counts?: Record<string,number>) => void;
-}) {
-  const [endorsed, setEndorsed] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setEndorsed(!!localStorage.getItem(`np_endorsed_${need.id}`));
-    }
-  }, [need.id]);
-
-  function handleDone(counts?: Record<string,number>) {
-    setEndorsed(true);
-    onDone(counts);
-  }
-
-  return (
-    <button 
-      type="button" 
-      disabled={endorsed}
-      className={`btn btn-ghost flex-1 ${endorsed ? "opacity-60 cursor-default" : ""}`}
-      onClick={onOpen}
-    >
-      {endorsed ? "賛同済み" : "賛同する"}
-    </button>
   );
 }
