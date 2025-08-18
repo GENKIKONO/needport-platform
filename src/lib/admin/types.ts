@@ -29,6 +29,7 @@ export type NeedRow = {
   estimateYen?: number;          // 想定金額（JPY）
   isPublished: boolean;
   isSample: boolean;
+  deletedAt?: string | null;     // ソフトデリート時刻
   createdAt: string;             // ISO
   updatedAt: string;             // ISO
   payment: PaymentStatus;
@@ -66,6 +67,7 @@ export type NeedDetail = {
   requireIntro?: boolean; // 追加: このニーズは「紹介必須」
   ownerUserId?: string;   // 追加: 投稿ユーザID（暫定）
   views?: number;         // 既存なら維持
+  deletedAt?: string | null; // ソフトデリート時刻（nullで未削除）
   createdAt: string;
   updatedAt: string;
   version?: number;

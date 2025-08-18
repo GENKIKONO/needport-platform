@@ -66,9 +66,19 @@ export async function deleteNeed(id: string): Promise<boolean> {
   return store.deleteNeed(id);
 }
 
-export async function listNeedsByOwner(ownerUserId: string): Promise<NeedRow[]> {
+export async function softDeleteNeed(id: string): Promise<boolean> {
   const store = await getStore();
-  return store.listNeedsByOwner(ownerUserId);
+  return store.softDeleteNeed(id);
+}
+
+export async function restoreNeed(id: string): Promise<boolean> {
+  const store = await getStore();
+  return store.restoreNeed(id);
+}
+
+export async function listNeedsByOwner(ownerUserId: string, opts?: { includeDeleted?: boolean }): Promise<NeedRow[]> {
+  const store = await getStore();
+  return store.listNeedsByOwner(ownerUserId, opts);
 }
 
 export async function listPublicNeeds(): Promise<NeedDetail[]> {

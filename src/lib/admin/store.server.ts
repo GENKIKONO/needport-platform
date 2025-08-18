@@ -296,7 +296,37 @@ export const kvStore = {
     return true;
   },
 
-  async listNeedsByOwner(ownerUserId: string): Promise<NeedRow[]> {
+  async softDeleteNeed(id: string): Promise<boolean> {
+    const need = await kv.get<NeedDetail>(needKey(id));
+    if (!need) return false;
+    if (need.deletedAt) return true; // 既に削除済み扱い
+
+    const updated = {
+      ...need,
+      deletedAt: new Date().toISOString(),
+      version: (need.version ?? 0) + 1,
+      updatedAt: new Date().toISOString()
+    };
+    await kv.set(needKey(id), updated);
+    return true;
+  },
+
+  async restoreNeed(id: string): Promise<boolean> {
+    const need = await kv.get<NeedDetail>(needKey(id));
+    if (!need) return false;
+    if (!need.deletedAt) return true; // そもそも未削除
+
+    const updated = {
+      ...need,
+      deletedAt: null,
+      version: (need.version ?? 0) + 1,
+      updatedAt: new Date().toISOString()
+    };
+    await kv.set(needKey(id), updated);
+    return true;
+  },
+
+  async listNeedsByOwner(ownerUserId: string, opts?: { includeDeleted?: boolean }): Promise<NeedRow[]> {
     await ensureInitialData();
     
     const allIds = await kv.smembers(NEEDS_INDEX);
@@ -304,7 +334,9 @@ export const kvStore = {
     
     for (const id of allIds) {
       const need = await kv.get<NeedDetail>(needKey(id));
-      if (need && need.ownerUserId === ownerUserId) {
+      if (need && 
+          need.ownerUserId === ownerUserId && 
+          (opts?.includeDeleted ? true : !need.deletedAt)) {
         needs.push({
           id: need.id,
           title: need.title,
@@ -316,6 +348,7 @@ export const kvStore = {
           estimateYen: need.estimateYen,
           isPublished: need.isPublished || false,
           isSample: need.isSample || false,
+          deletedAt: need.deletedAt,
           createdAt: need.createdAt,
           updatedAt: need.updatedAt,
           payment: "none",
@@ -324,7 +357,7 @@ export const kvStore = {
       }
     }
     
-    return needs;
+    return needs.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
   },
 
   async stats(): Promise<AdminStats> {

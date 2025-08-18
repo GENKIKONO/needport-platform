@@ -2,18 +2,27 @@
 import { useEffect, useState } from "react";
 
 type Flags = { userEditEnabled: boolean; userDeleteEnabled: boolean; };
-type Need = { id: string; title: string; description?: string; estimateYen?: number; updatedAt?: string; };
+type Need = { id: string; title: string; description?: string; estimateYen?: number; updatedAt?: string; deletedAt?: string | null; };
 
 export default function MePage() {
   const [flags, setFlags] = useState<Flags>({ userEditEnabled: true, userDeleteEnabled: true });
   const [items, setItems] = useState<Need[]>([]);
   const [editing, setEditing] = useState<Record<string, Partial<Need>>>({});
+  const [loading, setLoading] = useState(false);
+  const [lastDeletedId, setLastDeletedId] = useState<string | null>(null);
 
   async function load() {
-    const f = await fetch("/api/flags").then(r => r.json());
-    setFlags({ userEditEnabled: f.userEditEnabled, userDeleteEnabled: f.userDeleteEnabled });
-    const d = await fetch("/api/me/needs").then(r => r.json());
-    setItems(d.items ?? []);
+    try {
+      setLoading(true);
+      const f = await fetch("/api/flags").then(r => r.json());
+      setFlags({ userEditEnabled: f.userEditEnabled, userDeleteEnabled: f.userDeleteEnabled });
+      const d = await fetch("/api/me/needs").then(r => r.json());
+      setItems(d.items ?? []);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => { load(); }, []);
 
@@ -22,18 +31,109 @@ export default function MePage() {
 
   async function save(id: string) {
     const patch = editing[id]; if (!patch) return;
-    const res = await fetch(`/api/me/needs/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) });
-    if (res.status === 423) { alert("管理設定で編集が無効です"); return; }
-    if (!res.ok) { alert("保存に失敗しました"); return; }
-    await load(); cancelEdit(id);
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/me/needs/${id}`, { 
+        method: "PUT", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify(patch) 
+      });
+      
+      if (res.status === 423) { 
+        alert("管理設定で編集が無効です"); 
+        return; 
+      }
+      if (res.status === 401) {
+        alert("投稿者としてログインが必要です（/needs/new で投稿してください）");
+        return;
+      }
+      if (res.status === 403) {
+        alert("この投稿を編集する権限がありません");
+        return;
+      }
+      if (!res.ok) { 
+        alert("保存に失敗しました"); 
+        return; 
+      }
+      
+      alert("保存しました");
+      await load(); 
+      cancelEdit(id);
+    } catch (error) {
+      alert("処理に失敗しました");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function remove(id: string) {
     if (!confirm("この投稿を削除します。よろしいですか？")) return;
-    const res = await fetch(`/api/me/needs/${id}`, { method: "DELETE" });
-    if (res.status === 423) { alert("管理設定で削除が無効です"); return; }
-    if (!res.ok) { alert("削除に失敗しました"); return; }
-    await load();
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/me/needs/${id}`, { method: "DELETE" });
+      
+      if (res.status === 423) { 
+        alert("管理設定で削除が無効です"); 
+        return; 
+      }
+      if (res.status === 401) {
+        alert("投稿者としてログインが必要です（/needs/new で投稿してください）");
+        return;
+      }
+      if (res.status === 403) {
+        alert("この投稿を削除する権限がありません");
+        return;
+      }
+      if (!res.ok) { 
+        alert("削除に失敗しました"); 
+        return; 
+      }
+      
+      setLastDeletedId(id);
+      alert("削除しました（元に戻す）");
+      await load();
+    } catch (error) {
+      alert("処理に失敗しました");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function restore(id: string) {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/me/needs/${id}/restore`, { method: "POST" });
+      
+      if (res.status === 401) {
+        alert("投稿者としてログインが必要です（/needs/new で投稿してください）");
+        return;
+      }
+      if (res.status === 403) {
+        alert("この投稿を復元する権限がありません");
+        return;
+      }
+      if (!res.ok) { 
+        alert("復元に失敗しました"); 
+        return; 
+      }
+      
+      alert("復元しました");
+      setLastDeletedId(null);
+      await load();
+    } catch (error) {
+      alert("処理に失敗しました");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="container mx-auto max-w-3xl px-4 py-8">
+        <h1 className="text-2xl font-semibold mb-4">マイページ</h1>
+        <p className="text-sm text-gray-500">読み込み中...</p>
+      </main>
+    );
   }
 
   return (
@@ -42,6 +142,21 @@ export default function MePage() {
       <p className="mb-6 text-sm text-gray-600">
         編集: <b>{flags.userEditEnabled ? "有効" : "無効"}</b> / 削除: <b>{flags.userDeleteEnabled ? "有効" : "無効"}</b>
       </p>
+      
+      {/* 復元ボタン */}
+      {lastDeletedId && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800 mb-2">投稿を削除しました</p>
+          <button 
+            onClick={() => restore(lastDeletedId)}
+            disabled={loading}
+            className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+          >
+            元に戻す
+          </button>
+        </div>
+      )}
+      
       <div className="space-y-4">
         {items.map(n => {
           const e = editing[n.id];
@@ -52,10 +167,18 @@ export default function MePage() {
                   <div className="flex justify-between items-center">
                     <h3 className="font-medium">{n.title}</h3>
                     <div className="flex gap-2">
-                      <button disabled={!flags.userEditEnabled} onClick={() => startEdit(n.id)} className="px-3 py-1 rounded border">
+                      <button 
+                        disabled={!flags.userEditEnabled || loading} 
+                        onClick={() => startEdit(n.id)} 
+                        className="px-3 py-1 rounded border disabled:opacity-50"
+                      >
                         編集
                       </button>
-                      <button disabled={!flags.userDeleteEnabled} onClick={() => remove(n.id)} className="px-3 py-1 rounded border text-red-600">
+                      <button 
+                        disabled={!flags.userDeleteEnabled || loading} 
+                        onClick={() => remove(n.id)} 
+                        className="px-3 py-1 rounded border text-red-600 disabled:opacity-50"
+                      >
                         削除
                       </button>
                     </div>
@@ -64,14 +187,32 @@ export default function MePage() {
                 </>
               ) : (
                 <>
-                  <input className="w-full border rounded px-3 py-2" defaultValue={e.title ?? n.title}
-                    onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], title: ev.target.value } }))} />
-                  <textarea className="mt-2 w-full border rounded px-3 py-2" rows={3}
+                  <input 
+                    className="w-full border rounded px-3 py-2" 
+                    defaultValue={e.title ?? n.title}
+                    onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], title: ev.target.value } }))} 
+                  />
+                  <textarea 
+                    className="mt-2 w-full border rounded px-3 py-2" 
+                    rows={3}
                     defaultValue={e.description ?? n.description}
-                    onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], description: ev.target.value } }))} />
+                    onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], description: ev.target.value } }))} 
+                  />
                   <div className="mt-3 flex gap-2">
-                    <button onClick={() => save(n.id)} className="px-3 py-1 rounded bg-sky-600 text-white">保存</button>
-                    <button onClick={() => cancelEdit(n.id)} className="px-3 py-1 rounded border">取消</button>
+                    <button 
+                      onClick={() => save(n.id)} 
+                      disabled={loading}
+                      className="px-3 py-1 rounded bg-sky-600 text-white disabled:opacity-50"
+                    >
+                      保存
+                    </button>
+                    <button 
+                      onClick={() => cancelEdit(n.id)} 
+                      disabled={loading}
+                      className="px-3 py-1 rounded border disabled:opacity-50"
+                    >
+                      取消
+                    </button>
                   </div>
                 </>
               )}

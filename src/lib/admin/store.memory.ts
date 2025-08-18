@@ -133,10 +133,41 @@ export const memoryStore = {
     return true;
   },
 
-  listNeedsByOwner(ownerUserId: string): NeedRow[] {
+  async softDeleteNeed(id: string): Promise<boolean> {
+    const arr = ensure();
+    const i = arr.findIndex(n => n.id === id);
+    if (i === -1) return false;
+    if (arr[i].deletedAt) return true; // 既に削除済み扱い
+    arr[i] = { 
+      ...arr[i], 
+      deletedAt: new Date().toISOString(), 
+      version: (arr[i].version ?? 0) + 1, 
+      updatedAt: new Date().toISOString() 
+    };
+    return true;
+  },
+
+  async restoreNeed(id: string): Promise<boolean> {
+    const arr = ensure();
+    const i = arr.findIndex(n => n.id === id);
+    if (i === -1) return false;
+    if (!arr[i].deletedAt) return true; // そもそも未削除
+    arr[i] = { 
+      ...arr[i], 
+      deletedAt: null, 
+      version: (arr[i].version ?? 0) + 1, 
+      updatedAt: new Date().toISOString() 
+    };
+    return true;
+  },
+
+  listNeedsByOwner(ownerUserId: string, opts?: { includeDeleted?: boolean }): NeedRow[] {
     const all = ensure();
-    return all
-      .filter(need => need.ownerUserId === ownerUserId)
+    const list = all.filter(n => 
+      n.ownerUserId === ownerUserId && 
+      (opts?.includeDeleted ? true : !n.deletedAt)
+    );
+    return list
       .map(need => ({
         id: need.id,
         title: need.title,
@@ -148,11 +179,13 @@ export const memoryStore = {
         estimateYen: need.estimateYen,
         isPublished: need.isPublished || false,
         isSample: need.isSample || false,
+        deletedAt: need.deletedAt,
         createdAt: need.createdAt,
         updatedAt: need.updatedAt,
         payment: "none" as const,
         trust: {}
-      }));
+      }))
+      .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
   },
 
   setPublished(id: string, isPublished: boolean): NeedDetail | null {
