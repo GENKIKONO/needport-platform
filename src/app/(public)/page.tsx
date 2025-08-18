@@ -1,15 +1,28 @@
+import { getFlags } from '@/lib/admin/flags';
 import Hero from '@/components/Hero';
 import ServiceFlow from '@/components/ServiceFlow';
 import HomeSoon from '@/components/HomeSoon';
 import HomeCategories from '@/components/HomeCategories';
 import HomeFeatured from '@/components/HomeFeatured';
+import MarketingHero from '@/components/marketing/Hero';
+import QuickLinks from '@/components/marketing/QuickLinks';
 
 export const dynamic = "force-dynamic"; 
 export const revalidate = 0;
 
 export default async function Home(){
+  const flags = await getFlags();
+
   return (
     <main className="space-y-12 bg-white">
+      {/* Marketing Hero (フラグでON/OFF) */}
+      {flags.marketingHeroEnabled !== false && (
+        <>
+          <MarketingHero />
+          <QuickLinks />
+        </>
+      )}
+
       {/* Hero */}
       <section className="section">
         <Hero />

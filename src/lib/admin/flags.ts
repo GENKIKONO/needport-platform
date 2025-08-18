@@ -5,6 +5,7 @@ export type FeatureFlags = {
   demoGuardEnabled: boolean;
   sampleVisible: boolean;
   requireAccountForEngagement: boolean;
+  marketingHeroEnabled?: boolean;
 };
 
 export const DEFAULT_FLAGS: FeatureFlags = {
@@ -14,6 +15,7 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   demoGuardEnabled: false,
   sampleVisible: true,
   requireAccountForEngagement: true,
+  marketingHeroEnabled: true,
 };
 
 const KV_KEY = "flags:global";

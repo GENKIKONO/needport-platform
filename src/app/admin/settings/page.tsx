@@ -9,6 +9,7 @@ type FeatureFlags = {
   sampleVisible: boolean;
   vendorEditEnabled: boolean;
   requireAccountForEngagement: boolean;
+  marketingHeroEnabled: boolean;
 };
 
 export default function AdminSettingsPage() {
@@ -161,6 +162,24 @@ export default function AdminSettingsPage() {
               }`}
             >
               {flags?.requireAccountForEngagement ? "有効" : "無効"}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">ヒーロー（トップの大きな案内）を表示</div>
+              <div className="text-sm text-gray-500">トップページのヒーローセクションとクイックリンクを表示</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ marketingHeroEnabled: !flags?.marketingHeroEnabled })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.marketingHeroEnabled !== false
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.marketingHeroEnabled !== false ? "有効" : "無効"}
             </button>
           </div>
           
