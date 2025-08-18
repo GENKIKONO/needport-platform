@@ -41,10 +41,10 @@ export async function GET(req: NextRequest) {
   const list = await listPublicNeeds();
   const flags = await getFlags();
   
-  // 基本フィルタ: 公開ON & サンプル制御 & 削除済み除外
+  // 基本フィルタ: 公開ON & サンプル除外 & 削除済み除外
   let items = list.filter(need => {
     if (!need.isPublished) return false;
-    if (!flags.sampleVisible && need.isSample) return false;
+    if (need.isSample) return false; // 公開APIでは常にサンプル除外
     if (need.deletedAt) return false; // 削除済みを除外
     return true;
   });
