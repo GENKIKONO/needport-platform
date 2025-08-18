@@ -1,6 +1,6 @@
 import { kv } from "@vercel/kv"; // 存在しない環境では undefined にならない設計（既存のフォールバック方針に合わせる）
 import { randomUUID } from "crypto";
-import type { ReferralToken, UserProfile, TrustScore } from "./types";
+import type { ReferralToken, UserProfile, TrustScore, ReferralInvite } from "./types";
 
 const HAS_KV = !!process.env.KV_REST_API_URL;
 
@@ -12,6 +12,8 @@ const K = {
   endorsementsUser: (id: string) => `endorse:user:${id}`,   // ZSET or LIST
   endorsementsNeed: (id: string) => `endorse:need:${id}`,   // ZSET or LIST
   events: `trust:events`,                                   // 最近イベント LIST
+  invite: (token: string) => `ref:invite:${token}`,
+  inviteByNeed: (needId: string) => `ref:need:${needId}`,
 };
 
 // --- メモリフォールバック ---
@@ -22,6 +24,8 @@ const mem = {
   endorseU: new Map<string, number>(),   // userId -> count
   endorseN: new Map<string, number>(),   // needId -> count
   events: [] as any[],
+  invites: new Map<string, ReferralInvite>(),
+  inviteByNeed: new Map<string, string[]>(),
 };
 
 // Util
@@ -154,5 +158,33 @@ export async function listUsersWithTrust({ page = 1, pageSize = 200 } = {}) {
     const rows = allUsers.slice(start, end);
     
     return { rows, total: allUsers.length };
+  }
+}
+
+// 紹介リンク履歴の保存・取得
+export async function saveReferralInvite(inv: ReferralInvite) {
+  if (HAS_KV) {
+    await kv.set(K.invite(inv.token), inv);
+    if (inv.needId) {
+      await kv.zadd(K.inviteByNeed(inv.needId), { score: Date.parse(inv.createdAt), member: inv.token });
+    }
+  } else {
+    mem.invites.set(inv.token, inv);
+    if (inv.needId) {
+      const arr = mem.inviteByNeed.get(inv.needId) ?? [];
+      arr.push(inv.token);
+      mem.inviteByNeed.set(inv.needId, arr);
+    }
+  }
+}
+
+export async function listReferralInvitesByNeed(needId: string, limit = 5): Promise<ReferralInvite[]> {
+  if (HAS_KV) {
+    const tokens = await kv.zrange(K.inviteByNeed(needId), -limit, -1);
+    const items = await Promise.all(tokens.reverse().map(t => kv.get<ReferralInvite>(K.invite(t))));
+    return items.filter(Boolean) as ReferralInvite[];
+  } else {
+    const arr = mem.inviteByNeed.get(needId) ?? [];
+    return arr.slice(-limit).reverse().map(t => mem.invites.get(t)!).filter(Boolean);
   }
 }

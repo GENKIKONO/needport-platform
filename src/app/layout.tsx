@@ -13,6 +13,7 @@ import BottomNav from "@/components/BottomNav";
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ClientErrorCatcher from '@/components/ClientErrorCatcher';
 import { Analytics } from '@vercel/analytics/react';
+import { ToastProvider } from "@/components/ui/Toast";
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -128,24 +129,26 @@ export default async function RootLayout({
       <body>
         <ErrorBoundary>
           <ClientErrorCatcher />
-          <AppHeader />
-          {children}
-          {process.env.NEXT_PUBLIC_DISABLE_BOTTOMNAV === '1' ? null : <BottomNav />}
-          
-          {/* PWA Install Prompt */}
-          <PwaPrompt />
-          
-          {/* Demo Watermark */}
-          <DemoWatermark />
-          
-          {/* SEO JSON-LD for home page */}
-          <SeoJsonLd type="home" />
-          
-          {/* 投稿成功の港アニメ */}
-          <ToastShip />
-          
-          {/* Vercel Analytics */}
-          <Analytics />
+          <ToastProvider>
+            <AppHeader />
+            {children}
+            {process.env.NEXT_PUBLIC_DISABLE_BOTTOMNAV === '1' ? null : <BottomNav />}
+            
+            {/* PWA Install Prompt */}
+            <PwaPrompt />
+            
+            {/* Demo Watermark */}
+            <DemoWatermark />
+            
+            {/* SEO JSON-LD for home page */}
+            <SeoJsonLd type="home" />
+            
+            {/* 投稿成功の港アニメ */}
+            <ToastShip />
+            
+            {/* Vercel Analytics */}
+            <Analytics />
+          </ToastProvider>
         </ErrorBoundary>
       </body>
     </html>

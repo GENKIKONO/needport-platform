@@ -23,11 +23,19 @@ async function rateLimit(req: NextRequest, key: string, limitPerMin: number = 30
 }
 
 // GET /api/needs → 公開/サンプルの一覧
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
+  const pageSize = Math.min(50, Math.max(1, Number(searchParams.get("pageSize") ?? "10")));
+
   const list = await listPublicNeeds();
   // isPublished=true のみを返す（サンプルは除外）
-  const publishedOnly = list.filter(need => need.isPublished);
-  return NextResponse.json({ items: publishedOnly });
+  const items = list.filter(need => need.isPublished && !need.isSample);
+  const total = items.length;
+  const from = (page - 1) * pageSize;
+  const slice = items.slice(from, from + pageSize);
+  
+  return NextResponse.json({ items: slice, total, page, pageSize });
 }
 
 // POST /api/needs → 一般ユーザの投稿

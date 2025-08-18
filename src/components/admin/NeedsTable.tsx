@@ -4,6 +4,7 @@ import { type NeedRow, type Stage } from "@/lib/admin/types";
 import { StageBadge, PaymentBadge } from "./StatusBadge";
 import StageStepper from "./StageStepper";
 import TrustBadge from "./TrustBadge";
+import { useToast } from "@/components/ui/Toast";
 import { yen, timeAgo } from "@/lib/admin/format";
 
 export function NeedsTable() {
@@ -172,9 +173,25 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
   const [need, setNeed] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [issuing, setIssuing] = useState(false);
+  const [invites, setInvites] = useState<{ url: string; createdAt: string }[] | null>(null);
+  const [loadingInv, setLoadingInv] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     fetchNeed();
+  }, [needId]);
+
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const r = await fetch(`/api/admin/referrals?needId=${needId}`, { credentials: "include" });
+        if (r.ok) {
+          const { items } = await r.json();
+          setInvites(items ?? []);
+        }
+      } catch {}
+    };
+    run();
   }, [needId]);
 
   async function fetchNeed() {
@@ -190,33 +207,34 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
     }
   }
 
-  const issueReferral = useCallback(async () => {
+  const generateReferral = async () => {
     try {
-      setIssuing(true);
-      const res = await fetch("/api/referrals/invite", {
+      setLoadingInv(true);
+      const r = await fetch("/api/referrals/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ referrerId: "admin", expiresInDays: 7, needId: needId }),
       });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(`invite failed: ${res.status} ${t}`);
-      }
-      const data = await res.json();
-      if (data?.inviteUrl) {
-        // クリップボードにコピー + 簡易通知
-        try { await navigator.clipboard.writeText(data.inviteUrl); } catch {}
-        alert("紹介リンクをコピーしました：\n" + data.inviteUrl);
-      } else {
-        alert("紹介リンクの生成に失敗しました");
-      }
+      const data = await r.json();
+      if (!r.ok) throw new Error(data?.error || "failed");
+      const url = data?.inviteUrl as string;
+      await navigator.clipboard.writeText(url).catch(() => {});
+      toast("紹介リンクをコピーしました");
+      // 履歴を再取得
+      const rr = await fetch(`/api/admin/referrals?needId=${needId}`, { credentials: "include" });
+      if (rr.ok) { const { items } = await rr.json(); setInvites(items ?? []); }
     } catch (e) {
-      console.error(e);
-      alert("紹介リンクの発行に失敗しました");
+      toast("発行に失敗しました");
     } finally {
-      setIssuing(false);
+      setLoadingInv(false);
     }
-  }, [needId]);
+  };
+
+  const copy = async (text: string) => {
+    await navigator.clipboard.writeText(text).catch(()=>{});
+    toast("コピーしました");
+  };
 
   async function mutateStage(id: string, next: Stage) {
     // 楽観更新: 先に UI を反映、その後 API で確定
@@ -325,15 +343,35 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
                 エスクロー凍結
               </button>
               <button
-                type="button"
-                onClick={issueReferral}
-                disabled={issuing}
-                className="inline-flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700 hover:bg-sky-100 disabled:opacity-50"
-                title="この案件向けの紹介リンクを発行します（7日有効）"
+                onClick={generateReferral}
+                disabled={loadingInv}
+                className="rounded-lg bg-sky-600 text-white px-3 py-2 hover:bg-sky-700 disabled:opacity-50"
               >
-                {issuing ? "発行中…" : "紹介リンク発行"}
+                {loadingInv ? "発行中..." : "紹介リンク発行"}
               </button>
             </div>
+          </div>
+
+          {/* 紹介リンク履歴 */}
+          <div className="mb-6">
+            <div className="text-sm font-semibold text-neutral-700 mb-2">過去の紹介リンク（最新5件）</div>
+            {!invites ? (
+              <div className="text-sm text-neutral-500">読み込み中…</div>
+            ) : invites.length === 0 ? (
+              <div className="text-sm text-neutral-500">まだありません</div>
+            ) : (
+              <ul className="space-y-2">
+                {invites.map((it, i) => (
+                  <li key={i} className="flex items-center justify-between gap-2 rounded border px-2 py-1">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm text-sky-700">{it.url}</div>
+                      <div className="text-xs text-neutral-500">{new Date(it.createdAt).toLocaleString()}</div>
+                    </div>
+                    <button onClick={() => copy(it.url)} className="text-sm rounded bg-neutral-100 px-2 py-1 hover:bg-neutral-200">コピー</button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Trust Info */}
