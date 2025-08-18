@@ -4,28 +4,30 @@ import type { ReferralToken, UserProfile, TrustScore, ReferralInvite } from "./t
 
 const HAS_KV = !!process.env.KV_REST_API_URL;
 
-// キー設計
+// Key design
 const K = {
   user: (id: string) => `user:${id}`,
   userByEmail: (email: string) => `user:email:${email.toLowerCase()}`,
   referral: (token: string) => `referral:${token}`,
-  endorsementsUser: (id: string) => `endorse:user:${id}`,   // ZSET or LIST
-  endorsementsNeed: (id: string) => `endorse:need:${id}`,   // ZSET or LIST
-  events: `trust:events`,                                   // 最近イベント LIST
+  endorsementsUser: (id: string) => `endorse:user:${id}`,
+  endorsementsNeed: (id: string) => `endorse:need:${id}`,
+  events: `trust:events`,
   invite: (token: string) => `ref:invite:${token}`,
   inviteByNeed: (needId: string) => `ref:need:${needId}`,
+  refInvites: "referral:invites",
 };
 
-// --- メモリフォールバック ---
+// --- Memory fallback ---
 const mem = {
   users: new Map<string, UserProfile>(),
   emailIndex: new Map<string, string>(),
   referrals: new Map<string, ReferralToken>(),
-  endorseU: new Map<string, number>(),   // userId -> count
-  endorseN: new Map<string, number>(),   // needId -> count
+  endorseU: new Map<string, number>(),
+  endorseN: new Map<string, number>(),
   events: [] as any[],
   invites: new Map<string, ReferralInvite>(),
   inviteByNeed: new Map<string, string[]>(),
+  refInvites: [] as ReferralInvite[],
 };
 
 // Util
@@ -70,7 +72,6 @@ export async function acceptReferral(token: string, newUserId: string) {
   if (load.usedBy) return { ok:false, reason:"used" as const };
   if (load.expiresAt && Date.parse(load.expiresAt) < Date.now()) return { ok:false, reason:"expired" as const };
 
-  // link user
   const user = await getUser(newUserId);
   if (!user) return { ok:false, reason:"nouser" as const };
   user.referrerId = load.referrerId; user.updatedAt = now();
@@ -99,7 +100,6 @@ async function countEndorseUser(targetUserId: string) {
   return mem.endorseU.get(targetUserId)||0;
 }
 
-// 事件ログ（最近100件）
 async function pushEvent(e: any) {
   if (HAS_KV) await kv.lpush(K.events, JSON.stringify({ ...e, at: now() })), await kv.ltrim(K.events,0,99);
   else { mem.events.unshift({ ...e, at: now() }); mem.events = mem.events.slice(0,100); }
@@ -109,7 +109,6 @@ export async function recentTrustEvents(limit=20) {
   return mem.events.slice(0,limit);
 }
 
-// 簡易スコア: 紹介 +20 / 推薦×5 / 完了×3 / 紛争×-20（0-100にクリップ）
 export async function computeTrust(userId: string): Promise<TrustScore> {
   const u = await getUser(userId); if (!u) return { value:0, bands:"low", breakdown:{} };
   const ref = u.referrerId ? 20 : 0;
@@ -162,29 +161,29 @@ export async function listUsersWithTrust({ page = 1, pageSize = 200 } = {}) {
 }
 
 // 紹介リンク履歴の保存・取得
-export async function saveReferralInvite(inv: ReferralInvite) {
+export async function saveReferralInvite(invite: ReferralInvite) {
   if (HAS_KV) {
-    await kv.set(K.invite(inv.token), inv);
-    if (inv.needId) {
-      await kv.zadd(K.inviteByNeed(inv.needId), { score: Date.parse(inv.createdAt), member: inv.token });
-    }
+    const key = K.refInvites;
+    await kv.lpush(key, JSON.stringify(invite));
+    // 総数が多くなりすぎないよう1000件にクリップ
+    await kv.ltrim(key, 0, 999);
   } else {
-    mem.invites.set(inv.token, inv);
-    if (inv.needId) {
-      const arr = mem.inviteByNeed.get(inv.needId) ?? [];
-      arr.push(inv.token);
-      mem.inviteByNeed.set(inv.needId, arr);
-    }
+    mem.refInvites.unshift(invite);
+    if (mem.refInvites.length > 1000) mem.refInvites.length = 1000;
   }
+  return invite;
 }
 
-export async function listReferralInvitesByNeed(needId: string, limit = 5): Promise<ReferralInvite[]> {
+export async function listReferralInvites(params: { needId?: string; limit?: number }) {
   if (HAS_KV) {
-    const tokens = await kv.zrange(K.inviteByNeed(needId), -limit, -1);
-    const items = await Promise.all(tokens.reverse().map(t => kv.get<ReferralInvite>(K.invite(t))));
-    return items.filter(Boolean) as ReferralInvite[];
+    const raw = await kv.lrange<string>(K.refInvites, 0, (params.limit ?? 50) - 1);
+    const items = raw.map(x => JSON.parse(x) as ReferralInvite)
+      .filter(x => !params.needId || x.needId === params.needId);
+    return { items };
   } else {
-    const arr = mem.inviteByNeed.get(needId) ?? [];
-    return arr.slice(-limit).reverse().map(t => mem.invites.get(t)!).filter(Boolean);
+    const items = mem.refInvites
+      .filter(x => !params.needId || x.needId === params.needId)
+      .slice(0, params.limit ?? 50);
+    return { items };
   }
 }

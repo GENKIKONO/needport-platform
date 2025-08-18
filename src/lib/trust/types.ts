@@ -9,11 +9,10 @@ export type ReferralToken = {
 };
 
 export type ReferralInvite = {
-  token: string;
-  needId?: string | null;
-  referrerId: string;
-  url: string;
-  createdAt: string; // ISO
+  id: string;         // uuid
+  needId?: string;    // 紐付け先ニーズ（任意）
+  url: string;        // 招待URL
+  createdAt: string;  // ISO
 };
 
 export type UserProfile = {

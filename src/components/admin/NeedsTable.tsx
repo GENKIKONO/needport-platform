@@ -172,9 +172,8 @@ export function NeedsTable() {
 function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }) {
   const [need, setNeed] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [issuing, setIssuing] = useState(false);
-  const [invites, setInvites] = useState<{ url: string; createdAt: string }[] | null>(null);
-  const [loadingInv, setLoadingInv] = useState(false);
+  const [invites, setInvites] = useState<{url:string; createdAt:string}[]>([]);
+  const [loadingInvite, setLoadingInvite] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -182,16 +181,7 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
   }, [needId]);
 
   useEffect(() => {
-    const run = async () => {
-      try {
-        const r = await fetch(`/api/admin/referrals?needId=${needId}`, { credentials: "include" });
-        if (r.ok) {
-          const { items } = await r.json();
-          setInvites(items ?? []);
-        }
-      } catch {}
-    };
-    run();
+    loadRefHistory();
   }, [needId]);
 
   async function fetchNeed() {
@@ -207,34 +197,34 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
     }
   }
 
-  const generateReferral = async () => {
+  async function loadRefHistory() {
     try {
-      setLoadingInv(true);
-      const r = await fetch("/api/referrals/invite", {
+      const res = await fetch(`/api/admin/referrals?needId=${needId}&limit=5`, { credentials: "include" });
+      if (!res.ok) return;
+      const json = await res.json();
+      setInvites(json.items ?? []);
+    } catch {}
+  }
+
+  async function createInvite() {
+    try {
+      setLoadingInvite(true);
+      const res = await fetch(`/api/referrals/invite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ referrerId: "admin", expiresInDays: 7, needId: needId }),
+        body: JSON.stringify({ referrerId: "admin", expiresInDays: 7, needId: needId })
       });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error || "failed");
-      const url = data?.inviteUrl as string;
-      await navigator.clipboard.writeText(url).catch(() => {});
-      toast("紹介リンクをコピーしました");
-      // 履歴を再取得
-      const rr = await fetch(`/api/admin/referrals?needId=${needId}`, { credentials: "include" });
-      if (rr.ok) { const { items } = await rr.json(); setInvites(items ?? []); }
+      if (!res.ok) throw new Error("failed");
+      const json = await res.json();
+      await navigator.clipboard.writeText(json.inviteUrl);
+      toast("紹介リンクをコピーしました", "success");
+      loadRefHistory();
     } catch (e) {
-      toast("発行に失敗しました");
+      toast("紹介リンクの作成に失敗しました", "error");
     } finally {
-      setLoadingInv(false);
+      setLoadingInvite(false);
     }
-  };
-
-  const copy = async (text: string) => {
-    await navigator.clipboard.writeText(text).catch(()=>{});
-    toast("コピーしました");
-  };
+  }
 
   async function mutateStage(id: string, next: Stage) {
     // 楽観更新: 先に UI を反映、その後 API で確定
@@ -343,35 +333,36 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
                 エスクロー凍結
               </button>
               <button
-                onClick={generateReferral}
-                disabled={loadingInv}
-                className="rounded-lg bg-sky-600 text-white px-3 py-2 hover:bg-sky-700 disabled:opacity-50"
+                onClick={createInvite}
+                disabled={loadingInvite}
+                className="inline-flex items-center gap-2 rounded-md bg-sky-600 px-3 py-2 text-white hover:bg-sky-700 disabled:opacity-60"
               >
-                {loadingInv ? "発行中..." : "紹介リンク発行"}
+                {loadingInvite ? "発行中..." : "紹介リンク発行"}
               </button>
             </div>
           </div>
 
-          {/* 紹介リンク履歴 */}
+          {/* 過去の紹介リンク（最新5件） */}
           <div className="mb-6">
-            <div className="text-sm font-semibold text-neutral-700 mb-2">過去の紹介リンク（最新5件）</div>
-            {!invites ? (
-              <div className="text-sm text-neutral-500">読み込み中…</div>
-            ) : invites.length === 0 ? (
-              <div className="text-sm text-neutral-500">まだありません</div>
-            ) : (
-              <ul className="space-y-2">
-                {invites.map((it, i) => (
-                  <li key={i} className="flex items-center justify-between gap-2 rounded border px-2 py-1">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm text-sky-700">{it.url}</div>
-                      <div className="text-xs text-neutral-500">{new Date(it.createdAt).toLocaleString()}</div>
-                    </div>
-                    <button onClick={() => copy(it.url)} className="text-sm rounded bg-neutral-100 px-2 py-1 hover:bg-neutral-200">コピー</button>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div className="text-xs font-semibold text-gray-500 mb-2">過去の紹介リンク（最新5件）</div>
+            <ul className="space-y-2">
+              {invites.length === 0 && (
+                <li className="text-xs text-gray-400">まだ発行履歴はありません</li>
+              )}
+              {invites.map((it, idx) => (
+                <li key={idx} className="flex items-center justify-between gap-2">
+                  <span className="truncate text-xs text-gray-700" title={it.url}>
+                    {new Date(it.createdAt).toLocaleString()} — {it.url}
+                  </span>
+                  <button
+                    onClick={async () => { await navigator.clipboard.writeText(it.url); toast("コピーしました", "success"); }}
+                    className="rounded border border-gray-200 px-2 py-1 text-xs hover:bg-gray-50"
+                  >
+                    コピー
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Trust Info */}
