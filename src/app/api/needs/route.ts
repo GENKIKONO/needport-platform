@@ -27,15 +27,68 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = Math.max(Number(searchParams.get("page") ?? "1"), 1);
   const pageSize = Math.min(Math.max(Number(searchParams.get("pageSize") ?? "10"), 1), 50);
+  
+  // 検索・フィルタ・ソートパラメータ
+  const q = searchParams.get("q") ?? undefined;
+  const stage = searchParams.get("stage") ?? undefined;
+  const sort = searchParams.get("sort") as "updated" | "views" | "supporters" | "proposals" | undefined ?? "updated";
+  const direction = searchParams.get("direction") as "desc" | "asc" | undefined ?? "desc";
 
   const list = await listPublicNeeds();
-  // isPublished=true のみを返す（サンプルは除外）
-  const publicOnly = list.filter(need => need.isPublished && !need.isSample);
-  const total = publicOnly.length;
-  const start = (page - 1) * pageSize;
-  const items = publicOnly.slice(start, start + pageSize);
   
-  return NextResponse.json({ items, total, page, pageSize });
+  // 基本フィルタ: 公開ON & サンプルOFF
+  let items = list.filter(need => need.isPublished && !need.isSample);
+  
+  // キーワード検索
+  if (q) {
+    const query = q.toLowerCase();
+    items = items.filter(need => 
+      (need.title?.toLowerCase().includes(query) || 
+       need.body?.toLowerCase().includes(query))
+    );
+  }
+  
+  // ステージフィルタ
+  if (stage) {
+    items = items.filter(need => need.stage === stage);
+  }
+  
+  // ソート
+  items.sort((a, b) => {
+    let aVal: any, bVal: any;
+    
+    switch (sort) {
+      case "views":
+        aVal = (a as any).views || 0;
+        bVal = (b as any).views || 0;
+        break;
+      case "supporters":
+        aVal = a.supporters || 0;
+        bVal = b.supporters || 0;
+        break;
+      case "proposals":
+        aVal = a.proposals || 0;
+        bVal = b.proposals || 0;
+        break;
+      case "updated":
+      default:
+        aVal = new Date(a.updatedAt).getTime();
+        bVal = new Date(b.updatedAt).getTime();
+        break;
+    }
+    
+    if (direction === "asc") {
+      return aVal - bVal;
+    } else {
+      return bVal - aVal;
+    }
+  });
+  
+  const total = items.length;
+  const start = (page - 1) * pageSize;
+  const slicedItems = items.slice(start, start + pageSize);
+  
+  return NextResponse.json({ items: slicedItems, total, page, pageSize });
 }
 
 // POST /api/needs → 一般ユーザの投稿

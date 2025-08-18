@@ -26,12 +26,28 @@ export default function PublicNeedsList() {
   const pageSize = 10;
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  
+  // 検索・フィルタ・ソート状態
+  const [searchQuery, setSearchQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState("");
+  const [sortBy, setSortBy] = useState("updated");
+  const [sortDirection, setSortDirection] = useState<"desc" | "asc">("desc");
 
   async function load(p = page) {
     try {
       setLoading(true);
       setErr(null);
-      const res = await fetch(`/api/needs?page=${p}&pageSize=${pageSize}`, { cache: "no-store" });
+      
+      const params = new URLSearchParams();
+      params.set("page", p.toString());
+      params.set("pageSize", pageSize.toString());
+      
+      if (searchQuery) params.set("q", searchQuery);
+      if (stageFilter) params.set("stage", stageFilter);
+      if (sortBy) params.set("sort", sortBy);
+      if (sortDirection) params.set("direction", sortDirection);
+      
+      const res = await fetch(`/api/needs?${params}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json() as Resp;
       setData(json);
@@ -44,6 +60,20 @@ export default function PublicNeedsList() {
   }
 
   useEffect(() => { load(1); }, []);
+
+  const handleSearch = () => {
+    setPage(1);
+    load(1);
+  };
+
+  const handleReset = () => {
+    setSearchQuery("");
+    setStageFilter("");
+    setSortBy("updated");
+    setSortDirection("desc");
+    setPage(1);
+    load(1);
+  };
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -63,6 +93,69 @@ export default function PublicNeedsList() {
         </div>
         <div className="text-xs text-neutral-500">
           {data ? <>Page {page} / {pageCount}</> : null}
+        </div>
+      </div>
+
+      {/* 検索・フィルタ・ソートUI */}
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="text"
+            placeholder="キーワードで探す"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="キーワード検索"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <select
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value)}
+            aria-label="ステージフィルタ"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">すべてのステージ</option>
+            <option value="posted">投稿</option>
+            <option value="gathering">賛同集め</option>
+            <option value="proposed">提案受領</option>
+            <option value="approved">承認済み</option>
+            <option value="room">ルーム進行中</option>
+            <option value="in_progress">作業実行中</option>
+            <option value="completed">完了</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            aria-label="並び順"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="updated">更新が新しい</option>
+            <option value="views">閲覧が多い</option>
+            <option value="supporters">賛同が多い</option>
+            <option value="proposals">提案が多い</option>
+          </select>
+          <select
+            value={sortDirection}
+            onChange={(e) => setSortDirection(e.target.value as "desc" | "asc")}
+            aria-label="並び順方向"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="desc">降順</option>
+            <option value="asc">昇順</option>
+          </select>
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            検索
+          </button>
+          <button
+            onClick={handleReset}
+            disabled={loading}
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+          >
+            リセット
+          </button>
         </div>
       </div>
 

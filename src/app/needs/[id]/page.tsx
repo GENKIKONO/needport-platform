@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/components/ui/Toast";
 
 type NeedDetail = {
   id: string;
@@ -22,6 +23,7 @@ export default function NeedDetailPage() {
   const params = useParams();
   const [need, setNeed] = useState<NeedDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
     // 公開APIからデータを取得
@@ -51,6 +53,15 @@ export default function NeedDetailPage() {
       fetch(`/api/metrics/needs/${params.id}/view`, { method: 'POST' }).catch(() => {});
     }
   }, [params.id]);
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast("URLをコピーしました", "success");
+    } catch (error) {
+      toast("コピーに失敗しました", "error");
+    }
+  };
 
   if (loading) {
     return (
@@ -91,7 +102,16 @@ export default function NeedDetailPage() {
       </div>
       
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h1 className="text-3xl font-bold mb-4">{need.title}</h1>
+        <div className="flex items-start justify-between mb-4">
+          <h1 className="text-3xl font-bold">{need.title}</h1>
+          <button
+            onClick={handleShare}
+            className="ml-4 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+            aria-label="このページを共有"
+          >
+            共有
+          </button>
+        </div>
         
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
           <span>投稿者: {need.ownerMasked}</span>
