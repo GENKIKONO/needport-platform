@@ -35,7 +35,15 @@ export default [
           property: 'bg-*',
           message: 'body背景は変更しないでください'
         }
-      ]
+      ],
+      // 禁止: 旧ヘッダーの直接使用
+      'no-restricted-imports': ['error', {
+        paths: [
+          { name: "@/components/Header", message: "ヘッダーは AppHeader を使用してください。" },
+          { name: "@/components/layout/Header", message: "ヘッダーは AppHeader を使用してください。" },
+          { name: "@/mkt/components/MktHeader", message: "ヘッダーは AppHeader を使用してください。" },
+        ]
+      }]
     }
   }
 ];

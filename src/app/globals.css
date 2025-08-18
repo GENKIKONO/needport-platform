@@ -193,6 +193,11 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
     .route-boat, .route-water { animation: none; }
   }
   
+  /* ダイヤの残骸を確実に無効化 */
+  .np-brand-diamond,
+  .np-brand-diamond::before,
+  .np-brand-diamond::after { content: none !important; background: none !important; }
+  
   h1 { @apply text-2xl sm:text-3xl font-semibold tracking-tight; }
   h2 { @apply text-xl sm:text-2xl font-semibold tracking-tight; }
   p  { @apply leading-7 text-neutral-300; }
