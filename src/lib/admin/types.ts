@@ -26,6 +26,8 @@ export type NeedRow = {
   supporters: number;
   proposals: number;
   estimateYen?: number;          // 想定金額（JPY）
+  isPublished: boolean;
+  isSample: boolean;
   createdAt: string;             // ISO
   updatedAt: string;             // ISO
   payment: PaymentStatus;
@@ -47,9 +49,20 @@ export type AdminEventLegacy =
   | { type:"escrow_frozen"; needId:string; at:string }
   | { type:"note"; needId:string; text:string; at:string };
 
-export type NeedDetail = NeedRow & {
-  events: AdminEvent[];
-  description?: string;
+export type NeedDetail = {
+  id: string;
+  title: string;
+  body?: string;
+  ownerId?: string;           // 将来のユーザID
+  ownerMasked: string;
+  stage: Stage;
+  supporters: number;
+  proposals: number;
+  estimateYen?: number;
+  isPublished: boolean;       // ← 追加: 一般公開フラグ
+  isSample: boolean;          // ← 追加: サンプル表示フラグ（デモ用）
+  createdAt: string;
+  updatedAt: string;
   version: number;
 };
 

@@ -1,49 +1,28 @@
-export const runtime = 'nodejs';
-import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/server/supabase';  
-import { stripPII } from '@/lib/validation/need';
+import { NextRequest, NextResponse } from "next/server";
+import { createNeed, listPublicNeeds } from "@/lib/admin/store";
 
-export async function POST(req: Request) {
-  const sb = supabaseServer();
-  const body = await req.json();
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-  const {
+// GET /api/needs → 公開/サンプルの一覧
+export async function GET() {
+  const list = await listPublicNeeds();
+  return NextResponse.json({ items: list });
+}
+
+// POST /api/needs → 一般ユーザの投稿
+export async function POST(req: NextRequest) {
+  const { title, body, estimateYen } = await req.json().catch(() => ({}));
+  if (!title || typeof title !== "string") {
+    return NextResponse.json({ error: "title required" }, { status: 400 });
+  }
+  const need = await createNeed({
     title,
-    summary,
-    scale, // 'personal' | 'community'
-    macro_fee_hint,
-    macro_use_freq,
-    macro_area_hint,
-    agree,
-  } = body ?? {};
-
-  // 必須チェック
-  const titleTrimmed = (title ?? '').trim();
-  const summaryTrimmed = (summary ?? '').trim();
-  if (titleTrimmed.length < 4 || summaryTrimmed.length < 20) {
-    return NextResponse.json({ ok: false, error: 'invalid_input' }, { status: 400 });
-  }
-
-  if (!agree) return NextResponse.json({ ok: false, error: 'agree required' }, { status: 400 });
-  if (!title || !summary || (scale !== 'personal' && scale !== 'community')) {
-    return NextResponse.json({ ok: false, error: 'invalid input' }, { status: 400 });
-  }
-
-  const insertData = {
-    title: stripPII(title),
-    summary: stripPII(summary),
-    scale,
-    published: false,
-    adopted_offer_id: null,
-    macro_fee_hint: scale === 'community' ? macro_fee_hint ?? null : null,
-    macro_use_freq: scale === 'community' ? macro_use_freq ?? null : null,
-    macro_area_hint: scale === 'community' ? macro_area_hint ?? null : null,
-  };
-
-  const { error } = await sb
-    .from('needs')
-    .insert([insertData], { returning: 'minimal' }); // ★ ここが肝
-
-  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
-  return NextResponse.json({ ok: true });
+    body,
+    estimateYen: typeof estimateYen === "number" ? estimateYen : undefined,
+    ownerMasked: "ユーザ", // 将来はログインユーザ名に置換
+    isPublished: false,     // 投稿直後は非公開（管理で公開にする）
+    isSample: false,
+  });
+  return NextResponse.json(need, { status: 201 });
 }

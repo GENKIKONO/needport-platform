@@ -6,48 +6,97 @@ const now = Date.now();
 const rand = (min:number,max:number)=> Math.floor(Math.random()*(max-min+1))+min;
 
 export function seedNeeds(): NeedDetail[] {
-  return Array.from({length:50}).map((_,i)=> {
-    const stage = stages[rand(0,5)]; // まずは早い段階中心
-    const yen = [0, 5000, 12000, 30000, 80000, 150000][rand(0,5)];
-    const id = `N${String(i+1).padStart(4,"0")}`;
-    return {
-      id,
-      title: `ニーズ ${i+1}`,
-      ownerMasked: `u***${rand(10,99)}`,
-      stage,
-      supporters: rand(0, 25),
-      proposals: rand(0, 5),
-      estimateYen: yen,
-      createdAt: new Date(now - rand(1,40)*86400000).toISOString(),
-      updatedAt: new Date(now - rand(0,5)*86400000).toISOString(),
-      payment: ["none","escrow_hold","released","refunded"][rand(0,3)] as any,
-      trust: {
-        anchorName: Math.random() > 0.5 ? ["紹介A","紹介B","紹介C"][rand(0,2)] : undefined,
-        anchorReputation: rand(55,95),
-        expertVerified: Math.random() > 0.6,
-        creditHold: Math.random() > 0.85
-      },
-      events: [
-        { type:"stage_changed", needId:id, from:"posted", to:stage, at:new Date(now - rand(1,10)*86400000).toISOString() }
-      ],
-      version: 1
-    }
-  });
+  return [
+    {
+      id: "need_1",
+      title: "Webサイトリニューアル",
+      body: "企業のWebサイトをモダンなデザインにリニューアルしたい。レスポンシブ対応必須。",
+      ownerMasked: "企業A",
+      stage: "posted",
+      supporters: 5,
+      proposals: 3,
+      estimateYen: 500000,
+      isPublished: true,
+      isSample: false,
+      createdAt: "2024-01-15T10:00:00Z",
+      updatedAt: "2024-01-15T10:00:00Z",
+      version: 1,
+    },
+    {
+      id: "need_2", 
+      title: "ECサイト構築",
+      body: "オンラインショップの構築。決済機能、在庫管理、顧客管理機能が必要。",
+      ownerMasked: "企業B",
+      stage: "gathering",
+      supporters: 8,
+      proposals: 5,
+      estimateYen: 800000,
+      isPublished: true,
+      isSample: false,
+      createdAt: "2024-01-10T09:00:00Z",
+      updatedAt: "2024-01-12T14:30:00Z",
+      version: 1,
+    },
+    {
+      id: "need_3",
+      title: "モバイルアプリ開発",
+      body: "iOS/Android対応のモバイルアプリ。位置情報機能とプッシュ通知が必要。",
+      ownerMasked: "スタートアップC",
+      stage: "proposed",
+      supporters: 12,
+      proposals: 7,
+      estimateYen: 1200000,
+      isPublished: true,
+      isSample: false,
+      createdAt: "2024-01-05T11:00:00Z",
+      updatedAt: "2024-01-08T16:45:00Z",
+      version: 1,
+    },
+    {
+      id: "need_4",
+      title: "業務システム開発",
+      body: "社内の業務効率化のためのシステム開発。在庫管理、売上管理、レポート機能。",
+      ownerMasked: "製造業D",
+      stage: "approved",
+      supporters: 3,
+      proposals: 2,
+      estimateYen: 2000000,
+      isPublished: false,
+      isSample: true,
+      createdAt: "2024-01-01T08:00:00Z",
+      updatedAt: "2024-01-03T13:20:00Z",
+      version: 1,
+    },
+    {
+      id: "need_5",
+      title: "データ分析システム",
+      body: "ビッグデータの分析と可視化システム。機械学習機能も含む。",
+      ownerMasked: "IT企業E",
+      stage: "room",
+      supporters: 15,
+      proposals: 9,
+      estimateYen: 3000000,
+      isPublished: true,
+      isSample: false,
+      createdAt: "2023-12-28T10:30:00Z",
+      updatedAt: "2023-12-30T15:10:00Z",
+      version: 1,
+    },
+  ];
 }
 
-export function toRows(details: NeedDetail[]): NeedRow[] {
-  return details.map(d => ({
-    id: d.id,
-    title: d.title,
-    ownerMasked: d.ownerMasked,
-    stage: d.stage,
-    supporters: d.supporters,
-    proposals: d.proposals,
-    estimateYen: d.estimateYen,
-    createdAt: d.createdAt,
-    updatedAt: d.updatedAt,
-    payment: d.payment,
-    trust: d.trust
+export function toRows(needs: NeedDetail[]): NeedRow[] {
+  return needs.map(n => ({
+    id: n.id,
+    title: n.title,
+    ownerMasked: n.ownerMasked,
+    stage: n.stage,
+    supporters: n.supporters,
+    proposals: n.proposals,
+    estimateYen: n.estimateYen,
+    isPublished: n.isPublished,
+    isSample: n.isSample,
+    updatedAt: n.updatedAt,
   }));
 }
 

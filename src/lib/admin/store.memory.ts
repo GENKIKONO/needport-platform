@@ -75,6 +75,51 @@ export const memoryStore = {
     logEvent('escrow_updated', id, { hold });
     return n;
   },
+  createNeed(input: {
+    title: string; body?: string; estimateYen?: number; ownerMasked?: string;
+    isPublished?: boolean; isSample?: boolean;
+  }): NeedDetail {
+    const arr = ensure();
+    const newNeed: NeedDetail = {
+      id: `need_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      title: input.title,
+      body: input.body,
+      ownerMasked: input.ownerMasked ?? "ユーザ",
+      stage: "posted",
+      supporters: 0,
+      proposals: 0,
+      estimateYen: input.estimateYen,
+      isPublished: input.isPublished ?? false,
+      isSample: input.isSample ?? false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      version: 1,
+    };
+    arr.push(newNeed);
+    logEvent('need_created', newNeed.id, { title: input.title });
+    return newNeed;
+  },
+  updateNeed(id: string, patch: Partial<Pick<
+    NeedDetail,
+    "title" | "body" | "estimateYen" | "stage" | "isPublished" | "isSample"
+  >>): NeedDetail | null {
+    const arr = ensure();
+    const i = arr.findIndex(n => n.id === id);
+    if (i === -1) return null;
+
+    arr[i] = {
+      ...arr[i],
+      ...patch,
+      updatedAt: new Date().toISOString(),
+      version: arr[i].version + 1
+    };
+    logEvent('need_updated', id, patch);
+    return arr[i];
+  },
+  listPublicNeeds(): NeedDetail[] {
+    const all = ensure();
+    return all.filter(n => n.isPublished || n.isSample);
+  },
   stats(): AdminStats { 
     const baseStats = calcStats(ensure());
     return { ...baseStats, events: _events.slice(0, 5) };

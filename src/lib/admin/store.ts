@@ -44,3 +44,24 @@ export async function stats(): Promise<AdminStats> {
   const store = await getStore();
   return store.stats();
 }
+
+export async function createNeed(input: {
+  title: string; body?: string; estimateYen?: number; ownerMasked?: string;
+  isPublished?: boolean; isSample?: boolean;
+}): Promise<NeedDetail> {
+  const store = await getStore();
+  return store.createNeed(input);
+}
+
+export async function updateNeed(id: string, patch: Partial<Pick<
+  NeedDetail,
+  "title" | "body" | "estimateYen" | "stage" | "isPublished" | "isSample"
+>>): Promise<NeedDetail | null> {
+  const store = await getStore();
+  return store.updateNeed(id, patch);
+}
+
+export async function listPublicNeeds(): Promise<NeedDetail[]> {
+  const store = await getStore();
+  return store.listPublicNeeds();
+}

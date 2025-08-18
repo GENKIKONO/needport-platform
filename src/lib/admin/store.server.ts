@@ -103,6 +103,53 @@ export const kvStore = {
     await logEvent('escrow_updated', id, { hold });
     return all[i];
   },
+  async createNeed(input: {
+    title: string; body?: string; estimateYen?: number; ownerMasked?: string;
+    isPublished?: boolean; isSample?: boolean;
+  }): Promise<NeedDetail> {
+    const all = await ensure();
+    const newNeed: NeedDetail = {
+      id: `need_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      title: input.title,
+      body: input.body,
+      ownerMasked: input.ownerMasked ?? "ユーザ",
+      stage: "posted",
+      supporters: 0,
+      proposals: 0,
+      estimateYen: input.estimateYen,
+      isPublished: input.isPublished ?? false,
+      isSample: input.isSample ?? false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      version: 1,
+    };
+    all.push(newNeed);
+    await save(all);
+    await logEvent('need_created', newNeed.id, { title: input.title });
+    return newNeed;
+  },
+  async updateNeed(id: string, patch: Partial<Pick<
+    NeedDetail,
+    "title" | "body" | "estimateYen" | "stage" | "isPublished" | "isSample"
+  >>): Promise<NeedDetail | null> {
+    const all = await ensure();
+    const i = all.findIndex(n => n.id === id);
+    if (i === -1) return null;
+
+    all[i] = {
+      ...all[i],
+      ...patch,
+      updatedAt: new Date().toISOString(),
+      version: all[i].version + 1
+    };
+    await save(all);
+    await logEvent('need_updated', id, patch);
+    return all[i];
+  },
+  async listPublicNeeds(): Promise<NeedDetail[]> {
+    const all = await ensure();
+    return all.filter(n => n.isPublished || n.isSample);
+  },
   async stats(): Promise<AdminStats> {
     const all = await ensure();
     const baseStats = calcStats(all);
