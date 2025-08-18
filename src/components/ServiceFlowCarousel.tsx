@@ -18,7 +18,7 @@ export default function ServiceFlowCarousel({
   const snap = (dir:number) => {
     const el = ref.current; if (!el) return;
     const w = el.clientWidth;
-    const next = Math.max(0, Math.min(slides.length-1, Math.round((el.scrollLeft + dir*w)/w)));
+    const next = Math.max(0, Math.min((slides?.length ?? 0) - 1, Math.round((el.scrollLeft + dir*w)/w)));
     el.scrollTo({ left: next * w, behavior: "smooth" });
     onChange(next);
   };
@@ -39,7 +39,7 @@ export default function ServiceFlowCarousel({
           className="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          {slides.map((s, i) => (
+          {(slides ?? []).map((s, i) => (
             <div key={i} className="snap-start shrink-0 w-[88%] rounded-2xl border border-black/5 bg-white p-4 shadow-card">
               <div className="text-sky-700 font-semibold">{s.t}</div>
               <div className="mt-3 h-28 rounded-xl border border-dashed border-sky-200 bg-sky-50/40" />
@@ -48,7 +48,7 @@ export default function ServiceFlowCarousel({
           ))}
         </div>
 
-        {/* 矢印（任意） */}
+        {/* 矢印ナビ */}
         <div className="absolute inset-y-0 left-0 flex items-center pl-1">
           <button onClick={() => snap(-1)} aria-label="prev" className="rounded-full bg-white/80 backdrop-blur border px-2 py-1 shadow">‹</button>
         </div>

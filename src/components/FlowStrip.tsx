@@ -25,7 +25,7 @@ export default function FlowStrip({
   const a = typeof active === "number" ? active : internal;
 
   // 安全: stepsが空でも割れない
-  const denom = Math.max((steps?.length ?? DEFAULT_STEPS.length) - 1, 1);
+  const denom = Math.max(((steps?.length ?? 0) || DEFAULT_STEPS.length) - 1, 1);
   const left = useMemo(() => `calc(${(a * 100) / denom}% - 12px)`, [a, denom]);
 
   const set = (i: number) => {
@@ -34,7 +34,7 @@ export default function FlowStrip({
   };
 
   return (
-    <div className="relative rounded-2xl border border-black/5 bg-gradient-to-r from-sky-50 to-indigo-50 p-3 sm:p-4 shadow-card">
+    <div className="relative rounded-2xl border border-black/5 bg-gradient-to-r from-sky-50 to-indigo-50 p-3 sm:p-4 shadow-card" id="flowstrip">
       <div className="relative h-1.5 sm:h-2 bg-sky-100 rounded-full">
         {/* 船アイコン（家は禁止） */}
         <div className="absolute -top-2.5 sm:-top-3 w-6 h-6 transition-[left] duration-500 ease-out" style={{ left }}>
@@ -46,7 +46,7 @@ export default function FlowStrip({
 
       {showLabels && (
         <div className="mt-3 sm:mt-4 grid grid-cols-6 gap-2 text-xs sm:text-sm text-neutral-500">
-          {(steps?.length ? steps : DEFAULT_STEPS).map((s, i) => (
+          {((steps?.length ? steps : DEFAULT_STEPS) ?? []).map((s, i) => (
             <button
               key={i}
               type="button"

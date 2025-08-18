@@ -9,7 +9,7 @@ export default function ServiceFlow() {
   const [active, setActive] = useState(0);
 
   return (
-    <section className="bg-white">
+    <section className="bg-white service-flow">
       <div className="text-center mb-6">
         <h2 className="text-xl md:text-2xl font-bold text-neutral-900">サービスの流れ</h2>
         <p className="mt-2 text-neutral-600 text-sm md:text-base">はじめてでも直感で分かるステップ</p>
@@ -37,9 +37,11 @@ export default function ServiceFlow() {
           ].map((s, i) => (
             <li
               key={i}
+              data-step={i + 1}
               tabIndex={0}
               onMouseEnter={() => setActive(i)}
               onFocus={() => setActive(i)}
+              onClick={() => setActive(i)}
               className={`rounded-2xl border border-black/5 bg-white p-4 shadow-card cursor-pointer transition
                 ${i===active ? "ring-2 ring-sky-300" : "hover:shadow-md"}`}
             >

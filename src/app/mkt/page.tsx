@@ -9,7 +9,7 @@ export default function MktPage(){
   return (
     <main className="space-y-12">
       {/* Hero（価値訴求コピー＋CTA2つ） */}
-      <section className="container pt-10">
+      <section className="container pt-10 mkt-hero">
         <HeroMarketing/>
       </section>
 
