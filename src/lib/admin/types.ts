@@ -41,9 +41,10 @@ export type AdminStats = {
   byStage: Record<Stage, number>;
   grossYen: number;
   avgTicketYen: number;
-  pendingApprovals: number;      // 承認待ち件数
-  pendingPayouts: number;        // 支払い保留件数
-  events: AdminEvent[];          // 最近のイベント
+  pendingApprovals: number;
+  pendingPayouts: number;
+  totalSupports?: number;
+  events: AdminEvent[];
 };
 
 export type AdminEventLegacy =

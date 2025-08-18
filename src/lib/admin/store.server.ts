@@ -373,13 +373,25 @@ export const kvStore = {
 
     const baseStats = calcStats(allNeeds);
 
+    // 賛同数の合計を計算
+    let totalSupports = 0;
+    try {
+      for (const need of allNeeds) {
+        const supportKey = `supports:${need.id}`;
+        const count = await kv.scard(supportKey);
+        totalSupports += count;
+      }
+    } catch (error) {
+      console.error('Failed to calculate total supports:', error);
+    }
+
     try {
       const events = await kv.lrange(EVENTS_KEY, 0, 19); // 最新20件
       const parsedEvents = events.map(e => JSON.parse(e)).reverse();
-      return { ...baseStats, events: parsedEvents };
+      return { ...baseStats, totalSupports, events: parsedEvents };
     } catch (error) {
       console.error('Failed to fetch events:', error);
-      return { ...baseStats, events: [] };
+      return { ...baseStats, totalSupports, events: [] };
     }
   },
 

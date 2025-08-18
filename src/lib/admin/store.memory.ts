@@ -262,7 +262,8 @@ export const memoryStore = {
   },
   stats(): AdminStats {
     const baseStats = calcStats(ensure());
-    return { ...baseStats, events: [] }; // イベントはメモリストアには保存しないため、空にする
+    const totalSupports = Array.from(_supportsByNeed.values()).reduce((sum, set) => sum + set.size, 0);
+    return { ...baseStats, totalSupports, events: [] }; // イベントはメモリストアには保存しないため、空にする
   },
 
   async getVendorProfile(uid: string): Promise<VendorProfile | null> {
