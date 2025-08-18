@@ -6,6 +6,7 @@ import NeedInterestMeter from "@/components/NeedInterestMeter";
 import OffersList from "@/components/OffersList";
 import OfferForm from "@/components/OfferForm";
 import InterestDialog from "@/components/InterestDialog";
+import NeedRoomPanel from "@/components/NeedRoomPanel";
 
 export default function NeedDetail({params}:{params:{id:string}}){
   const [need, setNeed] = useState<any>(null);
@@ -108,6 +109,9 @@ export default function NeedDetail({params}:{params:{id:string}}){
       <section className="section">
         <OffersList needId={params.id} isOwner={need.owner_ref === 'demo_user'} />
       </section>
+
+      {/* 承認制ルーム */}
+      <NeedRoomPanel defaultStatus="closed" />
 
       {openDialog && need && (
         <InterestDialog
