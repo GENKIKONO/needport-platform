@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Logo from '../Logo';
 
 export default function Header() {
   const pathname = usePathname();
@@ -17,8 +18,7 @@ export default function Header() {
       <div className="container flex items-center justify-between py-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-semibold text-white">
-          <span className="inline-block h-3 w-3 rounded-sm bg-brand-600" />
-          <span className="text-lg">NeedPort</span>
+          <Logo showText />
         </Link>
 
         {/* Navigation Tabs */}
