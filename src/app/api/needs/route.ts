@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createNeed, listPublicNeeds } from "@/lib/admin/store";
 import { getOrCreateUserByEmail } from "@/lib/trust/store";
 import { getFlags } from "@/lib/admin/flags";
+import { randomUUID } from "crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
   // 基本フィルタ: 公開ON & サンプル制御
   let items = list.filter(need => {
     if (!need.isPublished) return false;
-    if (!flags.showSamples && need.isSample) return false;
+    if (!flags.sampleVisible && need.isSample) return false;
     return true;
   });
   
@@ -110,12 +111,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "title required" }, { status: 400 });
   }
   
+  // uidの取得または生成
+  let uid = req.cookies.get("uid")?.value;
+  if (!uid) {
+    uid = randomUUID();
+  }
+  
   // ユーザ作成（メールがある場合）
-  let ownerUserId: string | undefined;
   if (ownerEmail && typeof ownerEmail === "string") {
     try {
       const user = await getOrCreateUserByEmail(ownerEmail);
-      ownerUserId = user.id;
+      uid = user.id; // 既存ユーザの場合はそのIDを使用
     } catch (error) {
       console.error('Failed to create user:', error);
     }
@@ -128,20 +134,20 @@ export async function POST(req: NextRequest) {
     ownerMasked: "ユーザ", // 将来はログインユーザ名に置換
     isPublished: false,     // 投稿直後は非公開（管理で公開にする）
     isSample: false,
-    ownerUserId,           // ユーザIDを紐付け
+    ownerUserId: uid,       // ユーザIDを紐付け
   });
 
   // レスポンス作成
   const response = NextResponse.json(need, { status: 201 });
   
-  // ownerUserIdをCookieに設定（180日間有効）
-  if (ownerUserId) {
-    response.cookies.set("uid", ownerUserId, {
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 180 * 24 * 60 * 60, // 180日
-    });
-  }
+  // uidをCookieに設定（180日間有効）
+  response.cookies.set("uid", uid, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 180 * 24 * 60 * 60, // 180日
+    path: "/",
+  });
   
   return response;
 }

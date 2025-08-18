@@ -5,6 +5,30 @@ import { getFlags } from "@/lib/admin/flags";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const uid = req.cookies.get("uid")?.value;
+  
+  if (!uid) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  
+  try {
+    const need = await getNeed(params.id);
+    if (!need) {
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
+    }
+    
+    if (need.ownerUserId !== uid) {
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
+    
+    return NextResponse.json(need);
+  } catch (error) {
+    console.error("Failed to get need:", error);
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
+  }
+}
+
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const uid = req.cookies.get("uid")?.value;
   
@@ -48,7 +72,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     await logEvent({
       type: "me:update",
       needId: params.id,
-      meta: { uid, updates: Object.keys(updates) }
+      meta: { uid, updates: Object.keys(updates), before: need, after: updated }
     });
     
     return NextResponse.json(updated);
@@ -89,7 +113,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     await logEvent({
       type: "me:delete",
       needId: params.id,
-      meta: { uid, title: need.title }
+      meta: { uid, title: need.title, before: need }
     });
     
     return NextResponse.json({ success: true });

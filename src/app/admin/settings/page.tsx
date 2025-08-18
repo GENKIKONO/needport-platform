@@ -5,9 +5,8 @@ import { useToast } from "@/components/ui/Toast";
 type FeatureFlags = {
   userEditEnabled: boolean;
   userDeleteEnabled: boolean;
-  vendorEditEnabled: boolean;
   demoGuardEnabled: boolean;
-  showSamples: boolean;
+  sampleVisible: boolean;
 };
 
 export default function AdminSettingsPage() {
@@ -35,7 +34,7 @@ export default function AdminSettingsPage() {
     try {
       setSaving(true);
       const res = await fetch("/api/admin/flags", {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(updates),
@@ -111,24 +110,6 @@ export default function AdminSettingsPage() {
           
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-medium text-gray-900">事業者編集を許可</div>
-              <div className="text-sm text-gray-500">事業者プロフィールの編集を許可する</div>
-            </div>
-            <button
-              onClick={() => saveFlags({ vendorEditEnabled: !flags?.vendorEditEnabled })}
-              disabled={saving}
-              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
-                flags?.vendorEditEnabled 
-                  ? "bg-blue-600 text-white" 
-                  : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              {flags?.vendorEditEnabled ? "有効" : "無効"}
-            </button>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
               <div className="font-medium text-gray-900">デモガードを有効にする</div>
               <div className="text-sm text-gray-500">デモモードで一部機能を制限する</div>
             </div>
@@ -151,15 +132,15 @@ export default function AdminSettingsPage() {
               <div className="text-sm text-gray-500">サンプル案件を一般ユーザーに表示する</div>
             </div>
             <button
-              onClick={() => saveFlags({ showSamples: !flags?.showSamples })}
+              onClick={() => saveFlags({ sampleVisible: !flags?.sampleVisible })}
               disabled={saving}
               className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
-                flags?.showSamples 
+                flags?.sampleVisible 
                   ? "bg-blue-600 text-white" 
                   : "bg-gray-200 text-gray-700"
               }`}
             >
-              {flags?.showSamples ? "有効" : "無効"}
+              {flags?.sampleVisible ? "有効" : "無効"}
             </button>
           </div>
         </div>

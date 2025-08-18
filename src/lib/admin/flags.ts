@@ -1,11 +1,15 @@
-import type { FeatureFlags } from "./types";
+export type FeatureFlags = {
+  userEditEnabled: boolean;   // /me の編集を許可
+  userDeleteEnabled: boolean; // /me の削除を許可
+  demoGuardEnabled: boolean;  // 「デモ」の注意書き/ブロック（既定OFF）
+  sampleVisible: boolean;     // サンプル案件の公開側表示可否
+};
 
-const DEFAULT_FLAGS: FeatureFlags = {
+export const DEFAULT_FLAGS: FeatureFlags = {
   userEditEnabled: true,
   userDeleteEnabled: true,
-  vendorEditEnabled: true,
   demoGuardEnabled: false,
-  showSamples: false,
+  sampleVisible: false,
 };
 
 async function getImpl() {
@@ -22,7 +26,7 @@ export async function getFlags(): Promise<FeatureFlags> {
   
   if (impl.type === "kv") {
     try {
-      const stored = await impl.kv.get<string>("flags");
+      const stored = await impl.kv.get<string>("flags:global");
       if (stored) {
         return { ...DEFAULT_FLAGS, ...JSON.parse(stored) };
       }
@@ -42,7 +46,7 @@ export async function setFlags(patch: Partial<FeatureFlags>): Promise<FeatureFla
   
   if (impl.type === "kv") {
     try {
-      await impl.kv.set("flags", JSON.stringify(updated));
+      await impl.kv.set("flags:global", JSON.stringify(updated));
     } catch (error) {
       console.error("Failed to set flags in KV:", error);
     }

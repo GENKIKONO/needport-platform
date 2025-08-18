@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   const g = guard(req); if (g) return g;
   
   try {

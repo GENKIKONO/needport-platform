@@ -19,16 +19,13 @@ type NeedRow = {
 type Resp = {
   items: NeedRow[];
   total: number;
-  page: number;
-  pageSize: number;
 };
 
 type FeatureFlags = {
   userEditEnabled: boolean;
   userDeleteEnabled: boolean;
-  vendorEditEnabled: boolean;
   demoGuardEnabled: boolean;
-  showSamples: boolean;
+  sampleVisible: boolean;
 };
 
 export default function MePage() {
@@ -53,7 +50,7 @@ export default function MePage() {
       }
       
       // マイニーズ取得
-      const res = await fetch("/api/me/needs?pageSize=50");
+      const res = await fetch("/api/me/needs");
       if (!res.ok) {
         if (res.status === 401) {
           setErr("投稿がまだありません。まずニーズを投稿してください。");
@@ -98,14 +95,16 @@ export default function MePage() {
       if (!res.ok) {
         const error = await res.json();
         if (error.error === "feature_disabled") {
-          toast("編集機能が無効になっています", "error");
+          toast("編集機能が管理側で無効になっています", "error");
+        } else if (error.error === "forbidden") {
+          toast("この投稿を編集する権限がありません", "error");
         } else {
           toast("更新に失敗しました", "error");
         }
         return;
       }
       
-      toast("更新しました", "success");
+      toast("保存しました", "success");
       setEditingId(null);
       loadData(); // 再読み込み
     } catch (error) {
@@ -124,7 +123,9 @@ export default function MePage() {
       if (!res.ok) {
         const error = await res.json();
         if (error.error === "feature_disabled") {
-          toast("削除機能が無効になっています", "error");
+          toast("削除機能が管理側で無効になっています", "error");
+        } else if (error.error === "forbidden") {
+          toast("この投稿を削除する権限がありません", "error");
         } else {
           toast("削除に失敗しました", "error");
         }
@@ -166,6 +167,18 @@ export default function MePage() {
   return (
     <main className="container py-8">
       <h1 className="text-2xl font-semibold text-neutral-900 mb-6">マイページ</h1>
+      
+      {/* フラグ状態表示 */}
+      {flags && (
+        <div className="mb-4 flex gap-2 text-xs">
+          <span className={`px-2 py-1 rounded ${flags.userEditEnabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            編集{flags.userEditEnabled ? 'ON' : 'OFF'}
+          </span>
+          <span className={`px-2 py-1 rounded ${flags.userDeleteEnabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            削除{flags.userDeleteEnabled ? 'ON' : 'OFF'}
+          </span>
+        </div>
+      )}
       
       {flags?.demoGuardEnabled && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800 text-sm">
@@ -233,6 +246,7 @@ export default function MePage() {
                           onClick={() => handleEdit(need)}
                           disabled={!flags?.userEditEnabled}
                           className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={!flags?.userEditEnabled ? "管理側で編集機能が無効になっています" : ""}
                         >
                           編集
                         </button>
@@ -240,6 +254,7 @@ export default function MePage() {
                           onClick={() => handleDelete(need.id, need.title)}
                           disabled={!flags?.userDeleteEnabled}
                           className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={!flags?.userDeleteEnabled ? "管理側で削除機能が無効になっています" : ""}
                         >
                           削除
                         </button>
