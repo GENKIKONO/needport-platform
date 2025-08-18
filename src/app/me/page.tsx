@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import MeEmpty from "@/components/me/MeEmpty";
 
 type Flags = { userEditEnabled: boolean; userDeleteEnabled: boolean; };
 type Need = { id: string; title: string; description?: string; estimateYen?: number; updatedAt?: string; deletedAt?: string | null; };
@@ -138,10 +139,15 @@ export default function MePage() {
 
   return (
     <main className="container mx-auto max-w-3xl px-4 py-8">
-      <h1 className="text-2xl font-semibold mb-4">マイページ</h1>
-      <p className="mb-6 text-sm text-gray-600">
-        編集: <b>{flags.userEditEnabled ? "有効" : "無効"}</b> / 削除: <b>{flags.userDeleteEnabled ? "有効" : "無効"}</b>
-      </p>
+      <header>
+        <h1 className="text-2xl font-bold">マイページ</h1>
+        <p className="text-sm text-gray-500">編集: {flags.userEditEnabled ? "有効" : "無効"} / 削除: {flags.userDeleteEnabled ? "有効" : "無効"}</p>
+        <div className="mt-2">
+          <a href="#" onClick={(e) => { e.preventDefault(); (window as any).__needport_open_claim?.(); }} className="text-sm text-blue-600 underline">
+            別端末で続ける（メール連携）
+          </a>
+        </div>
+      </header>
       
       {/* 復元ボタン */}
       {lastDeletedId && (
@@ -157,70 +163,76 @@ export default function MePage() {
         </div>
       )}
       
-      <div className="space-y-4">
-        {items.map(n => {
-          const e = editing[n.id];
-          return (
-            <div key={n.id} className="rounded-xl border p-4">
-              {!e ? (
-                <>
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium">{n.title}</h3>
-                    <div className="flex gap-2">
+      {!items || items.length === 0 ? (
+        <div className="space-y-6">
+          <p className="text-gray-600">あなたの投稿はまだありません。</p>
+          <MeEmpty />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {items.map(n => {
+            const e = editing[n.id];
+            return (
+              <div key={n.id} className="rounded-xl border p-4">
+                {!e ? (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-medium">{n.title}</h3>
+                      <div className="flex gap-2">
+                        <button 
+                          disabled={!flags.userEditEnabled || loading} 
+                          onClick={() => startEdit(n.id)} 
+                          className="px-3 py-1 rounded border disabled:opacity-50"
+                        >
+                          編集
+                        </button>
+                        <button 
+                          disabled={!flags.userDeleteEnabled || loading} 
+                          onClick={() => remove(n.id)} 
+                          className="px-3 py-1 rounded border text-red-600 disabled:opacity-50"
+                        >
+                          削除
+                        </button>
+                      </div>
+                    </div>
+                    {n.description && <p className="mt-2 text-sm text-gray-700">{n.description}</p>}
+                  </>
+                ) : (
+                  <>
+                    <input 
+                      className="w-full border rounded px-3 py-2" 
+                      defaultValue={e.title ?? n.title}
+                      onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], title: ev.target.value } }))} 
+                    />
+                    <textarea 
+                      className="mt-2 w-full border rounded px-3 py-2" 
+                      rows={3}
+                      defaultValue={e.description ?? n.description}
+                      onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], description: ev.target.value } }))} 
+                    />
+                    <div className="mt-3 flex gap-2">
                       <button 
-                        disabled={!flags.userEditEnabled || loading} 
-                        onClick={() => startEdit(n.id)} 
+                        onClick={() => save(n.id)} 
+                        disabled={loading}
+                        className="px-3 py-1 rounded bg-sky-600 text-white disabled:opacity-50"
+                      >
+                        保存
+                      </button>
+                      <button 
+                        onClick={() => cancelEdit(n.id)} 
+                        disabled={loading}
                         className="px-3 py-1 rounded border disabled:opacity-50"
                       >
-                        編集
-                      </button>
-                      <button 
-                        disabled={!flags.userDeleteEnabled || loading} 
-                        onClick={() => remove(n.id)} 
-                        className="px-3 py-1 rounded border text-red-600 disabled:opacity-50"
-                      >
-                        削除
+                        取消
                       </button>
                     </div>
-                  </div>
-                  {n.description && <p className="mt-2 text-sm text-gray-700">{n.description}</p>}
-                </>
-              ) : (
-                <>
-                  <input 
-                    className="w-full border rounded px-3 py-2" 
-                    defaultValue={e.title ?? n.title}
-                    onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], title: ev.target.value } }))} 
-                  />
-                  <textarea 
-                    className="mt-2 w-full border rounded px-3 py-2" 
-                    rows={3}
-                    defaultValue={e.description ?? n.description}
-                    onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], description: ev.target.value } }))} 
-                  />
-                  <div className="mt-3 flex gap-2">
-                    <button 
-                      onClick={() => save(n.id)} 
-                      disabled={loading}
-                      className="px-3 py-1 rounded bg-sky-600 text-white disabled:opacity-50"
-                    >
-                      保存
-                    </button>
-                    <button 
-                      onClick={() => cancelEdit(n.id)} 
-                      disabled={loading}
-                      className="px-3 py-1 rounded border disabled:opacity-50"
-                    >
-                      取消
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })}
-        {items.length === 0 && <p className="text-sm text-gray-500">あなたの投稿はまだありません。</p>}
-      </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </main>
   );
 }

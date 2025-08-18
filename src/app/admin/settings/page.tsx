@@ -8,6 +8,7 @@ type FeatureFlags = {
   demoGuardEnabled: boolean;
   sampleVisible: boolean;
   vendorEditEnabled: boolean;
+  requireAccountForEngagement: boolean;
 };
 
 export default function AdminSettingsPage() {
@@ -130,7 +131,7 @@ export default function AdminSettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="font-medium text-gray-900">サンプル案件を公開側に表示</div>
-              <div className="text-sm text-gray-500">サンプル案件を一般ユーザーに表示する</div>
+              <div className="text-sm text-gray-500">公開一覧にサンプル案件を含める</div>
             </div>
             <button
               onClick={() => saveFlags({ sampleVisible: !flags?.sampleVisible })}
@@ -142,6 +143,24 @@ export default function AdminSettingsPage() {
               }`}
             >
               {flags?.sampleVisible ? "有効" : "無効"}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">未ログイン時の賛同/お気に入り/投稿をロック</div>
+              <div className="text-sm text-gray-500">ゲストユーザーの操作を制限し、メール連携を促す</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ requireAccountForEngagement: !flags?.requireAccountForEngagement })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.requireAccountForEngagement 
+                  ? "bg-blue-600 text-white" 
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.requireAccountForEngagement ? "有効" : "無効"}
             </button>
           </div>
           

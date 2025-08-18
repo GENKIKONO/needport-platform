@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
+import LockedActionGuard from "@/components/LockedActionGuard";
 
 type NeedDetail = {
   id: string;
@@ -21,7 +22,7 @@ type NeedDetail = {
 };
 
 // 賛同・お気に入りボタンコンポーネント
-function Actions({ id, supportsCount: initial }: { id: string; supportsCount?: number }) {
+function Actions({ id, supportsCount: initial, flagsRequireAccount }: { id: string; supportsCount?: number; flagsRequireAccount: boolean }) {
   const [count, setCount] = useState(initial ?? 0);
   const [fav, setFav] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -67,26 +68,36 @@ function Actions({ id, supportsCount: initial }: { id: string; supportsCount?: n
   }
 
   return (
-    <div className="flex items-center gap-3 mt-4">
-      <button 
-        onClick={() => support(true)} 
-        disabled={loading}
-        className="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 disabled:opacity-50"
-      >
-        賛同する（{count}）
-      </button>
-      <button 
-        onClick={() => favorite(!fav)} 
-        disabled={loading}
-        className={`px-4 py-2 rounded-md disabled:opacity-50 ${
-          fav 
-            ? "bg-amber-600 text-white hover:bg-amber-700" 
-            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-        }`}
-      >
-        {fav ? "★ お気に入り中" : "☆ お気に入り"}
-      </button>
-    </div>
+    <LockedActionGuard flagsRequireAccount={flagsRequireAccount}>
+      {(enabled, openModal) => (
+        <div className="flex items-center gap-3 mt-4">
+          <button 
+            onClick={() => enabled ? support(true) : openModal()} 
+            disabled={loading}
+            className={`px-4 py-2 rounded-md disabled:opacity-50 ${
+              enabled 
+                ? "bg-sky-600 text-white hover:bg-sky-700" 
+                : "bg-gray-200 text-gray-500"
+            }`}
+          >
+            賛同する（{count}）
+          </button>
+          <button 
+            onClick={() => enabled ? favorite(!fav) : openModal()} 
+            disabled={loading}
+            className={`px-4 py-2 rounded-md disabled:opacity-50 ${
+              enabled 
+                ? (fav 
+                    ? "bg-amber-600 text-white hover:bg-amber-700" 
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200")
+                : "bg-gray-200 text-gray-500"
+            }`}
+          >
+            {fav ? "★ お気に入り中" : "☆ お気に入り"}
+          </button>
+        </div>
+      )}
+    </LockedActionGuard>
   );
 }
 
@@ -94,7 +105,16 @@ export default function NeedDetailPage() {
   const params = useParams();
   const [need, setNeed] = useState<NeedDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [flags, setFlags] = useState({ requireAccountForEngagement: true });
   const toast = useToast();
+
+  useEffect(() => {
+    // フラグを取得
+    fetch("/api/flags")
+      .then(r => r.json())
+      .then(setFlags)
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // 公開APIからデータを取得
@@ -207,7 +227,7 @@ export default function NeedDetailPage() {
         )}
 
         {/* 賛同・お気に入りボタン */}
-        <Actions id={need.id} supportsCount={need.supportsCount} />
+        <Actions id={need.id} supportsCount={need.supportsCount} flagsRequireAccount={flags.requireAccountForEngagement} />
 
         <div className="text-xs text-gray-500 mt-6">
           作成日: {new Date(need.createdAt).toLocaleDateString('ja-JP')}

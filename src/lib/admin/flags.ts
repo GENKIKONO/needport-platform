@@ -1,17 +1,19 @@
 export type FeatureFlags = {
   userEditEnabled: boolean;
   userDeleteEnabled: boolean;
+  vendorEditEnabled: boolean;
   demoGuardEnabled: boolean;
   sampleVisible: boolean;
-  vendorEditEnabled: boolean;
+  requireAccountForEngagement: boolean;
 };
 
 export const DEFAULT_FLAGS: FeatureFlags = {
   userEditEnabled: true,
   userDeleteEnabled: true,
-  demoGuardEnabled: false,
-  sampleVisible: false,
   vendorEditEnabled: true,
+  demoGuardEnabled: false,
+  sampleVisible: true,
+  requireAccountForEngagement: true,
 };
 
 const KV_KEY = "flags:global";
