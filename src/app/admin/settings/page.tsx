@@ -7,6 +7,7 @@ type FeatureFlags = {
   userDeleteEnabled: boolean;
   demoGuardEnabled: boolean;
   sampleVisible: boolean;
+  vendorEditEnabled: boolean;
 };
 
 export default function AdminSettingsPage() {
@@ -141,6 +142,24 @@ export default function AdminSettingsPage() {
               }`}
             >
               {flags?.sampleVisible ? "有効" : "無効"}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">事業者プロフィール編集を許可</div>
+              <div className="text-sm text-gray-500">マイページで事業者プロフィールの編集を許可する</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ vendorEditEnabled: !flags?.vendorEditEnabled })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.vendorEditEnabled 
+                  ? "bg-blue-600 text-white" 
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.vendorEditEnabled ? "有効" : "無効"}
             </button>
           </div>
         </div>

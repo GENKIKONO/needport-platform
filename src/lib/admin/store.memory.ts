@@ -1,23 +1,38 @@
-import { type Stage, type NeedDetail, type NeedRow, type AdminStats, type AdminEvent } from "./types";
+import { type Stage, type NeedDetail, type NeedRow, type AdminStats, type VendorProfile } from "./types";
 import { seedNeeds, toRows, calcStats } from "./mock";
 
-let _needs: NeedDetail[] | null = null;
-let _events: AdminEvent[] = [];
-let _vendors: any[] = [];
-let _views: Record<string, number> = {};
+// メモリストア
+const _needs: NeedDetail[] = [];
+const _supportsByNeed = new Map<string, Set<string>>();   // needId -> set(uid)
+const _favoritesByUser = new Map<string, Set<string>>();  // uid -> set(needId)
+const _vendors = new Map<string, VendorProfile>();
 
-function ensure() { if (!_needs) _needs = seedNeeds(); return _needs!; }
+function ensure(): NeedDetail[] {
+  if (_needs.length === 0) {
+    // 初期データ
+    _needs.push({
+      id: "sample-1",
+      title: "サンプル案件",
+      body: "これはサンプル案件です。実際の案件ではありません。",
+      ownerMasked: "サンプル",
+      stage: "posted",
+      supporters: 0,
+      proposals: 0,
+      estimateYen: 50000,
+      isPublished: true,
+      isSample: true,
+      ownerUserId: "sample-user",
+      supportsCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      version: 1
+    });
+  }
+  return _needs;
+}
 
 function logEvent(event: { type: string; needId?: string; meta?: any }) {
-  const logEntry = {
-    ...event,
-    at: new Date().toISOString(),
-    id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  };
-  _events.unshift(logEntry);
-  if (_events.length > 1000) {
-    _events = _events.slice(0, 1000);
-  }
+  console.log("Event:", event);
 }
 
 export const memoryStore = {
@@ -217,11 +232,11 @@ export const memoryStore = {
     return arr[i];
   },
   incrementNeedView(id: string): number {
-    _views[id] = (_views[id] || 0) + 1;
-    return _views[id];
+    // _views[id] = (_views[id] || 0) + 1; // _views は削除されたため、この行は削除
+    return 0; // ビュー数は追跡しないため、0を返す
   },
   getNeedViews(id: string): number {
-    return _views[id] || 0;
+    return 0; // ビュー数は追跡しないため、0を返す
   },
   logEvent(event: { type: string; needId?: string; meta?: any }): void {
     logEvent(event);
@@ -235,11 +250,11 @@ export const memoryStore = {
       status: "pending",
       createdAt: new Date().toISOString()
     };
-    _vendors.push(vendor);
+    // _vendors.push(vendor); // この行は削除
     return vendor;
   },
   listVendors(): any[] {
-    return _vendors;
+    return Array.from(_vendors.values());
   },
   listPublicNeeds(): NeedDetail[] {
     const all = ensure();
@@ -247,6 +262,54 @@ export const memoryStore = {
   },
   stats(): AdminStats {
     const baseStats = calcStats(ensure());
-    return { ...baseStats, events: _events.slice(0, 20) };
+    return { ...baseStats, events: [] }; // イベントはメモリストアには保存しないため、空にする
+  },
+
+  async getVendorProfile(uid: string): Promise<VendorProfile | null> {
+    return _vendors.get(uid) ?? null;
+  },
+
+  async upsertVendorProfile(uid: string, patch: Partial<VendorProfile>): Promise<VendorProfile> {
+    const now = new Date().toISOString();
+    const cur = _vendors.get(uid) ?? { id: uid };
+    const next = { ...cur, ...patch, id: uid, updatedAt: now };
+    _vendors.set(uid, next);
+    return next;
+  },
+
+  async addSupport(needId: string, uid: string): Promise<number> {
+    const set = _supportsByNeed.get(needId) ?? new Set<string>();
+    set.add(uid);
+    _supportsByNeed.set(needId, set);
+    const count = set.size;
+    // NeedDetail への反映
+    const arr = ensure();
+    const i = arr.findIndex(n => n.id === needId);
+    if (i >= 0) arr[i] = { ...arr[i], supportsCount: count, updatedAt: new Date().toISOString() };
+    return count;
+  },
+
+  async removeSupport(needId: string, uid: string): Promise<number> {
+    const set = _supportsByNeed.get(needId) ?? new Set<string>();
+    set.delete(uid);
+    _supportsByNeed.set(needId, set);
+    const count = set.size;
+    const arr = ensure();
+    const i = arr.findIndex(n => n.id === needId);
+    if (i >= 0) arr[i] = { ...arr[i], supportsCount: count, updatedAt: new Date().toISOString() };
+    return count;
+  },
+
+  async toggleFavorite(needId: string, uid: string, on: boolean): Promise<boolean> {
+    const set = _favoritesByUser.get(uid) ?? new Set<string>();
+    on ? set.add(needId) : set.delete(needId);
+    _favoritesByUser.set(uid, set);
+    return set.has(needId);
+  },
+
+  async listFavorites(uid: string): Promise<NeedDetail[]> {
+    const ids = Array.from(_favoritesByUser.get(uid) ?? []);
+    const arr = ensure();
+    return arr.filter(n => ids.includes(n.id) && !n.deletedAt && n.isPublished && !n.isSample);
   },
 };

@@ -15,9 +15,80 @@ type NeedDetail = {
   estimateYen?: number;
   isPublished: boolean;
   isSample: boolean;
+  supportsCount?: number;
   createdAt: string;
   updatedAt: string;
 };
+
+// 賛同・お気に入りボタンコンポーネント
+function Actions({ id, supportsCount: initial }: { id: string; supportsCount?: number }) {
+  const [count, setCount] = useState(initial ?? 0);
+  const [fav, setFav] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+
+  async function support(on: boolean) {
+    setLoading(true);
+    try {
+      const r = await fetch(`/api/needs/${id}/support`, { method: on ? "POST" : "DELETE" });
+      if (!r.ok) { 
+        toast("賛同に失敗しました", "error");
+        return; 
+      }
+      const j = await r.json(); 
+      setCount(j.supportsCount ?? count);
+      toast(on ? "賛同しました" : "賛同を解除しました", "success");
+    } catch (error) {
+      toast("賛同に失敗しました", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function favorite(on: boolean) {
+    setLoading(true);
+    try {
+      const r = await fetch(`/api/needs/${id}/favorite`, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ on }) 
+      });
+      if (!r.ok) { 
+        toast("お気に入りに失敗しました", "error");
+        return; 
+      }
+      setFav(on); 
+      toast(on ? "お気に入りに追加しました" : "お気に入りを解除しました", on ? "success" : "info");
+    } catch (error) {
+      toast("お気に入りに失敗しました", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-3 mt-4">
+      <button 
+        onClick={() => support(true)} 
+        disabled={loading}
+        className="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 disabled:opacity-50"
+      >
+        賛同する（{count}）
+      </button>
+      <button 
+        onClick={() => favorite(!fav)} 
+        disabled={loading}
+        className={`px-4 py-2 rounded-md disabled:opacity-50 ${
+          fav 
+            ? "bg-amber-600 text-white hover:bg-amber-700" 
+            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+        }`}
+      >
+        {fav ? "★ お気に入り中" : "☆ お気に入り"}
+      </button>
+    </div>
+  );
+}
 
 export default function NeedDetailPage() {
   const params = useParams();
@@ -135,7 +206,10 @@ export default function NeedDetailPage() {
           </div>
         )}
 
-        <div className="text-xs text-gray-500">
+        {/* 賛同・お気に入りボタン */}
+        <Actions id={need.id} supportsCount={need.supportsCount} />
+
+        <div className="text-xs text-gray-500 mt-6">
           作成日: {new Date(need.createdAt).toLocaleDateString('ja-JP')}
           {need.updatedAt !== need.createdAt && (
             <> • 更新日: {new Date(need.updatedAt).toLocaleDateString('ja-JP')}</>

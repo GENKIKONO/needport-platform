@@ -30,6 +30,7 @@ export type NeedRow = {
   isPublished: boolean;
   isSample: boolean;
   deletedAt?: string | null;     // ソフトデリート時刻
+  supportsCount?: number;        // 賛同数
   createdAt: string;             // ISO
   updatedAt: string;             // ISO
   payment: PaymentStatus;
@@ -68,6 +69,7 @@ export type NeedDetail = {
   ownerUserId?: string;   // 追加: 投稿ユーザID（暫定）
   views?: number;         // 既存なら維持
   deletedAt?: string | null; // ソフトデリート時刻（nullで未削除）
+  supportsCount?: number; // 賛同数
   createdAt: string;
   updatedAt: string;
   version?: number;
@@ -87,4 +89,15 @@ export type FeatureFlags = {
   vendorEditEnabled: boolean;    // 事業者プロフィール編集可
   demoGuardEnabled: boolean;     // 旧「デモ」無効化スイッチ（true=ブロック、false=許可）
   showSamples: boolean;          // サンプル案件を公開側で見せる
+};
+
+// VendorProfile 追加（最小）
+export type VendorProfile = {
+  id: string;        // = ownerUserId（uid）
+  name?: string;
+  company?: string;
+  phone?: string;
+  website?: string;
+  intro?: string;
+  updatedAt?: string;
 };

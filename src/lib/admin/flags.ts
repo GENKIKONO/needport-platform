@@ -3,6 +3,7 @@ export type FeatureFlags = {
   userDeleteEnabled: boolean;
   demoGuardEnabled: boolean;
   sampleVisible: boolean;
+  vendorEditEnabled: boolean;
 };
 
 export const DEFAULT_FLAGS: FeatureFlags = {
@@ -10,6 +11,7 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   userDeleteEnabled: true,
   demoGuardEnabled: false,
   sampleVisible: false,
+  vendorEditEnabled: true,
 };
 
 const KV_KEY = "flags:global";

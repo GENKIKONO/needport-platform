@@ -10,6 +10,7 @@ type NeedRow = {
   supporters: number;
   proposals: number;
   estimateYen?: number | null;
+  supportsCount?: number;
   updatedAt: string;
 };
 
@@ -181,7 +182,7 @@ export default function PublicNeedsList() {
           const excerpt = (n.description ?? "").replace(/\s+/g, " ").slice(0, 120);
           const meta = [
             new Date(n.updatedAt).toLocaleDateString(),
-            `賛同 ${n.supporters}`,
+            `賛同 ${n.supportsCount ?? n.supporters}`,
             `提案 ${n.proposals}`,
             n.estimateYen ? `目安 ¥${n.estimateYen.toLocaleString()}` : undefined,
           ].filter(Boolean).join("・");

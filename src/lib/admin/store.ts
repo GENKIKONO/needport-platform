@@ -1,4 +1,4 @@
-import { type Stage, type NeedDetail, type NeedRow, type AdminStats } from "./types";
+import { type Stage, type NeedDetail, type NeedRow, type AdminStats, type VendorProfile } from "./types";
 
 const hasKV = !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
 export * from "./types";
@@ -79,6 +79,36 @@ export async function restoreNeed(id: string): Promise<boolean> {
 export async function listNeedsByOwner(ownerUserId: string, opts?: { includeDeleted?: boolean }): Promise<NeedRow[]> {
   const store = await getStore();
   return store.listNeedsByOwner(ownerUserId, opts);
+}
+
+export async function getVendorProfile(uid: string): Promise<VendorProfile | null> {
+  const store = await getStore();
+  return store.getVendorProfile(uid);
+}
+
+export async function upsertVendorProfile(uid: string, patch: Partial<VendorProfile>): Promise<VendorProfile> {
+  const store = await getStore();
+  return store.upsertVendorProfile(uid, patch);
+}
+
+export async function addSupport(needId: string, uid: string): Promise<number> {
+  const store = await getStore();
+  return store.addSupport(needId, uid);
+}
+
+export async function removeSupport(needId: string, uid: string): Promise<number> {
+  const store = await getStore();
+  return store.removeSupport(needId, uid);
+}
+
+export async function toggleFavorite(needId: string, uid: string, on: boolean): Promise<boolean> {
+  const store = await getStore();
+  return store.toggleFavorite(needId, uid, on);
+}
+
+export async function listFavorites(uid: string): Promise<NeedDetail[]> {
+  const store = await getStore();
+  return store.listFavorites(uid);
 }
 
 export async function listPublicNeeds(): Promise<NeedDetail[]> {

@@ -382,4 +382,102 @@ export const kvStore = {
       return { ...baseStats, events: [] };
     }
   },
+
+  async listFavorites(uid: string): Promise<NeedDetail[]> {
+    await ensureInitialData();
+    
+    const favoriteIds = await kv.smembers(`favorites:${uid}`);
+    const needs: NeedDetail[] = [];
+    
+    for (const id of favoriteIds) {
+      const need = await kv.get<NeedDetail>(needKey(id));
+      if (need && !need.deletedAt && need.isPublished && !need.isSample) {
+        needs.push(need);
+      }
+    }
+    
+    return needs;
+  },
+
+  async getVendorProfile(uid: string): Promise<VendorProfile | null> {
+    try {
+      return await kv.get<VendorProfile>(`vendor:${uid}`);
+    } catch (error) {
+      console.error("Failed to get vendor profile:", error);
+      return null;
+    }
+  },
+
+  async upsertVendorProfile(uid: string, patch: Partial<VendorProfile>): Promise<VendorProfile> {
+    const now = new Date().toISOString();
+    const current = await kv.get<VendorProfile>(`vendor:${uid}`) ?? { id: uid };
+    const updated = { ...current, ...patch, id: uid, updatedAt: now };
+    
+    try {
+      await kv.set(`vendor:${uid}`, updated);
+    } catch (error) {
+      console.error("Failed to save vendor profile:", error);
+    }
+    
+    return updated;
+  },
+
+  async addSupport(needId: string, uid: string): Promise<number> {
+    const supportKey = `supports:${needId}`;
+    
+    try {
+      await kv.sadd(supportKey, uid);
+      const count = await kv.scard(supportKey);
+      
+      // NeedDetail の supportsCount を更新
+      const need = await kv.get<NeedDetail>(needKey(needId));
+      if (need) {
+        const updated = { ...need, supportsCount: count, updatedAt: new Date().toISOString() };
+        await kv.set(needKey(needId), updated);
+      }
+      
+      return count;
+    } catch (error) {
+      console.error("Failed to add support:", error);
+      return 0;
+    }
+  },
+
+  async removeSupport(needId: string, uid: string): Promise<number> {
+    const supportKey = `supports:${needId}`;
+    
+    try {
+      await kv.srem(supportKey, uid);
+      const count = await kv.scard(supportKey);
+      
+      // NeedDetail の supportsCount を更新
+      const need = await kv.get<NeedDetail>(needKey(needId));
+      if (need) {
+        const updated = { ...need, supportsCount: count, updatedAt: new Date().toISOString() };
+        await kv.set(needKey(needId), updated);
+      }
+      
+      return count;
+    } catch (error) {
+      console.error("Failed to remove support:", error);
+      return 0;
+    }
+  },
+
+  async toggleFavorite(needId: string, uid: string, on: boolean): Promise<boolean> {
+    const favoriteKey = `favorites:${uid}`;
+    
+    try {
+      if (on) {
+        await kv.sadd(favoriteKey, needId);
+      } else {
+        await kv.srem(favoriteKey, needId);
+      }
+      
+      return await kv.sismember(favoriteKey, needId);
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+      return false;
+    }
+  },
 };
