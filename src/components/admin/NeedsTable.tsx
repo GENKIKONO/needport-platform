@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { type NeedRow, type Stage } from "@/lib/admin/types";
 import { StageBadge, PaymentBadge } from "./StatusBadge";
-import { StageStepper } from "./StageStepper";
+import StageStepper from "./StageStepper";
 import { yen, timeAgo } from "@/lib/admin/format";
 
 export function NeedsTable() {
@@ -218,7 +218,7 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
             </button>
           </div>
 
-          <StageStepper currentStage={need.stage} />
+          <StageStepper stage={need.stage} />
 
           {/* Actions */}
           <div className="mb-6">

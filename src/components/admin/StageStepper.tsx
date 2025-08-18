@@ -1,4 +1,4 @@
-import { type Stage } from "@/lib/admin/types";
+import type { Stage } from "@/lib/admin/types";
 
 const stages: { key: Stage; label: string }[] = [
   { key: "posted", label: "投稿" },
@@ -10,8 +10,8 @@ const stages: { key: Stage; label: string }[] = [
   { key: "completed", label: "完了" },
 ];
 
-export function StageStepper({ currentStage }: { currentStage: Stage }) {
-  const currentIndex = stages.findIndex(s => s.key === currentStage);
+export default function StageStepper({ stage }: { stage: Stage }) {
+  const currentIndex = stages.findIndex(s => s.key === stage);
   
   return (
     <div className="flex items-center space-x-2 mb-4">

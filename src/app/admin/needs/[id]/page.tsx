@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { StageStepper } from "@/components/admin/StageStepper";
+import StageStepper from "@/components/admin/StageStepper";
 import { yen, timeAgo } from "@/lib/admin/format";
 import { type NeedDetail } from "@/lib/admin/types";
 
@@ -64,7 +64,7 @@ export default function AdminNeedDetailPage({ params }: { params: { id: string }
         <div className="text-sm text-gray-500">ID: {need.id}</div>
       </div>
 
-      <StageStepper currentStage={need.stage} />
+      <StageStepper stage={need.stage} />
 
       {/* Actions */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
