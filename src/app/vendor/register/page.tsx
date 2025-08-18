@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function VendorRegisterPage(){
+  const router = useRouter();
+  const sp = useSearchParams();
+  const returnTo = sp.get('returnTo') || '/vendor/services/new';
+  
   const [name,setName]=useState("");
   const [email,setEmail]=useState("");
   const [note,setNote]=useState("");
@@ -17,6 +22,7 @@ export default function VendorRegisterPage(){
       });
       if(!res.ok) throw new Error(await res.text());
       alert("登録を受け付けました（審査中）");
+      router.replace(returnTo);
     }catch(e:any){ alert("失敗: "+e.message); }
     finally{ setSaving(false); }
   }
