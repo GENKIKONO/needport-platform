@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { updateExpert } from "@/lib/admin/store";
+import { guard } from "../../../_util";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  // TODO: connect to real DB (Prisma/SQL)
-  const body = await request.json();
-  const { action } = body;
-  
-  // Stub response - always success
-  return NextResponse.json({ 
-    success: true, 
-    message: `Expert ${action} requested for need ${params.id}` 
-  });
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  const g = guard(req); if (g) return g;
+  const { verdict } = await req.json();
+  const updated = updateExpert(params.id, verdict);
+  if (!updated) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  return NextResponse.json(updated);
 }

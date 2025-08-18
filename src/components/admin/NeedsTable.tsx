@@ -69,6 +69,12 @@ export function NeedsTable() {
               </option>
             ))}
           </select>
+          <a
+            href="/api/admin/needs/export"
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-center"
+          >
+            CSV出力
+          </a>
         </div>
       </div>
 
@@ -174,6 +180,23 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
     }
   }
 
+  async function mutateStage(id: string, next: Stage) {
+    // 楽観更新: 先に UI を反映、その後 API で確定
+    setNeed(n => n ? { ...n, stage: next } : n);
+    try {
+      await fetch(`/api/admin/needs/${id}/stage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage: next }),
+      });
+      // 再フェッチで正値に整える
+      fetchNeed();
+    } catch (error) {
+      console.error("Stage update failed:", error);
+      alert("ステージ更新に失敗しました");
+    }
+  }
+
   async function handleAction(action: string, data?: any) {
     try {
       const response = await fetch(`/api/admin/needs/${needId}/${action}`, {
@@ -225,13 +248,13 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
             <h3 className="text-lg font-semibold mb-2">アクション</h3>
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => handleAction("stage", { stage: "approved" })}
+                onClick={() => mutateStage(need.id, "approved")}
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
                 承認する
               </button>
               <button
-                onClick={() => handleAction("stage", { stage: "room" })}
+                onClick={() => mutateStage(need.id, "room")}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 ルーム開始

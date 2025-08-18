@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { type AdminStats } from "@/lib/admin/types";
 import { yen } from "@/lib/admin/format";
 
@@ -6,10 +7,10 @@ export function KpiCards({ stats }: { stats: AdminStats }) {
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <Link href="/admin/needs" className="bg-white rounded-lg border border-gray-200 p-4 hover:bg-gray-50">
         <div className="text-sm font-medium text-gray-600">総件数</div>
         <div className="text-2xl font-bold text-gray-900">{totalNeeds}</div>
-      </div>
+      </Link>
       
       <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="text-sm font-medium text-gray-600">総額</div>
@@ -21,15 +22,15 @@ export function KpiCards({ stats }: { stats: AdminStats }) {
         <div className="text-2xl font-bold text-gray-900">{yen(stats.avgTicketYen)}</div>
       </div>
       
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <Link href="/admin/needs?stage=proposed" className="bg-white rounded-lg border border-gray-200 p-4 hover:bg-gray-50">
         <div className="text-sm font-medium text-gray-600">承認待ち</div>
         <div className="text-2xl font-bold text-orange-600">{stats.pendingApprovals}</div>
-      </div>
+      </Link>
       
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <Link href="/admin/needs?stage=escrow_hold" className="bg-white rounded-lg border border-gray-200 p-4 hover:bg-gray-50">
         <div className="text-sm font-medium text-gray-600">支払い保留</div>
         <div className="text-2xl font-bold text-yellow-600">{stats.pendingPayouts}</div>
-      </div>
+      </Link>
     </div>
   );
 }

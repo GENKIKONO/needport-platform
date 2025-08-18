@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getNeed } from "@/lib/admin/mock";
+import { getNeed } from "@/lib/admin/store";
+import { guard } from "../../_util";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  // TODO: connect to real DB (Prisma/SQL)
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const g = guard(req); if (g) return g;
   const need = getNeed(params.id);
-  
-  if (!need) {
-    return NextResponse.json({ error: "Need not found" }, { status: 404 });
-  }
-  
+  if (!need) return NextResponse.json({ error: "not_found" }, { status: 404 });
   return NextResponse.json(need);
 }

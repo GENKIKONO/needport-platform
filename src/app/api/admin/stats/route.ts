@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
-import { getStats } from "@/lib/admin/mock";
+import { NextRequest, NextResponse } from "next/server";
+import { stats } from "@/lib/admin/store";
+import { guard } from "../_util";
 
-export async function GET() {
-  // TODO: connect to real DB (Prisma/SQL)
-  const stats = getStats();
-  
-  return NextResponse.json(stats);
+export async function GET(req: NextRequest) {
+  const g = guard(req); if (g) return g;
+  return NextResponse.json(stats());
 }
