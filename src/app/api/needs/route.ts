@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createNeed, listPublicNeeds } from "@/lib/admin/store";
+import { getOrCreateUserByEmail } from "@/lib/trust/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,9 +38,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
-  const { title, body, estimateYen } = await req.json().catch(() => ({}));
+  const { title, body, estimateYen, ownerEmail } = await req.json().catch(() => ({}));
   if (!title || typeof title !== "string") {
     return NextResponse.json({ error: "title required" }, { status: 400 });
+  }
+  
+  // ユーザ作成（メールがある場合）
+  let ownerUserId: string | undefined;
+  if (ownerEmail && typeof ownerEmail === "string") {
+    try {
+      const user = await getOrCreateUserByEmail(ownerEmail);
+      ownerUserId = user.id;
+    } catch (error) {
+      console.error('Failed to create user:', error);
+    }
   }
   
   const need = await createNeed({
@@ -49,6 +61,7 @@ export async function POST(req: NextRequest) {
     ownerMasked: "ユーザ", // 将来はログインユーザ名に置換
     isPublished: false,     // 投稿直後は非公開（管理で公開にする）
     isSample: false,
+    ownerUserId,           // ユーザIDを紐付け
   });
   return NextResponse.json(need, { status: 201 });
 }

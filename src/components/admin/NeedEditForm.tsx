@@ -14,6 +14,7 @@ export default function NeedEditForm({ need, onSaved }: {
     stage: need.stage as Stage,
     isPublished: need.isPublished,
     isSample: need.isSample,
+    requireIntro: need.requireIntro,
   });
   const [saving, setSaving] = useState(false);
 
@@ -65,6 +66,11 @@ export default function NeedEditForm({ need, onSaved }: {
             <input type="checkbox" checked={form.isSample}
               onChange={(e)=>setForm(v=>({...v, isSample:e.target.checked}))}/>
             <span>サンプル表示</span>
+          </label>
+          <label className="inline-flex items-center gap-2">
+            <input type="checkbox" checked={form.requireIntro ?? false}
+              onChange={(e)=>setForm(v=>({...v, requireIntro:e.target.checked}))}/>
+            <span>紹介必須</span>
           </label>
         </div>
       </div>

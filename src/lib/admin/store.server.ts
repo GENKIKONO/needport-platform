@@ -41,7 +41,7 @@ async function logEvent(event: { type: string; needId?: string; meta?: any }): P
 export const kvStore = {
   async createNeed(input: {
     title: string; body?: string; estimateYen?: number; ownerMasked?: string;
-    isPublished?: boolean; isSample?: boolean;
+    isPublished?: boolean; isSample?: boolean; ownerUserId?: string;
   }): Promise<NeedDetail> {
     await ensureInitialData();
     
@@ -56,6 +56,7 @@ export const kvStore = {
       estimateYen: input.estimateYen,
       isPublished: input.isPublished ?? false,
       isSample: input.isSample ?? false,
+      ownerUserId: input.ownerUserId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       version: 1,

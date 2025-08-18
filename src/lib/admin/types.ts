@@ -53,17 +53,21 @@ export type NeedDetail = {
   id: string;
   title: string;
   body?: string;
-  ownerId?: string;           // 将来のユーザID
   ownerMasked: string;
   stage: Stage;
   supporters: number;
   proposals: number;
   estimateYen?: number;
-  isPublished: boolean;       // ← 追加: 一般公開フラグ
-  isSample: boolean;          // ← 追加: サンプル表示フラグ（デモ用）
+  expert?: { status: "approved" | "rejected" | "pending"; at: string };
+  escrowHold?: boolean;
+  isSample?: boolean;
+  isPublished?: boolean;
+  requireIntro?: boolean; // 追加: このニーズは「紹介必須」
+  ownerUserId?: string;   // 追加: 投稿ユーザID（暫定）
+  views?: number;         // 既存なら維持
   createdAt: string;
   updatedAt: string;
-  version: number;
+  version?: number;
 };
 
 export type AdminEvent = {

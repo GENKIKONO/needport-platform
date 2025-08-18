@@ -47,7 +47,7 @@ export async function stats(): Promise<AdminStats> {
 
 export async function createNeed(input: {
   title: string; body?: string; estimateYen?: number; ownerMasked?: string;
-  isPublished?: boolean; isSample?: boolean;
+  isPublished?: boolean; isSample?: boolean; ownerUserId?: string;
 }): Promise<NeedDetail> {
   const store = await getStore();
   return store.createNeed(input);

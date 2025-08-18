@@ -81,7 +81,7 @@ export const memoryStore = {
   },
   createNeed(input: {
     title: string; body?: string; estimateYen?: number; ownerMasked?: string;
-    isPublished?: boolean; isSample?: boolean;
+    isPublished?: boolean; isSample?: boolean; ownerUserId?: string;
   }): NeedDetail {
     const arr = ensure();
     const newNeed: NeedDetail = {
@@ -95,6 +95,7 @@ export const memoryStore = {
       estimateYen: input.estimateYen,
       isPublished: input.isPublished ?? false,
       isSample: input.isSample ?? false,
+      ownerUserId: input.ownerUserId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       version: 1,

@@ -22,6 +22,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     stage: patch.stage,
     isPublished: patch.isPublished,
     isSample: patch.isSample,
+    requireIntro: patch.requireIntro,
   });
   if (!updated) return NextResponse.json({ error: "not found" }, { status: 404 });
   return NextResponse.json(updated);
