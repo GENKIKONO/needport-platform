@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
   // 検索・フィルタ・ソートパラメータ
   const q = searchParams.get("q") ?? undefined;
   const stage = searchParams.get("stage") ?? undefined;
+  const region = searchParams.get("region") ?? undefined;
   const sort = searchParams.get("sort") as "updated" | "views" | "supporters" | "proposals" | undefined ?? "updated";
   const direction = searchParams.get("direction") as "desc" | "asc" | undefined ?? "desc";
 
@@ -59,6 +60,11 @@ export async function GET(req: NextRequest) {
   // ステージフィルタ
   if (stage) {
     items = items.filter(need => need.stage === stage);
+  }
+  
+  // 地域フィルタ（optional: need.region があるもののみ対象）
+  if (region) {
+    items = items.filter(need => (need as any).region && (need as any).region === region);
   }
   
   // ソート

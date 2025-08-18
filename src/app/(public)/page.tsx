@@ -6,6 +6,7 @@ import HomeCategories from '@/components/HomeCategories';
 import HomeFeatured from '@/components/HomeFeatured';
 import MarketingHero from '@/components/marketing/Hero';
 import QuickLinks from '@/components/marketing/QuickLinks';
+import BottomHeroCTA from '@/components/marketing/BottomHeroCTA';
 
 export const dynamic = "force-dynamic"; 
 export const revalidate = 0;
@@ -57,6 +58,9 @@ export default async function Home(){
         </header>
         <HomeFeatured />
       </section>
+
+      {/* 下部ヒーローCTA */}
+      <BottomHeroCTA />
     </main>
   );
 }

@@ -126,12 +126,15 @@ export default async function RootLayout({
           `
         }} />
       </head>
-      <body>
+      <body className={`${inter.className} bg-slate-50 text-slate-900`}>
         <ErrorBoundary>
           <ClientErrorCatcher />
           <ToastProvider>
             <AppHeader />
-            {children}
+            {/* コンテンツ領域：下ナビとノッチに負けない余白 */}
+            <div className="min-h-screen pb-24 md:pb-0 [padding-bottom:env(safe-area-inset-bottom)]">
+              {children}
+            </div>
             {process.env.NEXT_PUBLIC_DISABLE_BOTTOMNAV === '1' ? null : <BottomNav />}
             
             {/* PWA Install Prompt */}

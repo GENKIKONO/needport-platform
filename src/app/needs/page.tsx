@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { prefectures } from "@/lib/geo/prefectures";
 
 type NeedRow = {
   id: string;
@@ -31,6 +32,7 @@ export default function PublicNeedsList() {
   // 検索・フィルタ・ソート状態
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState("");
+  const [regionFilter, setRegionFilter] = useState("");
   const [sortBy, setSortBy] = useState("updated");
   const [sortDirection, setSortDirection] = useState<"desc" | "asc">("desc");
 
@@ -45,6 +47,7 @@ export default function PublicNeedsList() {
       
       if (searchQuery) params.set("q", searchQuery);
       if (stageFilter) params.set("stage", stageFilter);
+      if (regionFilter) params.set("region", regionFilter);
       if (sortBy) params.set("sort", sortBy);
       if (sortDirection) params.set("direction", sortDirection);
       
@@ -70,6 +73,7 @@ export default function PublicNeedsList() {
   const handleReset = () => {
     setSearchQuery("");
     setStageFilter("");
+    setRegionFilter("");
     setSortBy("updated");
     setSortDirection("desc");
     setPage(1);
@@ -122,6 +126,15 @@ export default function PublicNeedsList() {
             <option value="room">ルーム進行中</option>
             <option value="in_progress">作業実行中</option>
             <option value="completed">完了</option>
+          </select>
+          <select
+            value={regionFilter}
+            onChange={(e) => setRegionFilter(e.target.value)}
+            aria-label="地域フィルタ"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">すべての地域</option>
+            {prefectures.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
           <select
             value={sortBy}

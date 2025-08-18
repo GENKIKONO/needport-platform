@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
 import LockedActionGuard from "@/components/LockedActionGuard";
+import { SupportMeter } from "@/components/needs/SupportMeter";
 
 type NeedDetail = {
   id: string;
@@ -218,6 +219,10 @@ export default function NeedDetailPage() {
               <span>予算: ¥{need.estimateYen.toLocaleString()}</span>
             </>
           )}
+        </div>
+
+        <div className="mt-4">
+          <SupportMeter current={need.supportsCount ?? 0} goal={10} />
         </div>
 
         {need.body && (

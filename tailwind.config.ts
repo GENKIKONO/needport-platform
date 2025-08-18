@@ -35,13 +35,19 @@ export default {
         sand:    { 50:  '#FFF6E6' },                                   // 砂浜の薄ベージュ
         buoy:    { 500: '#F97316' },                                   // ブイのオレンジ
         light:   { 500: '#F43F5E' },                                   // 灯台の赤
+        port: {
+          sky: "#38bdf8",
+          deep: "#0ea5e9",
+          indigo: "#6366f1",
+        }
       },
       borderRadius: {
         xl: '14px',
+        port: "14px"
       },
       boxShadow: {
         card: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 0 0 1px rgb(0 0 0 / 0.05)',
-        port: '0 10px 30px -10px rgba(14,116,144,.15), 0 2px 8px rgba(0,0,0,.04)',
+        port: '0 8px 24px -8px rgba(2,132,199,.25)'
       },
       container: {
         center: true,

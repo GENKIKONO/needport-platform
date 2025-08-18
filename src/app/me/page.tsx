@@ -1,9 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
 import MeEmpty from "@/components/me/MeEmpty";
+import Link from "next/link";
+import { NeedCard } from "@/components/needs/NeedCard";
 
 type Flags = { userEditEnabled: boolean; userDeleteEnabled: boolean; };
 type Need = { id: string; title: string; description?: string; estimateYen?: number; updatedAt?: string; deletedAt?: string | null; };
+
+// サンプルニーズ（デモ用）
+const demoNeeds = [
+  { id: "demo1", title: "地域の高齢者向け配食サービス", body: "一人暮らしの高齢者が安心して食事できる、温かく栄養バランスの良い配食サービスが欲しいです。", supportsCount: 15 },
+  { id: "demo2", title: "子育て世代のための一時預かり", body: "急な用事やリフレッシュの時間を確保したい子育て世代のための、安心できる一時預かりサービスを探しています。", supportsCount: 8 },
+];
 
 export default function MePage() {
   const [flags, setFlags] = useState<Flags>({ userEditEnabled: true, userDeleteEnabled: true });
@@ -164,9 +172,23 @@ export default function MePage() {
       )}
       
       {!items || items.length === 0 ? (
-        <div className="space-y-6">
-          <p className="text-gray-600">あなたの投稿はまだありません。</p>
-          <MeEmpty />
+        <div className="mx-auto max-w-5xl px-4 py-12">
+          <div className="mt-8 grid md:grid-cols-2 gap-6">
+            <div className="rounded-2xl border bg-white p-6">
+              <h2 className="text-lg font-semibold">はじめかた</h2>
+              <ol className="mt-3 list-decimal list-inside text-slate-700 space-y-1">
+                <li><Link className="text-sky-700 underline" href="/needs/new">ニーズを投稿</Link> してみましょう</li>
+                <li>管理により公開されると、みんなが賛同できます</li>
+                <li>賛同が <b>10人</b> 集まると「出港」ステージへ</li>
+              </ol>
+            </div>
+            <div className="rounded-2xl border bg-white p-6">
+              <h2 className="text-lg font-semibold">こんな投稿が人気</h2>
+              <div className="mt-3 space-y-3">
+                {demoNeeds.slice(0,2).map(n => <NeedCard key={n.id} need={n} />)}
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
