@@ -1,5 +1,5 @@
 // @needport: do-not-edit-outside-design-task
-import FlowStrip from "./FlowStrip";
+import FlowStrip from "@/components/FlowStrip";
 
 /* small inline icons (SVG) */
 const I = {
@@ -21,10 +21,10 @@ const pills = [
 export default function ServiceFlowCompact() {
   return (
     <div className="space-y-4">
-      <FlowStrip showLabels={false} />
+      <FlowStrip active={0} steps={5} />
       <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
         <div className="flex gap-2 min-w-max px-1">
-          {pills.map((p, i) => (
+          {(pills ?? []).map((p, i) => (
             <div key={i} className="flex-shrink-0 bg-white rounded-full border border-sky-200 px-3 py-2">
               <div className="flex items-center gap-2 text-xs">
                 {p.icon}
