@@ -3,7 +3,7 @@ import { type Stage, type NeedDetail, type NeedRow, type AdminStats } from "./ty
 const hasKV = !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
 export * from "./types";
 
-// 動的インポート用のヘルパー関数
+// Helper function for dynamic import
 async function getStore() {
   if (hasKV) {
     const { kvStore } = await import("./store.server");
@@ -14,7 +14,7 @@ async function getStore() {
   }
 }
 
-// 既存コード互換のため、個別関数を再エクスポート
+// Re-export individual functions for backward compatibility
 export async function listNeeds(params?: { q?: string; stage?: Stage | "all"; page?: number; pageSize?: number; }): Promise<{ rows: NeedRow[]; total: number }> {
   const store = await getStore();
   return store.listNeeds(params);
@@ -64,4 +64,39 @@ export async function updateNeed(id: string, patch: Partial<Pick<
 export async function listPublicNeeds(): Promise<NeedDetail[]> {
   const store = await getStore();
   return store.listPublicNeeds();
+}
+
+export async function setPublished(id: string, isPublished: boolean): Promise<NeedDetail | null> {
+  const store = await getStore();
+  return store.setPublished(id, isPublished);
+}
+
+export async function setSample(id: string, isSample: boolean): Promise<NeedDetail | null> {
+  const store = await getStore();
+  return store.setSample(id, isSample);
+}
+
+export async function incrementNeedView(id: string): Promise<number> {
+  const store = await getStore();
+  return store.incrementNeedView(id);
+}
+
+export async function getNeedViews(id: string): Promise<number> {
+  const store = await getStore();
+  return store.getNeedViews(id);
+}
+
+export async function logEvent(event: { type: string; needId?: string; meta?: any }): Promise<void> {
+  const store = await getStore();
+  return store.logEvent(event);
+}
+
+export async function createVendor(input: { name: string; email: string; note?: string }): Promise<any> {
+  const store = await getStore();
+  return store.createVendor(input);
+}
+
+export async function listVendors(): Promise<any[]> {
+  const store = await getStore();
+  return store.listVendors();
 }

@@ -2,24 +2,26 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from "next/server";
-import { updateStage } from "@/lib/admin/store";
-import { guard } from "../../../_util";
+import { updateStage, logEvent } from "@/lib/admin/store";
+import { guard } from "@/app/api/admin/_util";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const g = guard(req); if (g) return g;
-  const { stage } = await req.json();
   
   try {
+    const { stage } = await req.json();
     const updated = await updateStage(params.id, stage);
-    if (!updated) return NextResponse.json({ error: "not_found" }, { status: 404 });
     
-    console.log('Admin stage update success:', { id: params.id, stage, timestamp: new Date().toISOString() });
+    if (!updated) {
+      return NextResponse.json({ error: "not found" }, { status: 404 });
+    }
+
+    // イベントログは updateStage 内で自動的に記録される
     return NextResponse.json(updated);
   } catch (error: any) {
-    console.error('Admin stage update failed:', { id: params.id, stage, error: error.message });
     if (error.message.includes('Invalid stage transition')) {
-      return NextResponse.json({ error: "invalid_transition", message: error.message }, { status: 409 });
+      return NextResponse.json({ error: error.message }, { status: 409 });
     }
-    return NextResponse.json({ error: "update_failed" }, { status: 500 });
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
   }
 }

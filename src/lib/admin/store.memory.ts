@@ -1,14 +1,20 @@
-import { type Stage, type NeedDetail, type NeedRow, type AdminStats } from "./types";
+import { type Stage, type NeedDetail, type NeedRow, type AdminStats, type AdminEvent } from "./types";
 import { seedNeeds, toRows, calcStats } from "./mock";
 
 let _needs: NeedDetail[] | null = null;
 let _events: AdminEvent[] = [];
+let _vendors: any[] = [];
+let _views: Record<string, number> = {};
 
 function ensure() { if (!_needs) _needs = seedNeeds(); return _needs!; }
 
-function logEvent(type: string, id: string, payload?: any) {
-  const event = { type, id, by: 'admin', at: new Date().toISOString(), payload };
-  _events.unshift(event);
+function logEvent(event: { type: string; needId?: string; meta?: any }) {
+  const logEntry = {
+    ...event,
+    at: new Date().toISOString(),
+    id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  };
+  _events.unshift(logEntry);
   if (_events.length > 1000) {
     _events = _events.slice(0, 1000);
   }
@@ -29,10 +35,8 @@ export const memoryStore = {
   updateStage(id: string, stage: Stage) {
     const arr = ensure(); const i = arr.findIndex(n => n.id === id);
     if (i === -1) return null;
-    
+
     const currentStage = arr[i].stage;
-    
-    // ステージ遷移の制約チェック
     const allowedTransitions: Record<Stage, Stage[]> = {
       posted: ['gathering'],
       gathering: ['proposed'],
@@ -40,23 +44,23 @@ export const memoryStore = {
       approved: ['room'],
       room: ['in_progress'],
       in_progress: ['completed'],
-      completed: [], // 完了後は変更不可
-      disputed: [], // 異議後は変更不可
-      refunded: [] // 返金後は変更不可
+      completed: [],
+      disputed: [],
+      refunded: []
     };
-    
+
     if (!allowedTransitions[currentStage]?.includes(stage)) {
       throw new Error(`Invalid stage transition: ${currentStage} → ${stage}`);
     }
-    
+
     const oldStage = arr[i].stage;
-    arr[i] = { 
-      ...arr[i], 
-      stage, 
+    arr[i] = {
+      ...arr[i],
+      stage,
       updatedAt: new Date().toISOString(),
       version: arr[i].version + 1
     };
-    logEvent('stage_changed', id, { from: oldStage, to: stage });
+    logEvent({ type: 'stage_changed', needId: id, meta: { from: oldStage, to: stage } });
     return arr[i];
   },
   updateExpert(id: string, verdict: "approved" | "rejected" | "pending") {
@@ -64,7 +68,7 @@ export const memoryStore = {
     n.expert = { status: verdict, at: new Date().toISOString() };
     n.updatedAt = new Date().toISOString();
     n.version = n.version + 1;
-    logEvent('expert_updated', id, { verdict });
+    logEvent({ type: 'expert_updated', needId: id, meta: { verdict } });
     return n;
   },
   updateEscrow(id: string, hold: boolean) {
@@ -72,7 +76,7 @@ export const memoryStore = {
     n.escrowHold = hold;
     n.updatedAt = new Date().toISOString();
     n.version = n.version + 1;
-    logEvent('escrow_updated', id, { hold });
+    logEvent({ type: 'escrow_updated', needId: id, meta: { hold } });
     return n;
   },
   createNeed(input: {
@@ -96,7 +100,7 @@ export const memoryStore = {
       version: 1,
     };
     arr.push(newNeed);
-    logEvent('need_created', newNeed.id, { title: input.title });
+    logEvent({ type: 'need_created', needId: newNeed.id, meta: { title: input.title } });
     return newNeed;
   },
   updateNeed(id: string, patch: Partial<Pick<
@@ -113,15 +117,68 @@ export const memoryStore = {
       updatedAt: new Date().toISOString(),
       version: arr[i].version + 1
     };
-    logEvent('need_updated', id, patch);
+    logEvent({ type: 'need_updated', needId: id, meta: patch });
     return arr[i];
+  },
+  setPublished(id: string, isPublished: boolean): NeedDetail | null {
+    const arr = ensure();
+    const i = arr.findIndex(n => n.id === id);
+    if (i === -1) return null;
+
+    arr[i] = {
+      ...arr[i],
+      isPublished,
+      updatedAt: new Date().toISOString(),
+      version: arr[i].version + 1
+    };
+    logEvent({ type: 'published_changed', needId: id, meta: { value: isPublished } });
+    return arr[i];
+  },
+  setSample(id: string, isSample: boolean): NeedDetail | null {
+    const arr = ensure();
+    const i = arr.findIndex(n => n.id === id);
+    if (i === -1) return null;
+
+    arr[i] = {
+      ...arr[i],
+      isSample,
+      updatedAt: new Date().toISOString(),
+      version: arr[i].version + 1
+    };
+    logEvent({ type: 'sample_changed', needId: id, meta: { value: isSample } });
+    return arr[i];
+  },
+  incrementNeedView(id: string): number {
+    _views[id] = (_views[id] || 0) + 1;
+    return _views[id];
+  },
+  getNeedViews(id: string): number {
+    return _views[id] || 0;
+  },
+  logEvent(event: { type: string; needId?: string; meta?: any }): void {
+    logEvent(event);
+  },
+  createVendor(input: { name: string; email: string; note?: string }): any {
+    const vendor = {
+      id: `V${Date.now()}`,
+      name: input.name,
+      email: input.email,
+      note: input.note,
+      status: "pending",
+      createdAt: new Date().toISOString()
+    };
+    _vendors.push(vendor);
+    return vendor;
+  },
+  listVendors(): any[] {
+    return _vendors;
   },
   listPublicNeeds(): NeedDetail[] {
     const all = ensure();
     return all.filter(n => n.isPublished || n.isSample);
   },
-  stats(): AdminStats { 
+  stats(): AdminStats {
     const baseStats = calcStats(ensure());
-    return { ...baseStats, events: _events.slice(0, 5) };
+    return { ...baseStats, events: _events.slice(0, 20) };
   },
 };

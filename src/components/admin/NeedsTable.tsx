@@ -90,6 +90,7 @@ export function NeedsTable() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">賛同</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提案</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">見積</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">閲覧数</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支払い</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">更新</th>
             </tr>
@@ -97,13 +98,13 @@ export function NeedsTable() {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={10} className="px-6 py-4 text-center text-gray-500">
                   読み込み中...
                 </td>
               </tr>
             ) : needs.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={10} className="px-6 py-4 text-center text-gray-500">
                   データが見つかりません
                 </td>
               </tr>
@@ -134,6 +135,9 @@ export function NeedsTable() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {need.estimateYen ? yen(need.estimateYen) : "-"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {(need as any).views || 0}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <PaymentBadge status={need.payment} />

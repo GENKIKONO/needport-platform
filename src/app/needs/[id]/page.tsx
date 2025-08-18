@@ -1,126 +1,115 @@
 "use client";
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { getNeedByIdSafe } from "@/lib/demo/data";
-import NeedInterestMeter from "@/components/NeedInterestMeter";
-import OffersList from "@/components/OffersList";
-import OfferForm from "@/components/OfferForm";
-import InterestDialog from "@/components/InterestDialog";
-import NeedRoomPanel from "@/components/NeedRoomPanel";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
-export default function NeedDetail({params}:{params:{id:string}}){
-  const [need, setNeed] = useState<any>(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [endorsed, setEndorsed] = useState(false);
+type NeedDetail = {
+  id: string;
+  title: string;
+  body?: string;
+  ownerMasked: string;
+  stage: string;
+  supporters: number;
+  proposals: number;
+  estimateYen?: number;
+  isPublished: boolean;
+  isSample: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
 
-  // データ取得
-  useState(() => {
-    getNeedByIdSafe(params.id).then(setNeed);
-  });
+export default function NeedDetailPage() {
+  const params = useParams();
+  const [need, setNeed] = useState<NeedDetail | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 賛同済み状態チェック
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setEndorsed(!!localStorage.getItem(`np_endorsed_${params.id}`));
+    // 公開APIからデータを取得
+    async function fetchNeed() {
+      try {
+        const res = await fetch('/api/needs');
+        const data = await res.json();
+        const found = data.items.find((n: NeedDetail) => n.id === params.id);
+        if (found) {
+          setNeed(found);
+        }
+      } catch (error) {
+        console.error('Failed to fetch need:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (params.id) {
+      fetchNeed();
     }
   }, [params.id]);
 
-  function handleDone(newCounts?: Record<string,number>) {
-    setEndorsed(true);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`np_endorsed_${params.id}`, "1");
+  useEffect(() => {
+    // 閲覧数計測を発火
+    if (params.id) {
+      fetch(`/api/metrics/needs/${params.id}/view`, { method: 'POST' }).catch(() => {});
     }
-    // カウント更新（楽観的更新）
-    if (newCounts && need) {
-      setNeed(prev => ({ ...prev, counts: newCounts }));
-    }
-  }
-  if(!need){ // 赤エラー回避：静かな404
+  }, [params.id]);
+
+  if (loading) {
     return (
-      <main className="section">
-        <div className="np-card p-6 text-center">
-          <h1 className="text-xl font-bold text-gray-900">ニーズが見つかりませんでした</h1>
-          <p className="mt-2 text-sm text-gray-600">URLを確認するか、一覧から探してみてください。</p>
-          <div className="mt-4 flex gap-2 justify-center">
-            <Link className="btn btn-primary" href="/needs">一覧へ</Link>
-            <Link className="btn btn-ghost" href="/">ホームへ</Link>
+      <main className="container max-w-4xl py-10">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-4 bg-gray-200 rounded w-4/6"></div>
           </div>
         </div>
       </main>
     );
   }
-  
-  // Mock interest data
-  const interestData = {
-    buyCount: Math.floor(need.count * 0.4),
-    maybeCount: Math.floor(need.count * 0.3),
-    interestCount: Math.floor(need.count * 0.3),
-    totalCount: need.count
-  };
-  
+
+  if (!need) {
+    return (
+      <main className="container max-w-4xl py-10">
+        <h1 className="text-2xl font-bold text-red-600">ニーズが見つかりません</h1>
+        <p className="mt-2 text-gray-600">このニーズは存在しないか、非公開になっています。</p>
+      </main>
+    );
+  }
+
   return (
-    <main className="section space-y-6">
-      <div className="np-card p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">{need.title}</h1>
+    <main className="container max-w-4xl py-10">
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h1 className="text-3xl font-bold mb-4">{need.title}</h1>
         
-        {/* Interest Meter */}
-        <div className="mb-6">
-          <NeedInterestMeter {...interestData} />
+        <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
+          <span>投稿者: {need.ownerMasked}</span>
+          <span>•</span>
+          <span>ステージ: {need.stage}</span>
+          <span>•</span>
+          <span>サポーター: {need.supporters}人</span>
+          <span>•</span>
+          <span>提案: {need.proposals}件</span>
+          {need.estimateYen && (
+            <>
+              <span>•</span>
+              <span>予算: ¥{need.estimateYen.toLocaleString()}</span>
+            </>
+          )}
         </div>
-        
-        <p className="text-gray-700 leading-7 mb-6">{need.description}</p>
-        
-        {/* Meta info */}
-        <div className="flex items-center gap-2 mb-6">
-          <span className="np-badge bg-blue-100 text-blue-800">{need.category}</span>
-          <span className="np-badge bg-gray-100 text-gray-600">{need.area}</span>
-        </div>
-        
-        <div className="flex gap-2">
-          <button 
-            type="button" 
-            disabled={endorsed}
-            className={`btn btn-primary h-11 text-base ${endorsed ? "opacity-60 cursor-default" : ""}`}
-            onClick={() => setOpenDialog(true)}
-          >
-            {endorsed ? "賛同済み" : "賛同して参加する"}
-          </button>
-          <Link href="/needs" className="btn btn-ghost h-11 text-base">
-            一覧へ
-          </Link>
+
+        {need.body && (
+          <div className="prose max-w-none mb-6">
+            <p className="text-gray-700 whitespace-pre-wrap">{need.body}</p>
+          </div>
+        )}
+
+        <div className="text-xs text-gray-500">
+          作成日: {new Date(need.createdAt).toLocaleDateString('ja-JP')}
+          {need.updatedAt !== need.createdAt && (
+            <> • 更新日: {new Date(need.updatedAt).toLocaleDateString('ja-JP')}</>
+          )}
         </div>
       </div>
-
-      {/* 提案する */}
-      <section className="section">
-        <div className="np-card p-6">
-          <h3 className="font-semibold mb-4">提案する</h3>
-          <OfferForm needId={params.id} onSuccess={() => {
-            // 提案一覧を再取得
-            const offersList = document.querySelector('[data-offers-list]') as any;
-            if (offersList?.fetchOffers) {
-              offersList.fetchOffers();
-            }
-          }} />
-        </div>
-      </section>
-
-      {/* 提案一覧 */}
-      <section className="section">
-        <OffersList needId={params.id} isOwner={need.owner_ref === 'demo_user'} />
-      </section>
-
-      {/* 承認制ルーム */}
-      <NeedRoomPanel defaultStatus="closed" />
-
-      {openDialog && need && (
-        <InterestDialog
-          open={openDialog}
-          onClose={() => setOpenDialog(false)}
-          onDone={handleDone}
-          need={{ id: need.id, title: need.title, area: need.area, category: need.category, budgetLabel: need.budgetLabel }}
-        />
-      )}
     </main>
   );
 }

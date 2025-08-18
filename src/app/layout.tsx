@@ -12,6 +12,7 @@ import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ClientErrorCatcher from '@/components/ClientErrorCatcher';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -76,6 +77,31 @@ export default async function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         
+        {/* Search Console verification */}
+        {process.env.NEXT_PUBLIC_SEARCH_CONSOLE_VERIFICATION && (
+          <meta name="google-site-verification" content={process.env.NEXT_PUBLIC_SEARCH_CONSOLE_VERIFICATION} />
+        )}
+        
+        {/* GA4 */}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+                `,
+              }}
+            />
+          </>
+        )}
+        
         {/* Skip link for accessibility */}
         <a href="#content" className="skip-link">
           メインコンテンツにスキップ
@@ -113,10 +139,13 @@ export default async function RootLayout({
           <DemoWatermark />
           
           {/* SEO JSON-LD for home page */}
-          <SeoJsonLd />
+          <SeoJsonLd type="home" />
           
           {/* 投稿成功の港アニメ */}
           <ToastShip />
+          
+          {/* Vercel Analytics */}
+          <Analytics />
         </ErrorBoundary>
       </body>
     </html>
