@@ -21,7 +21,7 @@ const pills = [
 export default function ServiceFlowCompact() {
   return (
     <div className="space-y-4">
-      <FlowStrip />
+      <FlowStrip showLabels={false} />
       <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
         <div className="flex gap-2 min-w-max px-1">
           {pills.map((p, i) => (

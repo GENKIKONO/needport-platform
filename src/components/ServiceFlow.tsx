@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, {useState} from "react";
 import FlowStrip from "./FlowStrip";
 import ServiceFlowCarousel from "./ServiceFlowCarousel";
 
+const STEPS = ["投稿","賛同","提案","承認","ルーム","支払い"];
+
 export default function ServiceFlow() {
-  // 0〜5（投稿, 賛同, 提案, 承認, ルーム, 支払い）
-  const steps = ["投稿","賛同","提案","承認","ルーム","支払い"];
   const [active, setActive] = useState(0);
 
   return (
@@ -15,16 +15,17 @@ export default function ServiceFlow() {
         <p className="mt-2 text-neutral-600 text-sm md:text-base">はじめてでも直感で分かるステップ</p>
       </div>
 
-      {/* モバイル：カルーセル（スワイプで active を更新） */}
+      {/* SP：カルーセル（スワイプ/矢印でactive更新） */}
       <div className="md:hidden">
         <ServiceFlowCarousel active={active} onChange={setActive} />
       </div>
 
-      {/* デスクトップ：上に船アニメ／下に6カード（カードに連動） */}
+      {/* PC：上にFlowStrip（制御型）／下のカードにホバーで同期 */}
       <div className="hidden md:block">
         <div className="mb-6">
-          <FlowStrip active={active} steps={steps} showLabels={false} />
+          <FlowStrip active={active} steps={STEPS} />
         </div>
+
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
           {[
             {t:"投稿", d:"匿名OKで「欲しい」を投稿"},
@@ -36,11 +37,11 @@ export default function ServiceFlow() {
           ].map((s, i) => (
             <li
               key={i}
+              tabIndex={0}
               onMouseEnter={() => setActive(i)}
               onFocus={() => setActive(i)}
-              className={`rounded-2xl border border-black/5 bg-white p-4 shadow-card outline-none cursor-pointer transition
+              className={`rounded-2xl border border-black/5 bg-white p-4 shadow-card cursor-pointer transition
                 ${i===active ? "ring-2 ring-sky-300" : "hover:shadow-md"}`}
-              tabIndex={0}
             >
               <div className="flex items-center gap-2 text-sky-700 font-semibold">
                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-sky-50 border border-sky-200 text-xs">{i+1}</span>
