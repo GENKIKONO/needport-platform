@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import FlowStrip from "@/components/FlowStrip";
+import ServiceFlowCarousel from "@/components/ServiceFlowCarousel"; // ← 追加（綴り完全一致）
 
 const STEPS = [
   { t: "投稿", d: "匿名OKで「欲しい」を投稿" },
@@ -13,7 +14,6 @@ const STEPS = [
 
 export default function ServiceFlow() {
   const [active, setActive] = useState(0);
-
   return (
     <section className="bg-white service-flow">
       <div className="text-center mb-6">
@@ -21,11 +21,16 @@ export default function ServiceFlow() {
         <p className="mt-2 text-neutral-600 text-sm md:text-base">はじめてでも直感で分かるステップ</p>
       </div>
 
+      {/* SP：カルーセル＋上の船 */}
+      <div className="md:hidden">
+        <ServiceFlowCarousel />
+      </div>
+
+      {/* PC：船＋6カード（ここは従来通り） */}
       <div className="hidden md:block">
         <div className="mb-6">
           <FlowStrip active={active} steps={STEPS.length} />
         </div>
-
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
           {(STEPS ?? []).map((s, i) => (
             <li
@@ -46,11 +51,6 @@ export default function ServiceFlow() {
             </li>
           ))}
         </ol>
-      </div>
-
-      {/* SPはカルーセル（省略せずに FlowStrip と index を共有） */}
-      <div className="md:hidden">
-        <ServiceFlowCarousel />
       </div>
     </section>
   );

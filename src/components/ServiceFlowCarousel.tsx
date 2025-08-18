@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import FlowStrip from "@/components/FlowStrip";
 
 const SLIDES = [
@@ -17,9 +17,9 @@ export default function ServiceFlowCarousel() {
 
   useEffect(() => {
     const el = ref.current; if (!el) return;
-    const handler = () => setActive(Math.round(el.scrollLeft / el.clientWidth));
-    el.addEventListener("scroll", handler, { passive: true });
-    return () => el.removeEventListener("scroll", handler as any);
+    const onScroll = () => setActive(Math.round(el.scrollLeft / el.clientWidth));
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll as any);
   }, []);
 
   const go = (dir: number) => {
@@ -35,7 +35,11 @@ export default function ServiceFlowCarousel() {
     <div className="space-y-4">
       <FlowStrip active={active} steps={SLIDES.length} />
       <div className="relative">
-        <div ref={ref} className="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1" style={{ WebkitOverflowScrolling: "touch" }}>
+        <div
+          ref={ref}
+          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {(SLIDES ?? []).map((s, i) => (
             <div key={i} className="snap-start shrink-0 w-[88%] rounded-2xl border border-black/5 bg-white p-4 shadow-card">
               <div className="text-sky-700 font-semibold">{s.t}</div>
