@@ -61,9 +61,14 @@ export async function updateNeed(id: string, patch: Partial<Pick<
   return store.updateNeed(id, patch);
 }
 
-export async function deleteNeed(id: string): Promise<void> {
+export async function deleteNeed(id: string): Promise<boolean> {
   const store = await getStore();
   return store.deleteNeed(id);
+}
+
+export async function listNeedsByOwner(ownerUserId: string): Promise<NeedRow[]> {
+  const store = await getStore();
+  return store.listNeedsByOwner(ownerUserId);
 }
 
 export async function listPublicNeeds(): Promise<NeedDetail[]> {

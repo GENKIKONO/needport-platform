@@ -1,8 +1,8 @@
 export type FeatureFlags = {
-  userEditEnabled: boolean;   // /me の編集を許可
-  userDeleteEnabled: boolean; // /me の削除を許可
-  demoGuardEnabled: boolean;  // 「デモ」の注意書き/ブロック（既定OFF）
-  sampleVisible: boolean;     // サンプル案件の公開側表示可否
+  userEditEnabled: boolean;
+  userDeleteEnabled: boolean;
+  demoGuardEnabled: boolean;
+  sampleVisible: boolean;
 };
 
 export const DEFAULT_FLAGS: FeatureFlags = {
@@ -12,45 +12,41 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   sampleVisible: false,
 };
 
-async function getImpl() {
+const KV_KEY = "flags:global";
+
+// KV優先・メモリフォールバック
+let memoryFlags: FeatureFlags | null = null;
+
+async function readKV(): Promise<FeatureFlags | null> {
   try {
+    // KV導入済みなら使う（未導入なら catch）
+    // @ts-ignore
     const { kv } = await import("@vercel/kv");
-    return { kv, type: "kv" as const };
-  } catch {
-    return { kv: null, type: "memory" as const };
-  }
+    const v = await kv.get<FeatureFlags>(KV_KEY);
+    return v ?? null;
+  } catch { return null; }
+}
+
+async function writeKV(v: FeatureFlags) {
+  try {
+    // @ts-ignore
+    const { kv } = await import("@vercel/kv");
+    await kv.set(KV_KEY, v);
+  } catch {}
 }
 
 export async function getFlags(): Promise<FeatureFlags> {
-  const impl = await getImpl();
-  
-  if (impl.type === "kv") {
-    try {
-      const stored = await impl.kv.get<string>("flags:global");
-      if (stored) {
-        return { ...DEFAULT_FLAGS, ...JSON.parse(stored) };
-      }
-    } catch (error) {
-      console.error("Failed to get flags from KV:", error);
-    }
-  }
-  
-  // Memory fallback or default
-  return { ...DEFAULT_FLAGS };
+  const kv = await readKV();
+  if (kv) { memoryFlags = kv; return kv; }
+  if (memoryFlags) return memoryFlags;
+  memoryFlags = DEFAULT_FLAGS;
+  return memoryFlags;
 }
 
 export async function setFlags(patch: Partial<FeatureFlags>): Promise<FeatureFlags> {
-  const impl = await getImpl();
   const current = await getFlags();
-  const updated = { ...current, ...patch };
-  
-  if (impl.type === "kv") {
-    try {
-      await impl.kv.set("flags:global", JSON.stringify(updated));
-    } catch (error) {
-      console.error("Failed to set flags in KV:", error);
-    }
-  }
-  
-  return updated;
+  const next: FeatureFlags = { ...current, ...patch };
+  memoryFlags = next;
+  await writeKV(next);
+  return next;
 }

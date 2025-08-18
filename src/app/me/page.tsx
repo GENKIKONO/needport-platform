@@ -1,293 +1,84 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useToast } from "@/components/ui/Toast";
 
-type NeedRow = {
-  id: string;
-  title: string;
-  body?: string;
-  stage: string;
-  supporters: number;
-  proposals: number;
-  estimateYen?: number | null;
-  isPublished: boolean;
-  isSample: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type Resp = {
-  items: NeedRow[];
-  total: number;
-};
-
-type FeatureFlags = {
-  userEditEnabled: boolean;
-  userDeleteEnabled: boolean;
-  demoGuardEnabled: boolean;
-  sampleVisible: boolean;
-};
+type Flags = { userEditEnabled: boolean; userDeleteEnabled: boolean; };
+type Need = { id: string; title: string; description?: string; estimateYen?: number; updatedAt?: string; };
 
 export default function MePage() {
-  const [data, setData] = useState<Resp | null>(null);
-  const [flags, setFlags] = useState<FeatureFlags | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ title: "", body: "", estimateYen: "" });
-  const toast = useToast();
+  const [flags, setFlags] = useState<Flags>({ userEditEnabled: true, userDeleteEnabled: true });
+  const [items, setItems] = useState<Need[]>([]);
+  const [editing, setEditing] = useState<Record<string, Partial<Need>>>({});
 
-  async function loadData() {
-    try {
-      setLoading(true);
-      setErr(null);
-      
-      // フラグ取得
-      const flagsRes = await fetch("/api/flags");
-      if (flagsRes.ok) {
-        const flagsData = await flagsRes.json();
-        setFlags(flagsData);
-      }
-      
-      // マイニーズ取得
-      const res = await fetch("/api/me/needs");
-      if (!res.ok) {
-        if (res.status === 401) {
-          setErr("投稿がまだありません。まずニーズを投稿してください。");
-          return;
-        }
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const json = await res.json() as Resp;
-      setData(json);
-    } catch (e: any) {
-      setErr(e?.message ?? "failed");
-    } finally {
-      setLoading(false);
-    }
+  async function load() {
+    const f = await fetch("/api/flags").then(r => r.json());
+    setFlags({ userEditEnabled: f.userEditEnabled, userDeleteEnabled: f.userDeleteEnabled });
+    const d = await fetch("/api/me/needs").then(r => r.json());
+    setItems(d.items ?? []);
+  }
+  useEffect(() => { load(); }, []);
+
+  function startEdit(id: string) { setEditing(e => ({ ...e, [id]: items.find(i => i.id === id) || {} })); }
+  function cancelEdit(id: string) { setEditing(e => { const n = { ...e }; delete n[id]; return n; }); }
+
+  async function save(id: string) {
+    const patch = editing[id]; if (!patch) return;
+    const res = await fetch(`/api/me/needs/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) });
+    if (res.status === 423) { alert("管理設定で編集が無効です"); return; }
+    if (!res.ok) { alert("保存に失敗しました"); return; }
+    await load(); cancelEdit(id);
   }
 
-  useEffect(() => { loadData(); }, []);
-
-  const handleEdit = (need: NeedRow) => {
-    setEditingId(need.id);
-    setEditForm({
-      title: need.title,
-      body: need.body || "",
-      estimateYen: need.estimateYen?.toString() || "",
-    });
-  };
-
-  const handleSave = async () => {
-    if (!editingId) return;
-    
-    try {
-      const res = await fetch(`/api/me/needs/${editingId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: editForm.title,
-          body: editForm.body || undefined,
-          estimateYen: editForm.estimateYen ? Number(editForm.estimateYen) : undefined,
-        }),
-      });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        if (error.error === "feature_disabled") {
-          toast("編集機能が管理側で無効になっています", "error");
-        } else if (error.error === "forbidden") {
-          toast("この投稿を編集する権限がありません", "error");
-        } else {
-          toast("更新に失敗しました", "error");
-        }
-        return;
-      }
-      
-      toast("保存しました", "success");
-      setEditingId(null);
-      loadData(); // 再読み込み
-    } catch (error) {
-      toast("更新に失敗しました", "error");
-    }
-  };
-
-  const handleDelete = async (needId: string, title: string) => {
-    if (!confirm(`「${title}」を削除しますか？`)) return;
-    
-    try {
-      const res = await fetch(`/api/me/needs/${needId}`, {
-        method: "DELETE",
-      });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        if (error.error === "feature_disabled") {
-          toast("削除機能が管理側で無効になっています", "error");
-        } else if (error.error === "forbidden") {
-          toast("この投稿を削除する権限がありません", "error");
-        } else {
-          toast("削除に失敗しました", "error");
-        }
-        return;
-      }
-      
-      toast("削除しました", "success");
-      loadData(); // 再読み込み
-    } catch (error) {
-      toast("削除に失敗しました", "error");
-    }
-  };
-
-  const items = data?.items ?? [];
-
-  if (loading) {
-    return (
-      <main className="container py-8">
-        <h1 className="text-2xl font-semibold text-neutral-900 mb-6">マイページ</h1>
-        <div className="text-sm text-neutral-500">読み込み中...</div>
-      </main>
-    );
-  }
-
-  if (err) {
-    return (
-      <main className="container py-8">
-        <h1 className="text-2xl font-semibold text-neutral-900 mb-6">マイページ</h1>
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
-          <p className="mb-2">{err}</p>
-          <a href="/needs/new" className="text-blue-600 hover:underline">
-            ニーズを投稿する →
-          </a>
-        </div>
-      </main>
-    );
+  async function remove(id: string) {
+    if (!confirm("この投稿を削除します。よろしいですか？")) return;
+    const res = await fetch(`/api/me/needs/${id}`, { method: "DELETE" });
+    if (res.status === 423) { alert("管理設定で削除が無効です"); return; }
+    if (!res.ok) { alert("削除に失敗しました"); return; }
+    await load();
   }
 
   return (
-    <main className="container py-8">
-      <h1 className="text-2xl font-semibold text-neutral-900 mb-6">マイページ</h1>
-      
-      {/* フラグ状態表示 */}
-      {flags && (
-        <div className="mb-4 flex gap-2 text-xs">
-          <span className={`px-2 py-1 rounded ${flags.userEditEnabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            編集{flags.userEditEnabled ? 'ON' : 'OFF'}
-          </span>
-          <span className={`px-2 py-1 rounded ${flags.userDeleteEnabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            削除{flags.userDeleteEnabled ? 'ON' : 'OFF'}
-          </span>
-        </div>
-      )}
-      
-      {flags?.demoGuardEnabled && (
-        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800 text-sm">
-          デモモードが有効になっています。一部の機能が制限される場合があります。
-        </div>
-      )}
-      
+    <main className="container mx-auto max-w-3xl px-4 py-8">
+      <h1 className="text-2xl font-semibold mb-4">マイページ</h1>
+      <p className="mb-6 text-sm text-gray-600">
+        編集: <b>{flags.userEditEnabled ? "有効" : "無効"}</b> / 削除: <b>{flags.userDeleteEnabled ? "有効" : "無効"}</b>
+      </p>
       <div className="space-y-4">
-        <h2 className="text-lg font-medium text-neutral-900">投稿したニーズ</h2>
-        
-        {items.length === 0 ? (
-          <div className="rounded-xl border border-black/5 bg-white p-6 text-neutral-600">
-            まだ投稿したニーズはありません。
-            <a href="/needs/new" className="ml-2 text-blue-600 hover:underline">
-              ニーズを投稿する →
-            </a>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {items.map((need) => (
-              <div key={need.id} className="rounded-lg border border-gray-200 bg-white p-4">
-                {editingId === need.id ? (
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={editForm.title}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="タイトル"
-                    />
-                    <textarea
-                      value={editForm.body}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, body: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md h-24"
-                      placeholder="詳細"
-                    />
-                    <input
-                      type="number"
-                      value={editForm.estimateYen}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, estimateYen: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="予算（円）"
-                    />
+        {items.map(n => {
+          const e = editing[n.id];
+          return (
+            <div key={n.id} className="rounded-xl border p-4">
+              {!e ? (
+                <>
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium">{n.title}</h3>
                     <div className="flex gap-2">
-                      <button
-                        onClick={handleSave}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                      >
-                        保存
+                      <button disabled={!flags.userEditEnabled} onClick={() => startEdit(n.id)} className="px-3 py-1 rounded border">
+                        編集
                       </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                      >
-                        キャンセル
+                      <button disabled={!flags.userDeleteEnabled} onClick={() => remove(n.id)} className="px-3 py-1 rounded border text-red-600">
+                        削除
                       </button>
                     </div>
                   </div>
-                ) : (
-                  <div>
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-medium text-neutral-900">{need.title}</h3>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(need)}
-                          disabled={!flags?.userEditEnabled}
-                          className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title={!flags?.userEditEnabled ? "管理側で編集機能が無効になっています" : ""}
-                        >
-                          編集
-                        </button>
-                        <button
-                          onClick={() => handleDelete(need.id, need.title)}
-                          disabled={!flags?.userDeleteEnabled}
-                          className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title={!flags?.userDeleteEnabled ? "管理側で削除機能が無効になっています" : ""}
-                        >
-                          削除
-                        </button>
-                      </div>
-                    </div>
-                    
-                    {need.body && (
-                      <p className="text-sm text-neutral-600 mb-2">{need.body}</p>
-                    )}
-                    
-                    <div className="flex items-center gap-4 text-xs text-neutral-500">
-                      <span>ステージ: {need.stage}</span>
-                      <span>•</span>
-                      <span>公開: {need.isPublished ? "ON" : "OFF"}</span>
-                      <span>•</span>
-                      <span>賛同: {need.supporters}人</span>
-                      <span>•</span>
-                      <span>提案: {need.proposals}件</span>
-                      {need.estimateYen && (
-                        <>
-                          <span>•</span>
-                          <span>予算: ¥{need.estimateYen.toLocaleString()}</span>
-                        </>
-                      )}
-                      <span>•</span>
-                      <span>作成: {new Date(need.createdAt).toLocaleDateString()}</span>
-                    </div>
+                  {n.description && <p className="mt-2 text-sm text-gray-700">{n.description}</p>}
+                </>
+              ) : (
+                <>
+                  <input className="w-full border rounded px-3 py-2" defaultValue={e.title ?? n.title}
+                    onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], title: ev.target.value } }))} />
+                  <textarea className="mt-2 w-full border rounded px-3 py-2" rows={3}
+                    defaultValue={e.description ?? n.description}
+                    onChange={ev => setEditing(s => ({ ...s, [n.id]: { ...s[n.id], description: ev.target.value } }))} />
+                  <div className="mt-3 flex gap-2">
+                    <button onClick={() => save(n.id)} className="px-3 py-1 rounded bg-sky-600 text-white">保存</button>
+                    <button onClick={() => cancelEdit(n.id)} className="px-3 py-1 rounded border">取消</button>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                </>
+              )}
+            </div>
+          );
+        })}
+        {items.length === 0 && <p className="text-sm text-gray-500">あなたの投稿はまだありません。</p>}
       </div>
     </main>
   );

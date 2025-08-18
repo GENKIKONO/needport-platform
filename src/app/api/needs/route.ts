@@ -142,10 +142,10 @@ export async function POST(req: NextRequest) {
   
   // uidをCookieに設定（180日間有効）
   response.cookies.set("uid", uid, {
-    httpOnly: true,
+    httpOnly: false,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 180 * 24 * 60 * 60, // 180日
+    secure: true,
+    maxAge: 60 * 60 * 24 * 180, // 180日
     path: "/",
   });
   

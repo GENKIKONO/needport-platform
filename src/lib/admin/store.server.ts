@@ -286,13 +286,45 @@ export const kvStore = {
     return updated;
   },
 
-  async deleteNeed(id: string): Promise<void> {
+  async deleteNeed(id: string): Promise<boolean> {
     const need = await kv.get<NeedDetail>(needKey(id));
-    if (!need) return;
+    if (!need) return false;
 
     await kv.del(needKey(id));
     await kv.srem(NEEDS_INDEX, id);
     await logEvent({ type: 'need_deleted', needId: id, meta: { title: need.title } });
+    return true;
+  },
+
+  async listNeedsByOwner(ownerUserId: string): Promise<NeedRow[]> {
+    await ensureInitialData();
+    
+    const allIds = await kv.smembers(NEEDS_INDEX);
+    const needs: NeedRow[] = [];
+    
+    for (const id of allIds) {
+      const need = await kv.get<NeedDetail>(needKey(id));
+      if (need && need.ownerUserId === ownerUserId) {
+        needs.push({
+          id: need.id,
+          title: need.title,
+          ownerMasked: need.ownerMasked,
+          ownerUserId: need.ownerUserId,
+          stage: need.stage,
+          supporters: need.supporters,
+          proposals: need.proposals,
+          estimateYen: need.estimateYen,
+          isPublished: need.isPublished || false,
+          isSample: need.isSample || false,
+          createdAt: need.createdAt,
+          updatedAt: need.updatedAt,
+          payment: "none",
+          trust: {}
+        });
+      }
+    }
+    
+    return needs;
   },
 
   async stats(): Promise<AdminStats> {

@@ -122,14 +122,37 @@ export const memoryStore = {
     return arr[i];
   },
 
-  deleteNeed(id: string): void {
+  deleteNeed(id: string): boolean {
     const arr = ensure();
     const i = arr.findIndex(n => n.id === id);
-    if (i === -1) return;
+    if (i === -1) return false;
 
     const need = arr[i];
     arr.splice(i, 1);
     logEvent({ type: 'need_deleted', needId: id, meta: { title: need.title } });
+    return true;
+  },
+
+  listNeedsByOwner(ownerUserId: string): NeedRow[] {
+    const all = ensure();
+    return all
+      .filter(need => need.ownerUserId === ownerUserId)
+      .map(need => ({
+        id: need.id,
+        title: need.title,
+        ownerMasked: need.ownerMasked,
+        ownerUserId: need.ownerUserId,
+        stage: need.stage,
+        supporters: need.supporters,
+        proposals: need.proposals,
+        estimateYen: need.estimateYen,
+        isPublished: need.isPublished || false,
+        isSample: need.isSample || false,
+        createdAt: need.createdAt,
+        updatedAt: need.updatedAt,
+        payment: "none" as const,
+        trust: {}
+      }));
   },
 
   setPublished(id: string, isPublished: boolean): NeedDetail | null {
