@@ -26,8 +26,8 @@ export default function ServiceFlowCarousel() {
     const el = ref.current; if (!el) return;
     const n = (SLIDES?.length ?? 0);
     const w = el.clientWidth;
-    const next = Math.max(0, Math.min(n - 1, Math.round((el.scrollLeft + dir * w) / w)));
-    el.scrollTo({ left: next * w, behavior: "smooth" });
+    const next = Math.max(0, Math.min(n-1, Math.round((el.scrollLeft + dir*w)/w)));
+    el.scrollTo({ left: next*w, behavior: "smooth" });
     setActive(next);
   };
 

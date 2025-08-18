@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import FlowStrip from "@/components/FlowStrip";
-import ServiceFlowCarousel from "@/components/ServiceFlowCarousel"; // ← 追加（綴り完全一致）
+import ServiceFlowCarousel from "@/components/ServiceFlowCarousel";
 
 const STEPS = [
   { t: "投稿", d: "匿名OKで「欲しい」を投稿" },
@@ -28,23 +28,21 @@ export default function ServiceFlow() {
 
       {/* PC：船＋6カード（ここは従来通り） */}
       <div className="hidden md:block">
-        <div className="mb-6">
-          <FlowStrip active={active} steps={STEPS.length} />
-        </div>
+        <div className="mb-6"><FlowStrip active={active} steps={STEPS.length} /></div>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-          {(STEPS ?? []).map((s, i) => (
+          {STEPS.map((s, i) => (
             <li
               key={i}
-              data-step={i + 1}
+              data-step={i+1}
               tabIndex={0}
               onMouseEnter={() => setActive(i)}
               onFocus={() => setActive(i)}
               onClick={() => setActive(i)}
               className={`rounded-2xl border border-black/5 bg-white p-4 shadow-card cursor-pointer transition
-                ${i === active ? "ring-2 ring-sky-300" : "hover:shadow-md"}`}
+                ${i===active ? "ring-2 ring-sky-300" : "hover:shadow-md"}`}
             >
               <div className="flex items-center gap-2 text-sky-700 font-semibold">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-sky-50 border border-sky-200 text-xs">{i + 1}</span>
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-sky-50 border border-sky-200 text-xs">{i+1}</span>
                 {s.t}
               </div>
               <p className="mt-2 text-sm text-neutral-600">{s.d}</p>
