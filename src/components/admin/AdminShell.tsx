@@ -18,6 +18,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/admin", label: "概要", icon: "📊" },
     { href: "/admin/needs", label: "ニーズ一覧", icon: "📋" },
+    { href: "/admin/users", label: "ユーザー", icon: "👥" },
     { href: "/admin/settings", label: "設定", icon: "⚙️" },
   ];
 

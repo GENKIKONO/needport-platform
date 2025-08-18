@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { type NeedRow, type Stage } from "@/lib/admin/types";
 import { StageBadge, PaymentBadge } from "./StatusBadge";
 import StageStepper from "./StageStepper";
@@ -171,6 +171,7 @@ export function NeedsTable() {
 function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }) {
   const [need, setNeed] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [issuing, setIssuing] = useState(false);
 
   useEffect(() => {
     fetchNeed();
@@ -188,6 +189,34 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
       setLoading(false);
     }
   }
+
+  const issueReferral = useCallback(async () => {
+    try {
+      setIssuing(true);
+      const res = await fetch("/api/referrals/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ referrerId: "admin", expiresInDays: 7, needId: needId }),
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`invite failed: ${res.status} ${t}`);
+      }
+      const data = await res.json();
+      if (data?.inviteUrl) {
+        // クリップボードにコピー + 簡易通知
+        try { await navigator.clipboard.writeText(data.inviteUrl); } catch {}
+        alert("紹介リンクをコピーしました：\n" + data.inviteUrl);
+      } else {
+        alert("紹介リンクの生成に失敗しました");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("紹介リンクの発行に失敗しました");
+    } finally {
+      setIssuing(false);
+    }
+  }, [needId]);
 
   async function mutateStage(id: string, next: Stage) {
     // 楽観更新: 先に UI を反映、その後 API で確定
@@ -294,6 +323,15 @@ function NeedDrawer({ needId, onClose }: { needId: string; onClose: () => void }
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
               >
                 エスクロー凍結
+              </button>
+              <button
+                type="button"
+                onClick={issueReferral}
+                disabled={issuing}
+                className="inline-flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700 hover:bg-sky-100 disabled:opacity-50"
+                title="この案件向けの紹介リンクを発行します（7日有効）"
+              >
+                {issuing ? "発行中…" : "紹介リンク発行"}
               </button>
             </div>
           </div>
