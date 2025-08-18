@@ -25,7 +25,7 @@ export function NeedsTable() {
       
       const response = await fetch(`/api/admin/needs?${params}`);
       const data = await response.json();
-      setNeeds(data.items || []);
+      setNeeds(data.rows || []);
     } catch (error) {
       console.error("Failed to fetch needs:", error);
     } finally {

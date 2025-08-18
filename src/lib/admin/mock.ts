@@ -29,7 +29,8 @@ export function seedNeeds(): NeedDetail[] {
       },
       events: [
         { type:"stage_changed", needId:id, from:"posted", to:stage, at:new Date(now - rand(1,10)*86400000).toISOString() }
-      ]
+      ],
+      version: 1
     }
   });
 }

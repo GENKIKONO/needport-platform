@@ -38,9 +38,10 @@ export type AdminStats = {
   avgTicketYen: number;
   pendingApprovals: number;      // 承認待ち件数
   pendingPayouts: number;        // 支払い保留件数
+  events: AdminEvent[];          // 最近のイベント
 };
 
-export type AdminEvent =
+export type AdminEventLegacy =
   | { type:"stage_changed"; needId:string; from:Stage; to:Stage; at:string }
   | { type:"expert_requested"; needId:string; at:string }
   | { type:"escrow_frozen"; needId:string; at:string }
@@ -49,4 +50,13 @@ export type AdminEvent =
 export type NeedDetail = NeedRow & {
   events: AdminEvent[];
   description?: string;
+  version: number;
+};
+
+export type AdminEvent = {
+  type: string;
+  id: string;
+  by: string;
+  at: string;
+  payload?: any;
 };

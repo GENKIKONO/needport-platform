@@ -1,3 +1,6 @@
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from "next/server";
 import { listNeeds } from "@/lib/admin/store";
 import { guard } from "../_util";
@@ -9,5 +12,5 @@ export async function GET(req: NextRequest) {
   const stage = (searchParams.get("stage") ?? "all") as any;
   const page = Number(searchParams.get("page") ?? 1);
   const pageSize = Number(searchParams.get("pageSize") ?? 20);
-  return NextResponse.json(listNeeds({ q, stage, page, pageSize }));
+  return NextResponse.json(await listNeeds({ q, stage, page, pageSize }));
 }
