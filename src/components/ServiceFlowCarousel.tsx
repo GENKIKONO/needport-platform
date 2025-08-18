@@ -19,13 +19,20 @@ const slides = [
   { t: "支払い", d: "Stripeで安全に支払い。持ち逃げリスクを低減。", icon: I.card },
 ];
 
-export default function ServiceFlowCarousel() {
+export default function ServiceFlowCarousel({active, onChange}:{active:number; onChange:(i:number)=>void}) {
   const ref = useRef<HTMLDivElement>(null);
   const snap = (dir: number) => {
     const el = ref.current;
     if (!el) return;
     const w = el.clientWidth;
     el.scrollTo({ left: el.scrollLeft + dir * w, behavior: "smooth" });
+    const next = Math.max(0, Math.min(slides.length-1, Math.round((el.scrollLeft + dir*w)/w)));
+    onChange(next);
+  };
+  const onScroll = () => {
+    const el = ref.current; if (!el) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== active) onChange(i);
   };
 
   return (
@@ -34,6 +41,7 @@ export default function ServiceFlowCarousel() {
       <div className="relative">
         <div
           ref={ref}
+          onScroll={onScroll}
           className="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
