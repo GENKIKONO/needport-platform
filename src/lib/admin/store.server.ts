@@ -286,6 +286,15 @@ export const kvStore = {
     return updated;
   },
 
+  async deleteNeed(id: string): Promise<void> {
+    const need = await kv.get<NeedDetail>(needKey(id));
+    if (!need) return;
+
+    await kv.del(needKey(id));
+    await kv.srem(NEEDS_INDEX, id);
+    await logEvent({ type: 'need_deleted', needId: id, meta: { title: need.title } });
+  },
+
   async stats(): Promise<AdminStats> {
     await ensureInitialData();
     

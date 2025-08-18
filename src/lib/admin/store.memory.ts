@@ -121,6 +121,17 @@ export const memoryStore = {
     logEvent({ type: 'need_updated', needId: id, meta: patch });
     return arr[i];
   },
+
+  deleteNeed(id: string): void {
+    const arr = ensure();
+    const i = arr.findIndex(n => n.id === id);
+    if (i === -1) return;
+
+    const need = arr[i];
+    arr.splice(i, 1);
+    logEvent({ type: 'need_deleted', needId: id, meta: { title: need.title } });
+  },
+
   setPublished(id: string, isPublished: boolean): NeedDetail | null {
     const arr = ensure();
     const i = arr.findIndex(n => n.id === id);

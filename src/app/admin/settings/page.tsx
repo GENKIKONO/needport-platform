@@ -1,13 +1,169 @@
-export const dynamic = "force-dynamic";
+"use client";
+import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/Toast";
 
-import { getAllSettings } from "@/lib/server/settings";
-import AdminBar from "@/components/admin/AdminBar";
-import SettingsForm from "@/components/admin/SettingsForm";
+type FeatureFlags = {
+  userEditEnabled: boolean;
+  userDeleteEnabled: boolean;
+  vendorEditEnabled: boolean;
+  demoGuardEnabled: boolean;
+  showSamples: boolean;
+};
 
 export default function AdminSettingsPage() {
+  const [flags, setFlags] = useState<FeatureFlags | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const toast = useToast();
+
+  async function loadFlags() {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/flags", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setFlags(data);
+      }
+    } catch (error) {
+      console.error("Failed to load flags:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function saveFlags(updates: Partial<FeatureFlags>) {
+    try {
+      setSaving(true);
+      const res = await fetch("/api/admin/flags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updates),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setFlags(data);
+        toast("保存しました", "success");
+      } else {
+        toast("保存に失敗しました", "error");
+      }
+    } catch (error) {
+      toast("保存に失敗しました", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  useEffect(() => { loadFlags(); }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-gray-900">設定</h1>
+        <div className="text-sm text-gray-500">読み込み中...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">設定</h1>
+      
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">機能フラグ</h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">ユーザー編集を許可</div>
+              <div className="text-sm text-gray-500">マイページでニーズの編集を許可する</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ userEditEnabled: !flags?.userEditEnabled })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.userEditEnabled 
+                  ? "bg-blue-600 text-white" 
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.userEditEnabled ? "有効" : "無効"}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">ユーザー削除を許可</div>
+              <div className="text-sm text-gray-500">マイページでニーズの削除を許可する</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ userDeleteEnabled: !flags?.userDeleteEnabled })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.userDeleteEnabled 
+                  ? "bg-blue-600 text-white" 
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.userDeleteEnabled ? "有効" : "無効"}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">事業者編集を許可</div>
+              <div className="text-sm text-gray-500">事業者プロフィールの編集を許可する</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ vendorEditEnabled: !flags?.vendorEditEnabled })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.vendorEditEnabled 
+                  ? "bg-blue-600 text-white" 
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.vendorEditEnabled ? "有効" : "無効"}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">デモガードを有効にする</div>
+              <div className="text-sm text-gray-500">デモモードで一部機能を制限する</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ demoGuardEnabled: !flags?.demoGuardEnabled })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.demoGuardEnabled 
+                  ? "bg-blue-600 text-white" 
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.demoGuardEnabled ? "有効" : "無効"}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">サンプル案件を公開側に表示</div>
+              <div className="text-sm text-gray-500">サンプル案件を一般ユーザーに表示する</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ showSamples: !flags?.showSamples })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.showSamples 
+                  ? "bg-blue-600 text-white" 
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.showSamples ? "有効" : "無効"}
+            </button>
+          </div>
+        </div>
+      </div>
       
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">システム設定</h2>

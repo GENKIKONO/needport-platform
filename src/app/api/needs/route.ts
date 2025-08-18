@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createNeed, listPublicNeeds } from "@/lib/admin/store";
 import { getOrCreateUserByEmail } from "@/lib/trust/store";
+import { getFlags } from "@/lib/admin/flags";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,9 +36,14 @@ export async function GET(req: NextRequest) {
   const direction = searchParams.get("direction") as "desc" | "asc" | undefined ?? "desc";
 
   const list = await listPublicNeeds();
+  const flags = await getFlags();
   
-  // 基本フィルタ: 公開ON & サンプルOFF
-  let items = list.filter(need => need.isPublished && !need.isSample);
+  // 基本フィルタ: 公開ON & サンプル制御
+  let items = list.filter(need => {
+    if (!need.isPublished) return false;
+    if (!flags.showSamples && need.isSample) return false;
+    return true;
+  });
   
   // キーワード検索
   if (q) {
@@ -124,5 +130,18 @@ export async function POST(req: NextRequest) {
     isSample: false,
     ownerUserId,           // ユーザIDを紐付け
   });
-  return NextResponse.json(need, { status: 201 });
+
+  // レスポンス作成
+  const response = NextResponse.json(need, { status: 201 });
+  
+  // ownerUserIdをCookieに設定（180日間有効）
+  if (ownerUserId) {
+    response.cookies.set("uid", ownerUserId, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 180 * 24 * 60 * 60, // 180日
+    });
+  }
+  
+  return response;
 }

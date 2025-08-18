@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 interface DemoGuardProps {
   children: ReactNode;
@@ -8,10 +8,38 @@ interface DemoGuardProps {
   tooltip?: string;
 }
 
-export default function DemoGuard({ children, destructive = false, tooltip }: DemoGuardProps) {
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+type FeatureFlags = {
+  demoGuardEnabled: boolean;
+};
 
-  if (isDemoMode && destructive) {
+export default function DemoGuard({ children, destructive = false, tooltip }: DemoGuardProps) {
+  const [flags, setFlags] = useState<FeatureFlags | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadFlags() {
+      try {
+        const res = await fetch("/api/flags");
+        if (res.ok) {
+          const data = await res.json();
+          setFlags(data);
+        }
+      } catch (error) {
+        console.error("Failed to load flags:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadFlags();
+  }, []);
+
+  if (loading) {
+    return <>{children}</>;
+  }
+
+  const isBlocked = flags?.demoGuardEnabled && destructive;
+
+  if (isBlocked) {
     return (
       <div className="relative group">
         <div className="opacity-50 pointer-events-none">

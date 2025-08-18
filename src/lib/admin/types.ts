@@ -78,3 +78,11 @@ export type AdminEvent = {
   at: string;
   payload?: any;
 };
+
+export type FeatureFlags = {
+  userEditEnabled: boolean;      // マイページで編集可
+  userDeleteEnabled: boolean;    // マイページで削除可
+  vendorEditEnabled: boolean;    // 事業者プロフィール編集可
+  demoGuardEnabled: boolean;     // 旧「デモ」無効化スイッチ（true=ブロック、false=許可）
+  showSamples: boolean;          // サンプル案件を公開側で見せる
+};

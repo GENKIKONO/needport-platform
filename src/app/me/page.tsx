@@ -1,158 +1,278 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { MessageSquare } from 'lucide-react';
-import RoomsJoined from './RoomsJoined';
+import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/Toast";
 
-export const dynamic = 'force-dynamic';
+type NeedRow = {
+  id: string;
+  title: string;
+  body?: string;
+  stage: string;
+  supporters: number;
+  proposals: number;
+  estimateYen?: number | null;
+  isPublished: boolean;
+  isSample: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Resp = {
+  items: NeedRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+type FeatureFlags = {
+  userEditEnabled: boolean;
+  userDeleteEnabled: boolean;
+  vendorEditEnabled: boolean;
+  demoGuardEnabled: boolean;
+  showSamples: boolean;
+};
 
 export default function MePage() {
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [myNeeds, setMyNeeds] = useState([
-    { id: 'need-001', title: '地下室がある家を建てたい', interest_count: 0 },
-    { id: 'need-002', title: '手作り家具のワークショップ', interest_count: 2 },
-  ]);
-  const [rooms, setRooms] = useState<any[]>([]);
-  const [loadingRooms, setLoadingRooms] = useState(true);
+  const [data, setData] = useState<Resp | null>(null);
+  const [flags, setFlags] = useState<FeatureFlags | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ title: "", body: "", estimateYen: "" });
+  const toast = useToast();
 
-  // 案件ルーム一覧を取得
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const res = await fetch('/api/rooms', { cache: 'no-store' });
-        if (res.ok) {
-          const data = await res.json();
-          setRooms(data.rooms || []);
-        }
-      } catch (error) {
-        console.error('Failed to fetch rooms:', error);
-      } finally {
-        setLoadingRooms(false);
-      }
-    };
-    
-    fetchRooms();
-  }, []);
-
-  const handleDelete = async (needId: string, interestCount: number) => {
-    if (interestCount > 0) {
-      alert('賛同者がいるため削除できません');
-      return;
-    }
-    
-    if (!confirm('この投稿を削除しますか？（賛同0件のみ削除可能）')) return;
-    
-    setDeleting(needId);
+  async function loadData() {
     try {
-      const r = await fetch(`/api/needs/${needId}/delete-if-clear`, { method: 'POST' });
+      setLoading(true);
+      setErr(null);
       
-      if (r.status === 204) {
-        // 楽観更新: listから除去
-        setMyNeeds(prev => prev.filter(n => n.id !== needId));
-        alert('削除しました');
-      } else if (r.status === 409) {
-        alert('賛同者がいるため削除できません');
-      } else if (r.status === 501) {
-        alert('本番DB接続時のみ削除可能です（環境変数を設定してください）');
-      } else if (r.status === 403) {
-        alert('この投稿を削除する権限がありません');
-      } else {
-        alert('削除エラー');
+      // フラグ取得
+      const flagsRes = await fetch("/api/flags");
+      if (flagsRes.ok) {
+        const flagsData = await flagsRes.json();
+        setFlags(flagsData);
       }
-    } catch (error) {
-      alert('削除エラー');
+      
+      // マイニーズ取得
+      const res = await fetch("/api/me/needs?pageSize=50");
+      if (!res.ok) {
+        if (res.status === 401) {
+          setErr("投稿がまだありません。まずニーズを投稿してください。");
+          return;
+        }
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const json = await res.json() as Resp;
+      setData(json);
+    } catch (e: any) {
+      setErr(e?.message ?? "failed");
     } finally {
-      setDeleting(null);
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { loadData(); }, []);
+
+  const handleEdit = (need: NeedRow) => {
+    setEditingId(need.id);
+    setEditForm({
+      title: need.title,
+      body: need.body || "",
+      estimateYen: need.estimateYen?.toString() || "",
+    });
+  };
+
+  const handleSave = async () => {
+    if (!editingId) return;
+    
+    try {
+      const res = await fetch(`/api/me/needs/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: editForm.title,
+          body: editForm.body || undefined,
+          estimateYen: editForm.estimateYen ? Number(editForm.estimateYen) : undefined,
+        }),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        if (error.error === "feature_disabled") {
+          toast("編集機能が無効になっています", "error");
+        } else {
+          toast("更新に失敗しました", "error");
+        }
+        return;
+      }
+      
+      toast("更新しました", "success");
+      setEditingId(null);
+      loadData(); // 再読み込み
+    } catch (error) {
+      toast("更新に失敗しました", "error");
     }
   };
 
+  const handleDelete = async (needId: string, title: string) => {
+    if (!confirm(`「${title}」を削除しますか？`)) return;
+    
+    try {
+      const res = await fetch(`/api/me/needs/${needId}`, {
+        method: "DELETE",
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        if (error.error === "feature_disabled") {
+          toast("削除機能が無効になっています", "error");
+        } else {
+          toast("削除に失敗しました", "error");
+        }
+        return;
+      }
+      
+      toast("削除しました", "success");
+      loadData(); // 再読み込み
+    } catch (error) {
+      toast("削除に失敗しました", "error");
+    }
+  };
+
+  const items = data?.items ?? [];
+
+  if (loading) {
+    return (
+      <main className="container py-8">
+        <h1 className="text-2xl font-semibold text-neutral-900 mb-6">マイページ</h1>
+        <div className="text-sm text-neutral-500">読み込み中...</div>
+      </main>
+    );
+  }
+
+  if (err) {
+    return (
+      <main className="container py-8">
+        <h1 className="text-2xl font-semibold text-neutral-900 mb-6">マイページ</h1>
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
+          <p className="mb-2">{err}</p>
+          <a href="/needs/new" className="text-blue-600 hover:underline">
+            ニーズを投稿する →
+          </a>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="section space-y-6">
-      <h1 className="text-2xl font-bold">マイページ</h1>
+    <main className="container py-8">
+      <h1 className="text-2xl font-semibold text-neutral-900 mb-6">マイページ</h1>
       
-      {/* あなたの案件ルーム */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold">あなたの案件ルーム</h2>
-        <RoomsJoined />
-      </section>
+      {flags?.demoGuardEnabled && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800 text-sm">
+          デモモードが有効になっています。一部の機能が制限される場合があります。
+        </div>
+      )}
       
-      {/* Profile Card */}
-      <div className="np-card p-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
-            デ
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium text-neutral-900">投稿したニーズ</h2>
+        
+        {items.length === 0 ? (
+          <div className="rounded-xl border border-black/5 bg-white p-6 text-neutral-600">
+            まだ投稿したニーズはありません。
+            <a href="/needs/new" className="ml-2 text-blue-600 hover:underline">
+              ニーズを投稿する →
+            </a>
           </div>
-          <div>
-            <h2 className="text-lg font-semibold">デモユーザー</h2>
-            <p className="text-sm text-gray-600">東京都渋谷区</p>
-            <p className="text-xs text-gray-500">参加日: 2025/8/17</p>
+        ) : (
+          <div className="space-y-4">
+            {items.map((need) => (
+              <div key={need.id} className="rounded-lg border border-gray-200 bg-white p-4">
+                {editingId === need.id ? (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={editForm.title}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      placeholder="タイトル"
+                    />
+                    <textarea
+                      value={editForm.body}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, body: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md h-24"
+                      placeholder="詳細"
+                    />
+                    <input
+                      type="number"
+                      value={editForm.estimateYen}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, estimateYen: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      placeholder="予算（円）"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleSave}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        保存
+                      </button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                      >
+                        キャンセル
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-lg font-medium text-neutral-900">{need.title}</h3>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(need)}
+                          disabled={!flags?.userEditEnabled}
+                          className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          編集
+                        </button>
+                        <button
+                          onClick={() => handleDelete(need.id, need.title)}
+                          disabled={!flags?.userDeleteEnabled}
+                          className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          削除
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {need.body && (
+                      <p className="text-sm text-neutral-600 mb-2">{need.body}</p>
+                    )}
+                    
+                    <div className="flex items-center gap-4 text-xs text-neutral-500">
+                      <span>ステージ: {need.stage}</span>
+                      <span>•</span>
+                      <span>公開: {need.isPublished ? "ON" : "OFF"}</span>
+                      <span>•</span>
+                      <span>賛同: {need.supporters}人</span>
+                      <span>•</span>
+                      <span>提案: {need.proposals}件</span>
+                      {need.estimateYen && (
+                        <>
+                          <span>•</span>
+                          <span>予算: ¥{need.estimateYen.toLocaleString()}</span>
+                        </>
+                      )}
+                      <span>•</span>
+                      <span>作成: {new Date(need.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="np-card p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">2</div>
-          <div className="text-sm text-gray-600">投稿</div>
-        </div>
-        <div className="np-card p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">3</div>
-          <div className="text-sm text-gray-600">興味表明</div>
-        </div>
-        <div className="np-card p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600">1</div>
-          <div className="text-sm text-gray-600">マッチング</div>
-        </div>
-      </div>
-
-      {/* My Posts */}
-      <div className="np-card p-6">
-        <h3 className="font-semibold mb-4">私の投稿</h3>
-        <div className="space-y-3">
-          {myNeeds.map(need => (
-            <div key={need.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-              <div>
-                <h4 className="font-medium">{need.title}</h4>
-                <p className="text-sm text-gray-600">賛同: {need.interest_count}件</p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  className="btn btn-ghost text-sm"
-                  title="編集（近日実装）"
-                >
-                  編集
-                </button>
-                <button
-                  disabled={need.interest_count > 0 || deleting === need.id}
-                  onClick={() => handleDelete(need.id, need.interest_count)}
-                  className={`btn text-sm ${
-                    need.interest_count > 0 
-                      ? 'btn-ghost disabled:opacity-50' 
-                      : 'btn-primary'
-                  }`}
-                  title={
-                    need.interest_count > 0 
-                      ? '賛同者がいるため削除できません' 
-                      : 'この投稿を削除する'
-                  }
-                >
-                  {deleting === need.id ? '削除中...' : '削除'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      
-
-      {/* Quick Actions */}
-      <div className="np-card p-6">
-        <h3 className="font-semibold mb-4">クイックアクション</h3>
-        <div className="grid gap-3">
-          <a href="/post" className="btn btn-primary">新しいニーズを投稿</a>
-          <a href="/needs" className="btn btn-ghost">ニーズを探す</a>
-        </div>
+        )}
       </div>
     </main>
   );
