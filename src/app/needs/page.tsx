@@ -90,7 +90,7 @@ export default function PublicNeedsList() {
   };
 
   return (
-    <main className="container py-8">
+    <main className="container py-8 section">
       <div className="mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-neutral-900">ニーズ一覧</h1>

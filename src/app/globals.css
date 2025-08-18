@@ -3,13 +3,28 @@
 @tailwind utilities;
 
 :root {
-  --section-y: 56px;
+  --section-y-sm: 48px;
+  --section-y-lg: 72px;
   --page-bottom-safe: 88px; /* タブ+余白 */
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
 .section { 
-  padding-block: var(--section-y); 
+  padding-block: var(--section-y-sm); 
+}
+
+.section-lg { 
+  padding-block: var(--section-y-lg); 
+}
+
+main { 
+  padding-bottom: var(--page-bottom-safe); 
+}
+
+/* "波"区切り（軽量） */
+.wave-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgb(186 230 253 / 0.5), transparent);
 }
 
 /* iOS Safari でもフォームを常にライトにする */

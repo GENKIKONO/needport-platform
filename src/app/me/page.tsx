@@ -129,7 +129,7 @@ export default function MePage() {
   }
 
   return (
-    <main className="container mx-auto max-w-3xl px-4 py-8">
+    <main className="container mx-auto max-w-3xl px-4 py-8 section">
       <header>
         <h1 className="text-2xl font-bold">マイページ</h1>
         <p className="text-sm text-gray-500">編集: {flags.userEditEnabled ? "有効" : "無効"} / 削除: {flags.userDeleteEnabled ? "有効" : "無効"}</p>

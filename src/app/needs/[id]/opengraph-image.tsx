@@ -1,141 +1,80 @@
-import { ImageResponse } from 'next/og';
-import { getNeed } from '@/lib/admin/store';
+export const runtime = "edge";
+import { ImageResponse } from "next/og";
 
-export const runtime = 'edge';
-export const alt = 'NeedPort - ニーズ詳細';
-export const contentType = 'image/png';
-export const size = {
-  width: 1200,
-  height: 630,
-};
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
 
-export default async function Image({ params }: { params: { id: string } }) {
+export default async function OG({ params }: { params: { id: string } }) {
   try {
-    const need = await getNeed(params.id);
+    // ニーズデータを取得
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/needs`);
+    const data = await res.json();
+    const need = data.items?.find((n: any) => n.id === params.id);
     
-    if (!need || !need.isPublished) {
+    if (!need) {
       return new ImageResponse(
         (
-          <div
-            style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              padding: '40px',
-            }}
-          >
-            <h1 style={{ fontSize: '48px', margin: '0 0 20px 0', textAlign: 'center' }}>
-              NeedPort
-            </h1>
-            <p style={{ fontSize: '24px', margin: '0', textAlign: 'center' }}>
-              ニーズが見つかりません
-            </p>
+          <div style={{ 
+            width: "1200px", 
+            height: "630px", 
+            background: "linear-gradient(135deg,#0ea5e9,#2563eb 55%,#0ea5e9)",
+            color: "#fff",
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            fontSize: 48, 
+            fontWeight: 600 
+          }}>
+            ニーズが見つかりません
           </div>
-        ),
+        ), 
         size
       );
     }
 
-    const title = need.title.length > 50 ? need.title.substring(0, 50) + '...' : need.title;
-    const estimate = need.estimateYen ? `¥${need.estimateYen.toLocaleString()}` : '未定';
-
     return new ImageResponse(
       (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-            color: 'white',
-            padding: '60px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '40px' }}>
-            <div style={{ 
-              width: '60px', 
-              height: '60px', 
-              background: 'white', 
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: '20px'
-            }}>
-              <span style={{ fontSize: '32px', color: '#667eea' }}>🚀</span>
-            </div>
-            <h1 style={{ fontSize: '36px', margin: '0', fontWeight: 'bold' }}>
-              NeedPort
-            </h1>
+        <div style={{ 
+          width: "1200px", 
+          height: "630px", 
+          background: "linear-gradient(135deg,#0ea5e9,#2563eb 55%,#0ea5e9)",
+          color: "#fff",
+          display: "flex", 
+          flexDirection: "column",
+          alignItems: "center", 
+          justifyContent: "center", 
+          padding: "60px"
+        }}>
+          <div style={{ fontSize: 48, fontWeight: 700, marginBottom: 20, textAlign: "center" }}>
+            {need.title}
           </div>
-          
-          <h2 style={{ 
-            fontSize: '48px', 
-            margin: '0 0 30px 0', 
-            lineHeight: '1.2',
-            maxWidth: '1000px'
-          }}>
-            {title}
-          </h2>
-          
-          <div style={{ display: 'flex', gap: '40px', fontSize: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span style={{ marginRight: '10px' }}>💰</span>
-              <span>予算: {estimate}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span style={{ marginRight: '10px' }}>👥</span>
-              <span>賛同: {need.supportsCount ?? 0}人</span>
-            </div>
+          <div style={{ fontSize: 24, opacity: 0.9, marginBottom: 30, textAlign: "center" }}>
+            賛同 {need.supportsCount || 0}人 / 10人で出港
           </div>
-          
-          <div style={{ 
-            position: 'absolute', 
-            bottom: '40px', 
-            right: '60px',
-            fontSize: '20px',
-            opacity: 0.8
-          }}>
-            needport.jp
+          <div style={{ fontSize: 32, fontWeight: 600 }}>
+            NeedPort
           </div>
         </div>
-      ),
+      ), 
       size
     );
   } catch (error) {
-    console.error('Failed to generate OG image:', error);
-    
     return new ImageResponse(
       (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            padding: '40px',
-          }}
-        >
-          <h1 style={{ fontSize: '48px', margin: '0 0 20px 0', textAlign: 'center' }}>
-            NeedPort
-          </h1>
-          <p style={{ fontSize: '24px', margin: '0', textAlign: 'center' }}>
-            ニーズ詳細
-          </p>
+        <div style={{ 
+          width: "1200px", 
+          height: "630px", 
+          background: "linear-gradient(135deg,#0ea5e9,#2563eb 55%,#0ea5e9)",
+          color: "#fff",
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "center", 
+          fontSize: 48, 
+          fontWeight: 600 
+        }}>
+          NeedPort
         </div>
-      ),
+      ), 
       size
     );
   }

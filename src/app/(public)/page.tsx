@@ -29,10 +29,14 @@ export default async function Home(){
         <Hero />
       </section>
 
+      <div className="wave-divider"></div>
+
       {/* Flow：ここに集約（スマホ=カルーセル、PC=6カード+船） */}
       <section className="section">
         <ServiceFlow />
       </section>
+
+      <div className="wave-divider"></div>
 
       {/* 既存セクション（必要に応じて見出しだけ少しだけ調整） */}
       <section className="section">
@@ -43,6 +47,8 @@ export default async function Home(){
         <HomeSoon />
       </section>
 
+      <div className="wave-divider"></div>
+
       <section className="section">
         <header className="mb-4">
           <h2 className="text-xl md:text-2xl font-bold text-neutral-900">どんなニーズがありますか？</h2>
@@ -50,6 +56,8 @@ export default async function Home(){
         </header>
         <HomeCategories />
       </section>
+
+      <div className="wave-divider"></div>
 
       <section className="section">
         <header className="mb-4">
