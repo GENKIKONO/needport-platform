@@ -35,7 +35,9 @@ export default function HomeFeatured() {
           <article key={n.id} className="np-card overflow-hidden card-hover card-press">
             {/* Image placeholder */}
             <div className="aspect-[4/3] bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-              <div className="text-4xl opacity-50">📋</div>
+              <svg className="h-12 w-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
             </div>
             
             {/* Content */}
