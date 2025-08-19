@@ -138,7 +138,7 @@ export default async function RootLayout({
           `
         }} />
       </head>
-      <body className={`${inter.className} bg-slate-50 text-slate-900`}>
+      <body className={`${inter.className} bg-slate-50 text-slate-900 min-h-screen pb-[96px]`}>
         <ErrorBoundary>
           <ClientErrorCatcher />
           <ToastProvider>
