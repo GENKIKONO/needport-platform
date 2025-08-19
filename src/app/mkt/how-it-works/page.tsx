@@ -44,7 +44,7 @@ export default function HowItWorksPage() {
               step: "3",
               title: "良い提案を承認",
               description: "気に入った提案を承認すると、案件ルームが作成されます。承認制なので安心です。",
-              icon: "✅"
+              icon: "check"
             },
             {
               step: "4",

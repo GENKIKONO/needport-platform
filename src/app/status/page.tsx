@@ -140,10 +140,10 @@ export default async function StatusPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy': return '✅';
-      case 'degraded': return '⚠️';
-      case 'down': return '❌';
-      default: return '❓';
+      case 'healthy': return 'Healthy';
+      case 'degraded': return 'Degraded';
+      case 'down': return 'Down';
+      default: return 'Unknown';
     }
   };
 

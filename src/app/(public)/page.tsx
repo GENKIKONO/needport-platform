@@ -10,26 +10,42 @@ export const revalidate = 0;
 export default async function Home() {
   return (
     <main className="space-y-12 bg-white">
-      {/* 注目のニーズ - 必ず表示 */}
+      {/* 1. 注目のニーズ - 必ず表示 */}
       <section className="section">
+        <header className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">注目のニーズ</h2>
+          <p className="text-gray-600">関心が高い投稿をピックアップ</p>
+        </header>
         <HomeFeatured />
       </section>
 
-      {/* Hero (Existing) */}
+      <div className="wave-divider"></div>
+
+      {/* 2. 支援サービスセクション */}
+      <section className="section">
+        <SupportServices />
+      </section>
+      <section className="section">
+        <AudiencePicker />
+      </section>
+
+      <div className="wave-divider"></div>
+
+      {/* 3. Hero (Existing) */}
       <section className="section">
         <Hero />
       </section>
 
       <div className="wave-divider"></div>
 
-      {/* Flow：ここに集約（スマホ=カルーセル、PC=6カード+船） */}
+      {/* 4. Flow：ここに集約（スマホ=カルーセル、PC=6カード+船） */}
       <section className="section">
         <ServiceFlow />
       </section>
 
       <div className="wave-divider"></div>
 
-      {/* 既存セクション（必要に応じて見出しだけ少しだけ調整） */}
+      {/* 5. 既存セクション */}
       <section className="section">
         <HomeSoon />
       </section>
@@ -41,6 +57,126 @@ export default async function Home() {
       </section>
 
       <div className="wave-divider"></div>
+
+      {/* 6. 下部ヒーローCTA */}
+      <BottomHeroCTA />
     </main>
+  );
+}
+
+// 支援サービスセクション（簡易版）
+function SupportServices() {
+  return (
+    <div className="mx-auto max-w-6xl px-6">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">NeedPort支援サービス</h2>
+        <p className="text-lg text-gray-600">あなたのニーズ実現をサポートします</p>
+      </div>
+      
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[
+          {
+            id: 'posting',
+            title: 'はじめての投稿を、かんたんに。',
+            description: 'テンプレと事例で迷わず公開まで。',
+            cta: '投稿のコツを見る',
+            href: '/guide/posting',
+            color: 'bg-green-50 border-green-200'
+          },
+          {
+            id: 'offer',
+            title: '見つけて、提案して、つながる。',
+            description: '登録→検索→提案→見積の流れを解説。',
+            cta: '提案フローを見る',
+            href: '/guide/offer',
+            color: 'bg-orange-50 border-orange-200'
+          },
+          {
+            id: 'consultation',
+            title: '使い方・安全・トラブル、お気軽に。',
+            description: 'フォームからご相談ください。',
+            cta: '相談する',
+            href: '/support',
+            color: 'bg-blue-50 border-blue-200'
+          }
+        ].map((service) => (
+          <div
+            key={service.id}
+            className={`rounded-xl border-2 p-6 transition-all hover:shadow-lg ${service.color}`}
+          >
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">{service.title}</h3>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              {service.description}
+            </p>
+            <a
+              href={service.href}
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            >
+              {service.cta}
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// オーディエンス切替（簡易版）
+function AudiencePicker() {
+  return (
+    <div className="mx-auto max-w-6xl px-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">あなたはどちらですか？</h2>
+        <p className="text-gray-600">対象に応じたおすすめコンテンツをご案内します</p>
+      </div>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[
+          { id: 'consumer', label: '生活者の方', description: 'ニーズを探して賛同する' },
+          { id: 'vendor', label: '事業者の方', description: 'サービスを提供する' },
+          { id: 'gov', label: '自治体の方', description: '地域の課題を解決する' },
+          { id: 'ally', label: '支援者の方', description: 'プロジェクトを支援する' }
+        ].map((audience) => (
+          <button
+            key={audience.id}
+            className="p-6 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all hover:shadow-md"
+          >
+            <div className="text-center">
+              <h3 className="font-semibold text-gray-900 mb-1">{audience.label}</h3>
+              <p className="text-sm text-gray-600">{audience.description}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 下部ヒーローCTA（可読性修正済み）
+function BottomHeroCTA() {
+  return (
+    <section className="mx-auto max-w-6xl px-4 mt-16">
+      <div className="rounded-3xl bg-gradient-to-br from-indigo-600 via-sky-600 to-cyan-500 text-white px-6 py-10 md:px-10 md:py-14 shadow-lg">
+        <h2 className="text-2xl md:text-3xl font-bold">NeedPortが描く未来へ、いま出港。</h2>
+        <p className="mt-2 text-white/90">リアルな「欲しい」を集め、共創し、形にする。あなたの一歩が、次の価値を生みます。</p>
+        <div className="mt-6 flex gap-3 flex-wrap">
+          <a href="/needs/new" className="inline-flex items-center gap-2 rounded-xl bg-white text-sky-700 px-4 py-2 font-semibold shadow hover:shadow-md transition-shadow">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            ニーズを投稿
+          </a>
+          <a href="/needs" className="inline-flex items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/30 text-white px-4 py-2 font-semibold hover:bg-white/20 transition-colors">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            ニーズを探す
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
