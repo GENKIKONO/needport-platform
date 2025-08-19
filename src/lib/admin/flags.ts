@@ -1,23 +1,23 @@
 export type FeatureFlags = {
   userEditEnabled: boolean;
   userDeleteEnabled: boolean;
-  vendorEditEnabled: boolean;
   demoGuardEnabled: boolean;
   sampleVisible: boolean;
-  requireAccountForEngagement: boolean;
+  vendorEditEnabled?: boolean;
   marketingHeroEnabled?: boolean;
   marketingBottomHeroEnabled?: boolean;
+  requireAccountForEngagement?: boolean;
 };
 
 export const DEFAULT_FLAGS: FeatureFlags = {
   userEditEnabled: true,
   userDeleteEnabled: true,
-  vendorEditEnabled: true,
   demoGuardEnabled: false,
-  sampleVisible: true,
-  requireAccountForEngagement: true,
-  marketingHeroEnabled: true,
-  marketingBottomHeroEnabled: true,
+  sampleVisible: false, // サンプルは非公開がデフォルト
+  vendorEditEnabled: true,
+  marketingHeroEnabled: true, // ヒーロー表示は常時ON
+  marketingBottomHeroEnabled: true, // 下部ヒーローも常時ON
+  requireAccountForEngagement: true, // 未ログイン操作は制限
 };
 
 const KV_KEY = "flags:global";

@@ -54,7 +54,7 @@ export default async function NeedDetailPage({ params }: { params: { id: string 
   return (
     <main className="container max-w-4xl py-10 section">
       <div className="mb-4">
-        <Link href="/needs" className="text-sm text-blue-600 hover:underline">
+        <Link href="/needs" className="text-sm text-blue-600 hover:underline" aria-label="ニーズ一覧に戻る">
           ← 一覧へ戻る
         </Link>
       </div>
@@ -67,26 +67,29 @@ export default async function NeedDetailPage({ params }: { params: { id: string 
             className="ml-4 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
             aria-label="このページを共有"
           >
+            <svg className="h-4 w-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+            </svg>
             共有
           </button>
         </div>
         
         {/* SupportMeterをタイトル直下に配置 */}
-        <div className="mb-4">
+        <div className="mb-6">
           <SupportMeter current={need.supportsCount ?? 0} goal={10} />
         </div>
         
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
           <span>投稿者: {need.ownerMasked}</span>
-          <span>•</span>
+          <span aria-hidden="true">•</span>
           <span>ステージ: {need.stage}</span>
-          <span>•</span>
+          <span aria-hidden="true">•</span>
           <span>サポーター: {need.supporters}人</span>
-          <span>•</span>
+          <span aria-hidden="true">•</span>
           <span>提案: {need.proposals}件</span>
           {need.estimateYen && (
             <>
-              <span>•</span>
+              <span aria-hidden="true">•</span>
               <span>予算: ¥{need.estimateYen.toLocaleString()}</span>
             </>
           )}

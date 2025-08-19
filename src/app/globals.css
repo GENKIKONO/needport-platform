@@ -5,7 +5,7 @@
 :root {
   --section-y-sm: 48px;
   --section-y-lg: 72px;
-  --page-bottom-safe: 88px; /* タブ+余白 */
+  --page-bottom-safe: 96px; /* タブ+余白を96pxに統一 */
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
@@ -25,6 +25,27 @@ main {
 .wave-divider {
   height: 1px;
   background: linear-gradient(to right, transparent, rgb(186 230 253 / 0.5), transparent);
+}
+
+/* 信頼バッジ用CSSドット */
+.trust-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.trust-dot.high {
+  background-color: #10b981; /* green-500 */
+}
+
+.trust-dot.mid {
+  background-color: #f59e0b; /* amber-500 */
+}
+
+.trust-dot.low {
+  background-color: #ef4444; /* red-500 */
 }
 
 /* iOS Safari でもフォームを常にライトにする */

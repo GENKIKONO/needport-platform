@@ -9,7 +9,9 @@ export default function Hero() {
         <div className="px-6 py-10 sm:px-10 sm:py-14">
           <div className="mb-5 flex items-center justify-center">
             <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30">
-              <span className="text-xl">⚓</span>
+              <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+              </svg>
             </div>
           </div>
 
@@ -34,14 +36,20 @@ export default function Hero() {
               className="inline-flex w-full items-center justify-center rounded-lg bg-white px-5 py-3 font-medium text-blue-700 shadow-sm transition hover:bg-blue-50 sm:w-auto"
               aria-label="ニーズを投稿する"
             >
-              ✚ ニーズを投稿
+              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              ニーズを投稿
             </Link>
             <Link
               href="/needs"
               className="inline-flex w-full items-center justify-center rounded-lg bg-white/10 px-5 py-3 font-medium text-white ring-1 ring-inset ring-white/40 transition hover:bg-white/15 sm:w-auto"
               aria-label="ニーズを探す"
             >
-              🔎 ニーズを探す
+              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              ニーズを探す
             </Link>
           </div>
         </div>
