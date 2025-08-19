@@ -9,10 +9,9 @@ import QuickLinks from '@/components/marketing/QuickLinks';
 import BottomHeroCTA from '@/components/marketing/BottomHeroCTA';
 import PublicTwoPaneLayout from '@/components/public/PublicTwoPaneLayout';
 import TopHero from '@/components/home/TopHero';
-import PostSearchTabs from '@/components/home/PostSearchTabs';
-import SearchPanel from '@/components/home/SearchPanel';
-import AudienceGrid from '@/components/home/AudienceGrid';
-import Recommendations from '@/components/home/Recommendations';
+import HomeTabs from '@/components/home/HomeTabs';
+import SupportServices from '@/components/home/SupportServices';
+import AudiencePicker from '@/components/home/AudiencePicker';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -26,13 +25,15 @@ export default async function Home() {
       {flags.twoPanePublicEnabled && (
         <>
           <TopHero />
-          <PostSearchTabs />
-          <SearchPanel />
-          <AudienceGrid onSelectionChange={(audienceId) => {
-            // この関数は実際には使用されませんが、型エラーを避けるために必要
-            console.log('Audience selected:', audienceId);
-          }} />
-          <Recommendations audienceId="general" />
+          <HomeTabs />
+        </>
+      )}
+
+      {/* 支援サービスセクション */}
+      {flags.supportSectionEnabled && (
+        <>
+          <SupportServices />
+          <AudiencePicker />
         </>
       )}
 

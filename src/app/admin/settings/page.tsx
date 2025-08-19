@@ -12,6 +12,7 @@ type FeatureFlags = {
   marketingHeroEnabled: boolean;
   marketingBottomHeroEnabled: boolean;
   twoPanePublicEnabled: boolean;
+  supportSectionEnabled: boolean;
 };
 
 export default function AdminSettingsPage() {
@@ -218,6 +219,24 @@ export default function AdminSettingsPage() {
               }`}
             >
               {flags?.twoPanePublicEnabled ? "有効" : "無効"}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">支援サービスセクション</div>
+              <div className="text-sm text-gray-500">ホームページの支援サービス3カードセクションを表示</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ supportSectionEnabled: !flags?.supportSectionEnabled })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.supportSectionEnabled
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.supportSectionEnabled ? "有効" : "無効"}
             </button>
           </div>
           
