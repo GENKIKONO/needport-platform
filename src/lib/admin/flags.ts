@@ -3,6 +3,10 @@ export type FeatureFlags = {
   userDeleteEnabled: boolean;
   demoGuardEnabled: boolean;
   sampleVisible: boolean;
+  marketingHeroEnabled: boolean;
+  marketingBottomHeroEnabled: boolean;
+  twoPanePublicEnabled: boolean;
+  supportSectionEnabled: boolean;
 };
 
 export const DEFAULT_FLAGS: FeatureFlags = {
@@ -10,6 +14,10 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   userDeleteEnabled: true,
   demoGuardEnabled: false,
   sampleVisible: false,
+  marketingHeroEnabled: true,
+  marketingBottomHeroEnabled: true,
+  twoPanePublicEnabled: true,
+  supportSectionEnabled: true,
 };
 
 const KV_KEY = "flags:global";
