@@ -7,16 +7,36 @@ import HomeFeatured from '@/components/HomeFeatured';
 import MarketingHero from '@/components/marketing/Hero';
 import QuickLinks from '@/components/marketing/QuickLinks';
 import BottomHeroCTA from '@/components/marketing/BottomHeroCTA';
+import PublicTwoPaneLayout from '@/components/public/PublicTwoPaneLayout';
+import TopHero from '@/components/home/TopHero';
+import PostSearchTabs from '@/components/home/PostSearchTabs';
+import SearchPanel from '@/components/home/SearchPanel';
+import AudienceGrid from '@/components/home/AudienceGrid';
+import Recommendations from '@/components/home/Recommendations';
 
-export const dynamic = "force-dynamic"; 
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function Home(){
+export default async function Home() {
   const flags = await getFlags();
 
-  return (
+  const homeContent = (
     <main className="space-y-12 bg-white">
-      {/* Marketing Hero (フラグでON/OFF) */}
+      {/* 2ペインレイアウト用の新しいトップセクション */}
+      {flags.twoPanePublicEnabled && (
+        <>
+          <TopHero />
+          <PostSearchTabs />
+          <SearchPanel />
+          <AudienceGrid onSelectionChange={(audienceId) => {
+            // この関数は実際には使用されませんが、型エラーを避けるために必要
+            console.log('Audience selected:', audienceId);
+          }} />
+          <Recommendations audienceId="general" />
+        </>
+      )}
+
+      {/* 既存のセクション（2ペイン無効時または追加コンテンツ） */}
       {flags.marketingHeroEnabled && (
         <>
           <MarketingHero />
@@ -24,7 +44,7 @@ export default async function Home(){
         </>
       )}
 
-      {/* Hero */}
+      {/* Hero (Existing) */}
       <section className="section">
         <Hero />
       </section>
@@ -40,30 +60,18 @@ export default async function Home(){
 
       {/* 既存セクション（必要に応じて見出しだけ少しだけ調整） */}
       <section className="section">
-        <header className="mb-4">
-          <h2 className="text-xl md:text-2xl font-bold text-neutral-900">もうすぐ成立</h2>
-          <p className="text-neutral-600">あと少しで実現！いま参加しよう</p>
-        </header>
         <HomeSoon />
       </section>
 
       <div className="wave-divider"></div>
 
       <section className="section">
-        <header className="mb-4">
-          <h2 className="text-xl md:text-2xl font-bold text-neutral-900">どんなニーズがありますか？</h2>
-          <p className="text-neutral-600">カテゴリーから探す</p>
-        </header>
         <HomeCategories />
       </section>
 
       <div className="wave-divider"></div>
 
       <section className="section">
-        <header className="mb-4">
-          <h2 className="text-xl md:text-2xl font-bold text-neutral-900">注目のニーズ</h2>
-          <p className="text-neutral-600">関心が高い投稿をピックアップ</p>
-        </header>
         <HomeFeatured />
       </section>
 
@@ -71,4 +79,18 @@ export default async function Home(){
       {flags.marketingBottomHeroEnabled && <BottomHeroCTA />}
     </main>
   );
+
+  // PCで2ペインレイアウトが有効な場合は2ペインで包む
+  if (flags.twoPanePublicEnabled) {
+    return (
+      <div className="lg:block hidden">
+        <PublicTwoPaneLayout>
+          {homeContent}
+        </PublicTwoPaneLayout>
+      </div>
+    );
+  }
+
+  // モバイルまたは2ペイン無効時は従来のレイアウト
+  return homeContent;
 }

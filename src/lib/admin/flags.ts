@@ -7,6 +7,7 @@ export type FeatureFlags = {
   marketingHeroEnabled?: boolean;
   marketingBottomHeroEnabled?: boolean;
   requireAccountForEngagement?: boolean;
+  twoPanePublicEnabled?: boolean; // PCで左ナビ常時表示レイアウト
 };
 
 export const DEFAULT_FLAGS: FeatureFlags = {
@@ -18,6 +19,7 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   marketingHeroEnabled: true, // ヒーロー表示は常時ON
   marketingBottomHeroEnabled: true, // 下部ヒーローも常時ON
   requireAccountForEngagement: true, // 未ログイン操作は制限
+  twoPanePublicEnabled: true, // PCで2ペインレイアウトを有効
 };
 
 const KV_KEY = "flags:global";

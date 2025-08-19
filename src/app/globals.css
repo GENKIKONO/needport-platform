@@ -21,6 +21,11 @@ main {
   padding-bottom: var(--page-bottom-safe); 
 }
 
+/* 安全な下余白ユーティリティ */
+.pb-safe {
+  padding-bottom: max(6rem, 12vh);
+}
+
 /* "波"区切り（軽量） */
 .wave-divider {
   height: 1px;

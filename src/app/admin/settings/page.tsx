@@ -11,6 +11,7 @@ type FeatureFlags = {
   requireAccountForEngagement: boolean;
   marketingHeroEnabled: boolean;
   marketingBottomHeroEnabled: boolean;
+  twoPanePublicEnabled: boolean;
 };
 
 export default function AdminSettingsPage() {
@@ -199,6 +200,24 @@ export default function AdminSettingsPage() {
               }`}
             >
               {flags?.marketingBottomHeroEnabled ? "有効" : "無効"}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-gray-900">PCで左ナビ常時表示レイアウト</div>
+              <div className="text-sm text-gray-500">PCで2ペインレイアウト（左ナビ固定）を有効</div>
+            </div>
+            <button
+              onClick={() => saveFlags({ twoPanePublicEnabled: !flags?.twoPanePublicEnabled })}
+              disabled={saving}
+              className={`px-4 py-2 rounded hover:opacity-80 disabled:opacity-50 ${
+                flags?.twoPanePublicEnabled
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {flags?.twoPanePublicEnabled ? "有効" : "無効"}
             </button>
           </div>
           
