@@ -112,7 +112,7 @@ export default function LeftDock() {
       {/* ロゴ */}
       <div className="p-6 border-b border-gray-100">
         <Link href="/" className="flex items-center gap-2" aria-label="NeedPortホーム">
-          <Logo showText className="h-8" />
+          <Logo />
         </Link>
       </div>
 

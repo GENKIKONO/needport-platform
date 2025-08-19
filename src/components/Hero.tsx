@@ -19,6 +19,17 @@ export default function Hero() {
         </div>
       </div>
 
+      {/* 背景装飾レイヤー - 飛行機 */}
+      <svg className="absolute inset-0 pointer-events-none opacity-10" aria-hidden="true">
+        <defs>
+          <symbol id="plane" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M2 12l20-6-4 6 4 6-20-6 6-2-1-3 3 1 2-1-2-1-3 1 1-3z"/>
+          </symbol>
+        </defs>
+        <use href="#plane" x="10%" y="20%" className="text-sky-700" />
+        <use href="#plane" x="70%" y="60%" className="text-sky-600" />
+      </svg>
+
       <div className="relative max-w-3xl mx-auto text-center">
         {/* キッカー */}
         <div className="kicker mb-4">
