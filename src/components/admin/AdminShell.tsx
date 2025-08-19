@@ -16,10 +16,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   const navItems = [
-    { href: "/admin", label: "概要", icon: "📊" },
-    { href: "/admin/needs", label: "ニーズ一覧", icon: "📋" },
-    { href: "/admin/users", label: "ユーザー", icon: "👥" },
-    { href: "/admin/settings", label: "設定", icon: "⚙️" },
+    { href: "/admin", label: "ダッシュボード", icon: "dashboard" },
+    { href: "/admin/needs", label: "ニーズ一覧", icon: "list" },
+    { href: "/admin/users", label: "ユーザー", icon: "users" },
+    { href: "/admin/audit", label: "監査ログ", icon: "audit" },
+    { href: "/admin/backups", label: "バックアップ", icon: "backup" },
+    { href: "/admin/logs", label: "ログ", icon: "logs" },
+    { href: "/admin/mails", label: "メール", icon: "mail" },
+    { href: "/admin/exports", label: "エクスポート", icon: "export" },
+    { href: "/admin/settings", label: "設定", icon: "settings" },
+    { href: "/admin/docs", label: "ドキュメント", icon: "docs" },
   ];
 
   return (

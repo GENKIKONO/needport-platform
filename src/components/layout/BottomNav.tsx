@@ -8,10 +8,10 @@ export default function BottomNav() {
   const [showToast, setShowToast] = useState(false);
 
   const navItems = [
-    { href: '/', label: 'ホーム', icon: '🏠' },
-    { href: '/needs', label: 'ニーズ', icon: '📋' },
-    { href: '/needs/new', label: '投稿', icon: '✏️' },
-    { href: '/me', label: 'マイページ', icon: '👤' },
+    { href: '/', label: 'ホーム', icon: 'home' },
+    { href: '/needs', label: 'ニーズ', icon: 'list' },
+    { href: '/vendor/register', label: '事業者', icon: 'building' },
+    { href: '/me', label: 'マイページ', icon: 'user' },
   ];
 
   const handleClick = (item: typeof navItems[0]) => {
