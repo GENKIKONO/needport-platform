@@ -130,7 +130,9 @@ export default async function RootLayout({
         <ErrorBoundary>
           <ClientErrorCatcher />
           <ToastProvider>
-            <AppHeader />
+            <div className="lg:hidden">
+              <AppHeader />
+            </div>
             {children}
             {process.env.NEXT_PUBLIC_DISABLE_BOTTOMNAV === '1' ? null : <BottomNav />}
             

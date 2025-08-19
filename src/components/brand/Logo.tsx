@@ -1,31 +1,25 @@
-interface LogoProps {
-  showText?: boolean;
-  className?: string;
-}
+import * as React from "react";
 
-export default function Logo({ showText = false, className = "" }: LogoProps) {
+type Props = { className?: string; hideText?: boolean };
+
+export function Logo({ className = "", hideText = false }: Props) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      {/* 船のSVGアイコン */}
-      <svg 
-        className="h-8 w-8 text-blue-600" 
-        fill="none" 
-        stroke="currentColor" 
-        viewBox="0 0 24 24" 
-        aria-hidden="true"
+    <span className={`inline-flex items-center gap-2 ${className}`} aria-label="NeedPort">
+      {/* Ship icon (inline SVG) */}
+      <svg
+        width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"
+        className="text-slate-800 dark:text-slate-100"
+        fill="currentColor"
       >
-        <path 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-          strokeWidth={2} 
-          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-        />
+        {/* hull */}
+        <path d="M3 16l2 4h14l2-4-9-3-9 3z" />
+        {/* deck + bridge */}
+        <path d="M9 10h6v2H9zM10 7h4v2h-4z" />
+        {/* bow waves */}
+        <path d="M5 20c1.2 0 1.8-.6 2.6-.6S9 20 10.2 20s1.8-.6 2.6-.6S15 20 16.2 20s1.8-.6 2.6-.6S21 20 22 20h-17z" />
       </svg>
-      
-      {/* テキスト（オプション） */}
-      {showText && (
-        <span className="text-xl font-bold text-gray-900">NeedPort</span>
-      )}
-    </div>
+      {!hideText && <span className="text-lg font-semibold tracking-tight">NeedPort</span>}
+    </span>
   );
 }
+export default Logo;
