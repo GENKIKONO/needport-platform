@@ -47,6 +47,15 @@
   --chip-interest: #6B7280;
   --chip-consider: #0EA5E9;
   --chip-buy: #10B981;
+  
+  /* 福島式タブ用トークン */
+  --ndp-find-bg: #E9F3FF;
+  --ndp-find-border: #B7D7FF;
+  --ndp-find-accent: #4C7DBF;
+
+  --ndp-post-bg: #E7FFF2;
+  --ndp-post-border: #A9F0CB;
+  --ndp-post-accent: #1B9C75;
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
@@ -230,9 +239,55 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
      .np-boat, .np-wake { animation: none !important; display: none; }
    }
    
-   /* 軽い港味のマイクロ演出 */
-   @keyframes np-bob { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-2px) } }
-   .bob { animation: np-bob 3s ease-in-out infinite; transform-origin: 50% 100%; }
+     /* 軽い港味のマイクロ演出 */
+  @keyframes np-bob { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-2px) } }
+  .bob { animation: np-bob 3s ease-in-out infinite; transform-origin: 50% 100%; }
+  
+  /* 福島式パネルの基礎 */
+  .ndp-panel{
+    border:1px solid var(--ndp-border);
+    background: var(--ndp-bg);
+    border-radius: 16px;
+  }
+
+  /* モード別に変数を注入 */
+  .ndp-panel[data-mode="find"]{
+    --ndp-bg: var(--ndp-find-bg);
+    --ndp-border: var(--ndp-find-border);
+    --ndp-accent: var(--ndp-find-accent);
+  }
+  .ndp-panel[data-mode="post"]{
+    --ndp-bg: var(--ndp-post-bg);
+    --ndp-border: var(--ndp-post-border);
+    --ndp-accent: var(--ndp-post-accent);
+  }
+
+  /* タブ（セグメント） */
+  .ndp-tabbar{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:.5rem;
+    border-radius: 12px;
+    /* タブバー自体はパネルと一体化させる（背景透過） */
+    background: transparent;
+  }
+
+  .ndp-tab{
+    height: 44px;
+    border-radius: 10px;
+    background: transparent;
+    color: color-mix(in srgb, var(--ndp-accent) 90%, #000 0%);
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .ndp-tab[aria-selected="true"]{
+    background: #fff;               /* 押した側は白っぽく */
+    border-color: color-mix(in srgb, var(--ndp-accent) 25%, #fff 75%);
+  }
+  .ndp-tab[aria-selected="false"]:hover{ 
+    background: rgba(255,255,255,.45);
+  }
    
    /* ボタンのさざ波クリック */
    .btn-wave { position: relative; overflow: hidden; }
