@@ -23,10 +23,10 @@ export default function HeroMain() {
           <div className="relative inline-block">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg transform rotate-3 scale-105 opacity-20"></div>
             <div className="relative bg-white/90 backdrop-blur-sm rounded-lg p-8 lg:p-12 border-2 border-amber-400 shadow-xl">
-              <h1 className="text-3xl lg:text-5xl font-extrabold tracking-tight text-gray-900">
+              <h1 className="text-[var(--h1)] font-bold text-[var(--ink-900)] tracking-tight">
                 運命のニーズは、ここにある。
               </h1>
-              <p className="mt-4 text-lg text-gray-700 leading-relaxed">
+              <p className="mt-4 text-[var(--lead)] text-[var(--ink-700)] leading-relaxed">
                 生活から生まれるリアルなニーズが集まり、共鳴し、形になるプラットフォーム。
               </p>
             </div>
@@ -36,13 +36,13 @@ export default function HeroMain() {
         {/* CTAボタン */}
         <div className="mt-8 lg:mt-12 flex flex-col sm:flex-row gap-4 justify-center">
           <a 
-            className="px-8 py-4 rounded-lg bg-sky-600 text-white font-semibold text-lg hover:bg-sky-700 transition-colors shadow-lg hover:shadow-xl" 
+            className="px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--blue-600)] to-[var(--blue-700)] text-white font-semibold text-lg hover:opacity-95 transition-all shadow-[var(--elev-1)] hover:shadow-[var(--elev-2)]" 
             href="/post"
           >
             ニーズを投稿
           </a>
           <a 
-            className="px-8 py-4 rounded-lg bg-white ring-2 ring-slate-200 text-sky-700 font-semibold text-lg hover:bg-slate-50 transition-colors shadow-lg hover:shadow-xl" 
+            className="px-8 py-4 rounded-xl bg-white border-2 border-[var(--blue-600)] text-[var(--blue-700)] font-semibold text-lg hover:bg-[var(--blue-100)] transition-all shadow-[var(--elev-1)] hover:shadow-[var(--elev-2)]" 
             href="/needs"
           >
             ニーズを探す

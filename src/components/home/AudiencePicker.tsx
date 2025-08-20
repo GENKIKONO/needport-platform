@@ -89,17 +89,17 @@ export default function AudiencePicker() {
             <button
               key={audience.id}
               onClick={() => setSelectedAudience(audience.id)}
-              className={`p-6 rounded-xl border-2 transition-all hover:shadow-md text-center
+              className={`p-5 rounded-2xl ring-1 ring-slate-200 bg-white hover:shadow-[var(--elev-2)] transition-all text-center
                 ${selectedAudience === audience.id 
-                  ? `${audience.color} border-current` 
-                  : 'bg-white border-gray-200 hover:border-gray-300'}`}
+                  ? 'ring-[var(--blue-600)] bg-[var(--blue-100)]' 
+                  : 'hover:ring-slate-300'}`}
             >
               <div className="flex flex-col items-center">
-                <div className="text-[var(--tab-find-ac)] mb-3">
+                <div className="w-12 h-12 bg-[var(--blue-600)] text-white rounded-full flex items-center justify-center mb-3">
                   {audience.icon}
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{audience.label}</h3>
-                <p className="text-sm text-gray-600">{audience.description}</p>
+                <h3 className="font-semibold text-[16px] text-[var(--ink-900)] mb-2">{audience.label}</h3>
+                <p className="text-sm text-[var(--ink-700)]">{audience.description}</p>
               </div>
             </button>
           ))}
