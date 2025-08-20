@@ -62,6 +62,14 @@
   --panel-blue-accent: #2F63B7;  /* 未選択タブ＆主要ボタン */
   --panel-blue-text: #1F2A44;    /* 濃紺テキスト */
   --audience-surface: #F3F6FA;   /* おすすめ面の地色（薄グレー） */
+  
+  /* 福島式UI統一トークン */
+  --np-blue-bg: #E9F3FF;     /* 面＆選択タブ */
+  --np-blue-ac: #2F63B7;     /* 未選択タブ/主要ボタン */
+  --np-blue-border: #C9DCF7; /* 薄い境界 */
+  --np-ink: #1F2A44;         /* 濃紺テキスト */
+  
+  --aside-w: 280px;          /* PC左ドック幅 */
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
@@ -308,6 +316,36 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
     border-bottom-left-radius: .75rem;
     border-bottom-right-radius: .75rem;
   }
+  
+  /* 面を左ドック端まで広げる（PCのみ） */
+  @media (min-width: 1024px){
+    .np-full-bleed-to-aside{
+      border-radius: 12px;
+      margin-left: 0; padding-left: 0;
+    }
+    /* コンテンツだけに左右の余白を戻す */
+    .np-full-bleed-to-aside > .np-inner{
+      padding-left: 0;         /* 左はドック端に揃える */
+      padding-right: 24px;     /* 右は通常の余白 */
+    }
+  }
+  
+  /* タイポの底上げ */
+  .np-heading{ font-weight: 700; color: var(--np-ink); }
+  .np-sub{ font-weight: 600; color: var(--np-ink); }
+  .np-body{ font-weight: 500; color: var(--np-ink); }
+  
+  /* 市町村チップの読みやすさ */
+  .np-chip{
+    padding: 6px 12px;
+    border-radius: 9999px;
+    border: 1px solid var(--np-blue-border);
+    line-height: 1.2;
+    font-weight: 600;
+    color: var(--np-ink);
+    background: #fff;
+  }
+  .np-chip:focus{ outline: 2px solid var(--np-blue-ac); outline-offset: 2px; }
    
    /* ボタンのさざ波クリック */
    .btn-wave { position: relative; overflow: hidden; }
