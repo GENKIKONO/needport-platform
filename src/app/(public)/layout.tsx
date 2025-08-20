@@ -8,7 +8,9 @@ export default function PublicLayout({children}: {children: React.ReactNode}) {
       <MobileHeader />
       <div className="lg:grid lg:grid-cols-[300px,1fr] lg:gap-0">
         <LeftDock />
-        <main className="min-h-dvh pb-24 lg:pb-10">{children}</main>
+        <main className="min-h-dvh pt-[var(--header-mobile)] lg:pt-0 pb-[var(--safe-bottom)] lg:pb-10">
+          {children}
+        </main>
       </div>
       <BottomNav />
     </div>

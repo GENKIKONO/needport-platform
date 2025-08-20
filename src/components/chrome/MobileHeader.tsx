@@ -9,14 +9,23 @@ export default function MobileHeader() {
   return (
     <div className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur border-b">
       <div className="h-14 flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <Logo className="w-6 h-6" /><span className="font-medium">NeedPort</span>
-        </div>
+        {/* 左：ハンバーガー */}
         <button aria-label="メニュー" onClick={() => setOpen(v=>!v)} className="p-2">
           <div className="w-6 h-[2px] bg-slate-800 mb-[6px]" />
           <div className="w-6 h-[2px] bg-slate-800" />
         </button>
+        
+        {/* 中央：船ロゴ＋NeedPort */}
+        <div className="flex items-center gap-2">
+          <Logo className="w-6 h-6" />
+          <span className="font-medium">NeedPort</span>
+        </div>
+        
+        {/* 右：空（将来用） */}
+        <div className="w-10" />
       </div>
+      
+      {/* ドロワー */}
       {open && (
         <div className="border-t bg-white">
           {MENU.map(g => (
@@ -25,12 +34,22 @@ export default function MobileHeader() {
               <ul className="mt-2">
                 {g.items.map(i => (
                   <li key={i.href}>
-                    <Link href={i.href} className="block py-2">{i.label}</Link>
+                    <Link href={i.href} className="block py-2" onClick={() => setOpen(false)}>{i.label}</Link>
                   </li>
                 ))}
               </ul>
             </div>
           ))}
+          
+          {/* ログインボタン */}
+          <div className="px-4 py-3 border-t space-y-2">
+            <Link href="/signup" className="block w-full bg-sky-600 text-white text-center py-2 rounded-md" onClick={() => setOpen(false)}>
+              一般ログイン
+            </Link>
+            <Link href="/vendor/register" className="block w-full bg-emerald-600 text-white text-center py-2 rounded-md" onClick={() => setOpen(false)}>
+              事業者ログイン
+            </Link>
+          </div>
         </div>
       )}
     </div>
