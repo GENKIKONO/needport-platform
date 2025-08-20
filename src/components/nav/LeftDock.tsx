@@ -1,41 +1,29 @@
-import { navGroups } from "./menuData";
-
-function ShipIcon(props:{className?:string; "aria-hidden"?:boolean}) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" {...props}>
-      <path d="M3 15l9-5 9 5-9 5-9-5Z" />
-      <path d="M12 4v6" />
-    </svg>
-  );
-}
+"use client";
+import Link from "next/link";
+import { MENU } from "./menuData";
+import Logo from "@/components/brand/Logo";
 
 export default function LeftDock() {
   return (
-    <aside className="hidden lg:block lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto border-r bg-white">
-      <div className="px-4 py-5">
-        {/* 船ロゴのみ（絵文字不可） */}
-        <div className="mb-6 flex items-center gap-2">
-          <ShipIcon className="h-6 w-6 text-sky-600" aria-hidden />
-          <span className="font-semibold">NeedPort</span>
-        </div>
-
-        <nav className="space-y-6">
-          {navGroups.map((g) => (
-            <div key={g.title}>
-              <div className="text-xs text-gray-500 mb-2">{g.title}</div>
-              <ul className="space-y-1">
-                {g.items.map((it) => (
-                  <li key={it.href}>
-                    <a className="block rounded px-3 py-2 hover:bg-gray-50" href={it.href}>
-                      {it.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </nav>
+    <aside className="hidden lg:flex lg:flex-col lg:w-[300px] lg:h-dvh lg:sticky lg:top-0 lg:overflow-y-auto border-r bg-white">
+      <div className="flex items-center gap-2 p-4">
+        <Logo className="w-7 h-7" />
+        <span className="font-semibold">NeedPort</span>
       </div>
+      <nav className="px-2 pb-6 space-y-6">
+        {MENU.map(g => (
+          <div key={g.title}>
+            <div className="px-2 text-xs font-semibold text-slate-500">{g.title}</div>
+            <ul className="mt-2 space-y-1">
+              {g.items.map(i => (
+                <li key={i.href}>
+                  <Link className="block rounded-md px-3 py-2 hover:bg-slate-50" href={i.href}>{i.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
     </aside>
   );
 }

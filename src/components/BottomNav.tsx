@@ -22,7 +22,7 @@ export default function BottomNav() {
     <nav
       className="
         lg:hidden
-        fixed z-40 left-0 right-0 bottom-0
+        fixed z-40 left-0 right-0 bottom-0 h-16
         bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80
         border-t border-neutral-200
         pb-[env(safe-area-inset-bottom)]

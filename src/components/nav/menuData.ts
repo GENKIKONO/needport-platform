@@ -1,33 +1,22 @@
-export type NavItem = { label: string; href: string };
-export type NavGroup = { title: string; items: NavItem[] };
+export type MenuItem = { label: string; href: string; icon?: string };
+export type MenuGroup = { title: string; items: MenuItem[] };
 
-export const navGroups: NavGroup[] = [
-  {
-    title: "みんなの「欲しい」",
-    items: [
-      { label: "ニーズ一覧", href: "/needs" },
-      { label: "タグで探す", href: "/needs?sort=trending" },
-    ],
-  },
-  {
-    title: "企業の「できる」",
-    items: [
-      { label: "事業者登録", href: "/vendors/new" },
-      { label: "提案・見積の流れ", href: "/guide/offer" },
-    ],
-  },
-  {
-    title: "使い方ガイド",
-    items: [
-      { label: "投稿の流れ", href: "/guide/posting" },
-      { label: "サポート", href: "/support" },
-    ],
-  },
-  {
-    title: "サイト情報",
-    items: [
-      { label: "NeedPortについて", href: "/about" },
-      { label: "利用規約", href: "/terms" },
-    ],
-  },
+export const MENU: MenuGroup[] = [
+  { title: "みんなの『欲しい』", items: [
+    { label: "ニーズ一覧", href: "/needs", icon: "list" },
+    { label: "ニーズを投稿", href: "/post", icon: "plus" },
+  ]},
+  { title: "企業の『できる』", items: [
+    { label: "事業者登録", href: "/business", icon: "building" },
+    { label: "提案ガイド", href: "/guide/offer", icon: "book" },
+  ]},
+  { title: "ガイド", items: [
+    { label: "使い方ガイド", href: "/guide/using", icon: "guide" },
+    { label: "サービス航海図", href: "/how-it-works", icon: "route" },
+    { label: "無料相談", href: "/support", icon: "support" },
+  ]},
+  { title: "サイト情報", items: [
+    { label: "お知らせ", href: "/news", icon: "megaphone" },
+    { label: "このサイトについて", href: "/about", icon: "info" },
+  ]},
 ];
