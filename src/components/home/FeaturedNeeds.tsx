@@ -59,9 +59,21 @@ export default function FeaturedNeeds() {
                 <Link key={need.id} href={`/needs/${need.id}`} className="block">
                   <div className="rounded-xl bg-white ring-1 ring-slate-200 hover:shadow-md transition overflow-hidden">
                     {/* 画像 */}
-                    <div className="aspect-video bg-slate-100 relative">
+                    <div className="aspect-video bg-slate-100 relative overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center">
-                        <span className="text-white font-medium">{need.category}</span>
+                        <div className="text-center">
+                          <div className="text-white text-2xl mb-2">
+                            {need.category === 'IT・システム' && '💻'}
+                            {need.category === '製造・技術' && '⚙️'}
+                            {need.category === 'デザイン・クリエイティブ' && '🎨'}
+                            {need.category === 'マーケティング' && '📈'}
+                            {need.category === '営業・販売' && '💼'}
+                            {need.category === '事務・管理' && '📋'}
+                            {need.category === 'サービス' && '🤝'}
+                            {need.category === 'その他' && '📌'}
+                          </div>
+                          <span className="text-white font-medium">{need.category}</span>
+                        </div>
                       </div>
                     </div>
                     
@@ -88,17 +100,17 @@ export default function FeaturedNeeds() {
                       
                       {/* 賛同メーター（3色積層） */}
                       <div className="mb-3">
-                        <div className="flex h-2 rounded-full overflow-hidden">
+                        <div className="w-full h-2 rounded-full overflow-hidden bg-slate-200">
                           <div 
-                            className="bg-[var(--chip-interest)]"
+                            className="h-2 bg-[var(--chip-interest)]"
                             style={{ width: `${need.interest}%` }}
                           />
                           <div 
-                            className="bg-[var(--chip-consider)]"
+                            className="h-2 bg-[var(--chip-consider)]"
                             style={{ width: `${need.consider}%` }}
                           />
                           <div 
-                            className="bg-[var(--chip-buy)]"
+                            className="h-2 bg-[var(--chip-buy)]"
                             style={{ width: `${need.buy}%` }}
                           />
                         </div>

@@ -3,10 +3,50 @@ import { useState } from "react";
 import Link from "next/link";
 
 const AUDIENCES = [
-  { id: 'general', label: '一般', description: 'ニーズを探して賛同する', color: 'bg-blue-50 border-blue-200' },
-  { id: 'business', label: '企業', description: 'サービスを提供する', color: 'bg-green-50 border-green-200' },
-  { id: 'government', label: '自治体', description: '地域の課題を解決する', color: 'bg-purple-50 border-purple-200' },
-  { id: 'support', label: '支援者', description: 'プロジェクトを支援する', color: 'bg-orange-50 border-orange-200' },
+  { 
+    id: 'general', 
+    label: '一般の方へ', 
+    description: 'ニーズを探して賛同する', 
+    color: 'bg-blue-50 border-blue-200',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    )
+  },
+  { 
+    id: 'business', 
+    label: '企業の方へ', 
+    description: 'サービスを提供する', 
+    color: 'bg-green-50 border-green-200',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    )
+  },
+  { 
+    id: 'government', 
+    label: '自治体の方へ', 
+    description: '地域の課題を解決する', 
+    color: 'bg-purple-50 border-purple-200',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+    )
+  },
+  { 
+    id: 'support', 
+    label: '支援者の方へ', 
+    description: 'プロジェクトを支援する', 
+    color: 'bg-orange-50 border-orange-200',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    )
+  },
 ];
 
 const RECOMMENDATIONS = {
@@ -49,13 +89,16 @@ export default function AudiencePicker() {
             <button
               key={audience.id}
               onClick={() => setSelectedAudience(audience.id)}
-              className={`p-6 rounded-xl border-2 transition-all hover:shadow-md text-left
+              className={`p-6 rounded-xl border-2 transition-all hover:shadow-md text-center
                 ${selectedAudience === audience.id 
                   ? `${audience.color} border-current` 
                   : 'bg-white border-gray-200 hover:border-gray-300'}`}
             >
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">{audience.label}</h3>
+              <div className="flex flex-col items-center">
+                <div className="text-[var(--tab-find-ac)] mb-3">
+                  {audience.icon}
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">{audience.label}</h3>
                 <p className="text-sm text-gray-600">{audience.description}</p>
               </div>
             </button>
