@@ -30,14 +30,14 @@ export default function LeftDock() {
           <div key={g.title}>
             <div className="px-2 text-xs font-semibold text-[var(--ink-500)] mb-2">{g.title}</div>
             <ul className="space-y-1">
-              {g.items.map(i => (
-                <li key={i.href}>
-                  <Link className="flex items-center gap-2.5 rounded-md px-3 py-2.5 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" href={i.href}>
-                    {i.icon && <span className="h-5 w-5 stroke-[1.75] text-[var(--blue-600)]">{getIcon(i.icon)}</span>}
-                    <span className="font-medium text-[15px]">{i.label}</span>
-                  </Link>
-                </li>
-              ))}
+                              {g.items.map(i => (
+                  <li key={i.href}>
+                    <Link className="flex items-center gap-2.5 rounded-md px-3 py-2.5 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" href={i.href}>
+                      {i.icon && <i.icon className="menu-icon text-[var(--blue-600)]" />}
+                      <span className="font-medium text-[15px]">{i.label}</span>
+                    </Link>
+                  </li>
+                ))}
             </ul>
           </div>
         ))}

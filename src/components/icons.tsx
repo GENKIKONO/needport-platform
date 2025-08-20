@@ -1,6 +1,7 @@
 export { 
   ListBulletIcon, 
   PlusIcon, 
+  PlusCircleIcon,
   BuildingOffice2Icon,
   LightBulbIcon, 
   BookOpenIcon, 
@@ -12,5 +13,6 @@ export {
   MagnifyingGlassIcon, 
   UserGroupIcon,
   AcademicCapIcon,
-  MegaphoneIcon
+  MegaphoneIcon,
+  Squares2X2Icon
 } from "@heroicons/react/24/outline";

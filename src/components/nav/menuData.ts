@@ -1,23 +1,33 @@
-export type MenuItem = { label: string; href: string; icon?: string };
+import { 
+  Squares2X2Icon, 
+  PlusCircleIcon, 
+  BuildingOffice2Icon,
+  BookOpenIcon, 
+  MapIcon, 
+  QuestionMarkCircleIcon,
+  MegaphoneIcon, 
+  InformationCircleIcon 
+} from '@/components/icons';
+
+export type MenuItem = { label: string; href: string; icon?: any };
 export type MenuGroup = { title: string; items: MenuItem[] };
 
 export const MENU: MenuGroup[] = [
   { title: "みんなの『欲しい』", items: [
-    { label: "ニーズ一覧", href: "/needs", icon: "list" },
-    { label: "ニーズを投稿", href: "/post", icon: "plus" },
+    { label: "ニーズ一覧", href: "/needs", icon: Squares2X2Icon },
+    { label: "ニーズを投稿", href: "/post", icon: PlusCircleIcon },
   ]},
   { title: "企業の『できる』", items: [
-    { label: "事業者登録", href: "/vendor/register", icon: "building" },
-    { label: "提案ガイド", href: "/guide/offer", icon: "book" },
+    { label: "事業者登録", href: "/vendor/register", icon: BuildingOffice2Icon },
+    { label: "提案ガイド", href: "/guide/offer", icon: BookOpenIcon },
   ]},
   { title: "ガイド", items: [
-    { label: "使い方ガイド", href: "/guide/using", icon: "guide" },
-    { label: "サービス航海図", href: "/how-it-works", icon: "route" },
-    { label: "よくある質問", href: "/faq", icon: "help" },
+    { label: "使い方ガイド", href: "/guide/using", icon: BookOpenIcon },
+    { label: "サービス航海図", href: "/how-it-works", icon: MapIcon },
+    { label: "よくある質問", href: "/faq", icon: QuestionMarkCircleIcon },
   ]},
   { title: "サイト情報", items: [
-    { label: "お知らせ", href: "/news", icon: "megaphone" },
-    { label: "このサイトについて", href: "/about", icon: "info" },
-    { label: "利用規約", href: "/terms", icon: "document" },
+    { label: "お知らせ", href: "/news", icon: MegaphoneIcon },
+    { label: "このサイトについて", href: "/about", icon: InformationCircleIcon },
   ]},
 ];

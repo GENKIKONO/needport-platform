@@ -46,7 +46,7 @@ export default function FeaturedNeeds() {
 
   return (
     <section className="bg-white np-full-bleed-to-aside">
-      <div className="max-w-[1200px] mx-auto px-4 py-12">
+      <div className="max-w-[1200px] mx-auto px-4">
         <header className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">注目のニーズ</h2>
           <p className="text-gray-600">関心が高い投稿をピックアップ</p>

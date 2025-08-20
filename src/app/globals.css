@@ -78,6 +78,20 @@
   --np-section-gap: 64px;     /* セクション間の標準余白 ↑↓ */
   --np-card-radius: 10px;     /* 角丸は控えめ。ヒーロー/パネルは0 */
   --left-dock-w: 264px;      /* 左ドックの実寸に合わせて調整 */
+  
+  /* 新トークン */
+  --np-blue-bg: #E9F3FF;
+  --np-blue: #2F63B7;
+  --np-ink: #1F2A44;
+  --np-muted: #F4F6F8;
+  --np-white: #FFF;
+  --np-dock-w: 248px; /* 左ドック幅（実値に合わせてOK） */
+
+  --np-pad-sm: 12px;
+  --np-pad: 16px;
+  --np-pad-lg: 24px;
+  --np-gap: 24px;
+  --np-gap-lg: 32px;
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
@@ -358,34 +372,18 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   }
 }
 
-/* full-bleed: 左ドック端まで伸ばす（PCのみ） */
-@media (min-width:1024px){
-  .np-bleed-left{
-    margin-left: calc(-1 * var(--content-left-gap, 24px));
-    /* 左ドックがあるレイアウトなら以下で揃える */
-    padding-left: calc(var(--content-left-gap, 24px));
-    border-radius: 0 !important;
-  }
-  .np-bleed-left-to-dock{
-    margin-left: calc(-1 * var(--content-left-gap, 24px));
-    width: calc(100% + var(--content-left-gap, 24px));
-    border-radius: 0 !important;
-  }
+/* full-bleed（左ドック端まで） */
+.np-bleed-left{
+  margin-left: calc(-1 * var(--np-dock-w));
+  padding-left: var(--np-dock-w);
 }
 
-/* full-bleedの徹底（左ドック端まで） */
-:root { 
-  --aside-w: 256px; 
-  --content-gap: 24px; 
-}
-
-.np-full-bleed-to-aside{
-  margin-left: calc(var(--aside-w) * -1);
-  padding-left: calc(var(--aside-w) + var(--content-gap));
-  margin-right: 0;
-  padding-right: var(--content-gap);
-  border-radius: 0 !important;
-  border: 0 !important;
+/* 白背景のフル幅セクション（左ドック〜右端） */
+.np-white-bleed{
+  background: var(--np-white);
+  margin-left: calc(-1 * var(--np-dock-w));
+  padding-left: var(--np-dock-w);
+  padding-right: max(env(safe-area-inset-right), 24px);
 }
 
 /* 付箋タブ */
@@ -432,10 +430,13 @@ body {
   touch-action: pan-y;     /* 縦スクロールだけ許可（横スワイプ誤作動防止） */
 }
 
-/* スマホ横スクロール禁止 */
+/* 横スクロール抑止＆横フリック誤作動対策 */
 html, body { 
   overflow-x: hidden; 
   max-width: 100vw;
+}
+main { 
+  touch-action: pan-y; 
 }
 
 /* ヒーロー＆検索パネルは角丸ゼロ */
@@ -445,44 +446,61 @@ html, body {
 .np-h { color: var(--np-ink); font-weight: 700; }
 .np-sub { color: #64748b; font-weight: 500; }
 
-/* タブを中央・大きめに */
-.np-tabs-center { 
-  display: flex; 
-  justify-content: center; 
+/* 付箋タブ */
+.np-bookmark-tabs{
+  display: grid; 
+  grid-template-columns: 1fr 1fr;
   gap: 16px; 
+  align-items: stretch; 
+  width: min(920px, 92vw);
+  margin-inline: auto; /* 中央寄せ */
 }
-.np-tab { 
-  height: 48px; 
-  padding: 0 24px; 
+.np-tab{
+  border-radius: 12px 12px 0 0;
+  height: 52px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
   font-weight: 700; 
+  letter-spacing: .02em;
+  transition: filter .2s ease, transform .1s ease;
 }
-.np-tab--active {
-  background: var(--np-blue-50); 
-  color: var(--np-ink);
-  border: none; 
-  box-shadow: none;
+.np-tab--active{ 
+  background: var(--np-blue-bg); 
+  color: var(--np-ink); 
 }
-.np-tab--inactive {
-  background: var(--np-blue-400); 
+.np-tab--inactive{ 
+  background: var(--np-blue); 
   color: #fff; 
-  border: none;
+}
+.np-tab:active{ 
+  transform: translateY(1px); 
 }
 
-/* おすすめ帯（吹き出しのベース） */
-.np-reco-wrap {
-  background: var(--np-blue-400); 
-  color: #fff;
+/* タブとパネルの一体化 */
+.np-panel{
+  background: var(--np-blue-bg);
   border-radius: 12px; 
+  padding: 24px;
+}
+
+/* オーディエンス：選択見出しの吹き出し ▼ */
+.np-reco{ 
+  position: relative; 
+  background: var(--np-blue); 
+  color: #fff;
+  border-radius: 14px; 
   padding: 20px; 
 }
-.np-reco-arrow { /* 上向きの小さな三角 */
-  width: 0; height: 0; 
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent; 
-  border-bottom: 10px solid var(--np-blue-400);
+.np-reco::before{
+  content: ""; 
   position: absolute; 
-  top: -10px; 
-  left: 48px;  /* カード下中央寄せに移動可 */
+  bottom: 100%;
+  left: calc(var(--arrow-x, 40px) - 12px);
+  border-left: 12px solid transparent; 
+  border-right: 12px solid transparent;
+  border-bottom: 12px solid var(--np-blue);
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,.06));
 }
 
 /* 左ドックのアイコンを太く */
@@ -490,6 +508,20 @@ html, body {
   width: 20px; 
   height: 20px; 
   stroke-width: 2.2; 
+}
+
+/* スマホの内側余白強化 */
+@media (max-width: 767px){
+  .np-pad{ padding: 20px !important; }
+  .np-gap{ gap: 20px !important; }
+  .np-tab{ height: 48px; font-size: 15px; }
+}
+
+/* ハンバーガー内のアイコン一貫性（線太め） */
+.menu-icon{ 
+  width: 22px; 
+  height: 22px; 
+  stroke-width: 2; 
 }
 
   /* iOSのフォーム自動ズーム対策（16px未満でズーム） */

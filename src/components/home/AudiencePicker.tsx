@@ -1,133 +1,64 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 
-type Audience = 'general' | 'company' | 'gov';
+function RecoCard({ title, desc }: { title: string; desc: string }) {
+  return (
+    <Link href="#" className="block p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 hover:bg-white/20 transition">
+      <h4 className="font-semibold text-white mb-1">{title}</h4>
+      <p className="text-white/80 text-sm">{desc}</p>
+    </Link>
+  );
+}
 
-const AUDIENCES = [
-  {
-    id: 'general' as Audience,
-    label: '一般の方へ',
-    description: 'ニーズを探して賛同する',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    )
-  },
-  {
-    id: 'company' as Audience,
-    label: '企業の方へ',
-    description: 'サービスを提供する',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>
-    )
-  },
-  {
-    id: 'gov' as Audience,
-    label: '自治体の方へ',
-    description: '地域の課題を解決する',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-        <path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-      </svg>
-    )
-  }
-];
+export default function AudiencePicker(){
+  const [active, setActive] = useState<0|1|2>(0);
+  const cardsRef = [useRef<HTMLButtonElement>(null), useRef<HTMLButtonElement>(null), useRef<HTMLButtonElement>(null)];
+  const recoRef = useRef<HTMLDivElement>(null);
 
-const RECOMMENDATIONS = {
-  general: [
-    { title: 'ニーズ一覧を見る', desc: '地域のニーズを探してみよう', href: '/needs' },
-    { title: '使い方ガイド', desc: '初めての方へ', href: '/guide/using' },
-    { title: 'よくある質問', desc: 'Q&Aで解決', href: '/faq' }
-  ],
-  company: [
-    { title: '事業者登録', desc: '提案を始めよう', href: '/vendor/register' },
-    { title: '提案ガイド', desc: '効果的な提案方法', href: '/guide/offer' },
-    { title: '成功事例', desc: '他社の取り組み', href: '/success' }
-  ],
-  gov: [
-    { title: '自治体向けガイド', desc: '行政での活用方法', href: '/guide/government' },
-    { title: '地域課題解決', desc: '住民ニーズの把握', href: '/needs?category=government' },
-    { title: 'パートナーシップ', desc: '民間との連携', href: '/partnership' }
-  ]
-};
-
-export default function AudiencePicker() {
-  const [active, setActive] = useState<Audience>('general'); // PC初期＝general
+  // 画面幅に応じて再計算
+  useEffect(()=>{
+    const update = ()=>{
+      const card = cardsRef[active].current;
+      const reco = recoRef.current;
+      if(!card || !reco) return;
+      const cardRect = card.getBoundingClientRect();
+      const recoRect = reco.getBoundingClientRect();
+      const x = cardRect.left + cardRect.width/2 - recoRect.left;
+      reco.style.setProperty('--arrow-x', `${x}px`);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return ()=>window.removeEventListener('resize', update);
+  },[active]);
 
   return (
-    <section className="mt-12">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* カード行 */}
-        <div className="mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-3 gap-4 px-4 lg:px-6">
-          {AUDIENCES.map((item) => {
-            const isActive = active === item.id;
-            return (
-              <div key={item.id} className="relative">
-                <button
-                  onClick={() => setActive(item.id)}
-                  aria-current={isActive}
-                  className={`w-full rounded-none border-2 bg-white p-4 text-left transition ${
-                    isActive 
-                      ? "border-[var(--np-blue-accent)] ring-2 ring-[var(--np-blue-accent)]" 
-                      : "border-slate-300"
-                  }`}
-                >
-                  <span className="font-semibold text-[15px] text-[var(--np-ink)]">{item.label}</span>
-                </button>
-                {isActive && (
-                  <div className="absolute left-10 -bottom-2 w-0 h-0
-                    border-x-8 border-x-transparent border-t-8
-                    border-t-[var(--np-blue-accent)]" />
-                )}
-              </div>
-            );
-          })}
-        </div>
+    <section className="mt-10" style={{width:'min(1100px, 96vw)', marginInline:'auto'}}>
+      {/* カード行—左右の余白を広めに */}
+      <div className="grid grid-cols-3 gap-4 md:gap-6">
+        {['一般の方へ','企業の方へ','自治体の方へ'].map((label,i)=>(
+          <button
+            key={label}
+            ref={cardsRef[i] as any}
+            onClick={()=>setActive(i as 0|1|2)}
+            className={`rounded-xl border px-5 py-4 text-[15px] font-semibold
+             ${active===i?'border-[var(--np-blue)] text-[var(--np-ink)] bg-white shadow-sm':'border-slate-300 bg-white/70'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-        {/* おすすめ帯 */}
-        <div className="relative max-w-[1100px] mx-auto px-4">
-          <div className="np-reco-wrap">
-            <div className="np-reco-arrow" />
-            <h3 className="font-bold text-[16px] mb-4">
-              {active === 'general' && '一般の方へのおすすめコンテンツ'}
-              {active === 'company' && '企業の方へのおすすめコンテンツ'}
-              {active === 'gov' && '自治体の方へのおすすめコンテンツ'}
-            </h3>
-
-            {/* おすすめカード：SPカルーセル（scroll-snap） */}
-            <div className="lg:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
-              {RECOMMENDATIONS[active].map((card, index) => (
-                <Link
-                  key={index}
-                  href={card.href}
-                  className="snap-start shrink-0 w-72 rounded-xl bg-white/10 backdrop-blur-sm p-4 border border-white/20"
-                >
-                  <h3 className="font-semibold text-white">{card.title}</h3>
-                  <p className="text-white/80 text-sm mt-1">{card.desc}</p>
-                </Link>
-              ))}
-            </div>
-                                   {/* PCグリッド */}
-                       <div className="hidden lg:grid grid-cols-3 gap-4">
-              {RECOMMENDATIONS[active].map((card, index) => (
-                <Link
-                  key={index}
-                  href={card.href}
-                  className="rounded-xl bg-white/10 backdrop-blur-sm p-5 border border-white/20 hover:bg-white/20 transition"
-                >
-                  <h3 className="font-semibold text-white">{card.title}</h3>
-                  <p className="text-white/80 text-sm mt-1">{card.desc}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
+      {/* 推奨ブロック（青）。幅を検索バー級に拡張 */}
+      <div ref={recoRef} className="np-reco mt-4 md:mt-5" style={{width:'100%'}}>
+        <h3 className="font-bold mb-3 text-white/95">
+          {['一般の方へのおすすめコンテンツ','企業の方へのおすすめコンテンツ','自治体の方へのおすすめコンテンツ'][active]}
+        </h3>
+        <div className="grid md:grid-cols-3 gap-3">
+          <RecoCard title="ニーズ一覧を見る" desc="地域のニーズを探してみよう"/>
+          <RecoCard title="使い方ガイド" desc="初めての方へ"/>
+          <RecoCard title="よくある質問" desc="Q&Aで解決"/>
         </div>
-        {/* 白セクションとの間隔 */}
-        <div style={{height:'calc(var(--np-section-gap) + 24px)'}} />
       </div>
     </section>
   );
