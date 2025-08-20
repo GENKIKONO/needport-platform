@@ -5,14 +5,20 @@ import Link from "next/link";
 export default function DualActionPanel() {
   const [activeTab, setActiveTab] = useState<'find'|'post'>('find');
   
+  const kochiCities = [
+    "高知市", "香南市", "南国市", "土佐市", "須崎市", "四万十市", "宿毛市", "安芸市", "室戸市"
+  ];
+  
   return (
     <section className="section">
       <div className="max-w-6xl mx-auto px-4">
         {/* タブナビゲーション */}
-        <div className="flex mb-6">
+        <div className="flex mb-0" role="tablist">
           <button
             onClick={() => setActiveTab('find')}
-            className={`flex-1 py-3 px-6 text-center font-medium transition-all duration-300 rounded-t-lg
+            role="tab"
+            aria-selected={activeTab === 'find'}
+            className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 rounded-t-lg
               ${activeTab === 'find' 
                 ? 'bg-[var(--tab-find-bg)] text-[var(--tab-find-ac)] border-b-2 border-[var(--tab-find-ac)]' 
                 : 'bg-white text-slate-600 border border-slate-200'}`}
@@ -26,7 +32,9 @@ export default function DualActionPanel() {
           </button>
           <button
             onClick={() => setActiveTab('post')}
-            className={`flex-1 py-3 px-6 text-center font-medium transition-all duration-300 rounded-t-lg
+            role="tab"
+            aria-selected={activeTab === 'post'}
+            className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 rounded-t-lg
               ${activeTab === 'post' 
                 ? 'bg-[var(--tab-post-bg)] text-[var(--tab-post-ac)] border-b-2 border-[var(--tab-post-ac)]' 
                 : 'bg-white text-slate-600 border border-slate-200'}`}
@@ -45,11 +53,15 @@ export default function DualActionPanel() {
           ${activeTab === 'find' ? 'bg-[var(--tab-find-bg)]' : 'bg-[var(--tab-post-bg)]'}`}>
           
           {activeTab === 'find' ? (
-            <form action="/needs" className="space-y-4">
+            <form action="/needs" className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">所在地</label>
-                  <select name="city" className="w-full rounded-md border px-3 py-2 bg-white">
+                  <label htmlFor="city" className="block text-sm font-medium text-slate-700 mb-2">所在地</label>
+                  <select 
+                    id="city"
+                    name="city" 
+                    className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--tab-find-ac)] focus:border-[var(--tab-find-ac)]"
+                  >
                     <option value="">選択してください</option>
                     <option value="高知市">高知市</option>
                     <option value="室戸市">室戸市</option>
@@ -66,8 +78,12 @@ export default function DualActionPanel() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">カテゴリ</label>
-                  <select name="category" className="w-full rounded-md border px-3 py-2 bg-white">
+                  <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">カテゴリ</label>
+                  <select 
+                    id="category"
+                    name="category" 
+                    className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--tab-find-ac)] focus:border-[var(--tab-find-ac)]"
+                  >
                     <option value="">選択してください</option>
                     <option value="IT・システム">IT・システム</option>
                     <option value="デザイン・クリエイティブ">デザイン・クリエイティブ</option>
@@ -82,30 +98,54 @@ export default function DualActionPanel() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">キーワード</label>
+                <label htmlFor="keyword" className="block text-sm font-medium text-slate-700 mb-2">キーワード</label>
                 <input 
+                  id="keyword"
                   name="q" 
                   type="text" 
-                  className="w-full rounded-md border px-3 py-2 bg-white" 
+                  className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--tab-find-ac)] focus:border-[var(--tab-find-ac)]" 
                   placeholder="例：Webサイト制作、デザイン、システム開発"
                 />
               </div>
               
+              {/* よく使う市町村チップ */}
+              <div>
+                <p className="text-sm font-medium text-slate-700 mb-3">よく使う市町村</p>
+                <div className="flex flex-wrap gap-2">
+                  {kochiCities.map((city) => (
+                    <button
+                      key={city}
+                      type="button"
+                      className="px-3 py-1 bg-white text-[var(--tab-find-ac)] border border-[var(--tab-find-ac)] rounded-full text-sm hover:bg-[var(--tab-find-ac)] hover:text-white transition-colors"
+                      onClick={() => {
+                        const select = document.getElementById('city') as HTMLSelectElement;
+                        if (select) {
+                          select.value = city;
+                        }
+                      }}
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
               <button 
                 type="submit" 
-                className="w-full bg-[var(--tab-find-ac)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors"
+                className="w-full bg-[var(--tab-find-ac)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors shadow-lg"
               >
                 検索する
               </button>
             </form>
           ) : (
-            <form action="/post" className="space-y-4">
+            <form action="/post" className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">タイトル</label>
+                <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-2">タイトル簡易入力</label>
                 <input 
+                  id="title"
                   name="title" 
                   type="text" 
-                  className="w-full rounded-md border px-3 py-2 bg-white" 
+                  className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--tab-post-ac)] focus:border-[var(--tab-post-ac)]" 
                   placeholder="まずは件名だけでもOK"
                   required
                 />
@@ -113,7 +153,7 @@ export default function DualActionPanel() {
               
               <button 
                 type="submit" 
-                className="w-full bg-[var(--tab-post-ac)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors"
+                className="w-full bg-[var(--tab-post-ac)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors shadow-lg"
               >
                 投稿をはじめる
               </button>
