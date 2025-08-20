@@ -66,6 +66,7 @@
   /* 福島式UI統一トークン */
   --np-blue: #2F63B7;       /* 濃青：未選択タブ・おすすめ帯の塗り */
   --np-blue-bg: #E9F3FF;    /* 薄青：付箋タブ選択面 & パネル */
+  --np-blue-accent: #2F63B7; /* 濃青・タブ未選択/主要ボタン */
   --np-ink: #1F2A44;        /* 濃紺テキスト */
   --np-border: #C9DCF7;     /* 淡い境界線 */
   
@@ -336,24 +337,63 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   }
 
   /* === Full-bleed helpers (福島準拠) === */
-  :root{ --aside-left: 0px; } /* レイアウト側で左ドック幅を代入してOK */
+:root{ --aside-left: 0px; } /* レイアウト側で左ドック幅を代入してOK */
+.np-fullbleed-left{
+  margin-left: calc(var(--aside-left) * -1);
+  padding-left: calc(var(--aside-left));
+}
+@media (max-width:1024px){
   .np-fullbleed-left{
-    margin-left: calc(var(--aside-left) * -1);
-    padding-left: calc(var(--aside-left));
+    margin-left: calc(50vw - 50%);   /* 画面端まで */
+    margin-right: calc(50vw - 50%);
+    padding-left: 0;
+    padding-right: 0;
   }
-  @media (max-width:1024px){
-    .np-fullbleed-left{
-      margin-left: calc(50vw - 50%);   /* 画面端まで */
-      margin-right: calc(50vw - 50%);
-      padding-left: 0;
-      padding-right: 0;
-    }
-  }
+}
+
+/* 付箋タブ */
+.np-tab { 
+  border-radius: 0; 
+}
+.np-tab--active{ 
+  background: var(--np-blue-bg); 
+  color: var(--np-ink); 
+}
+.np-tab--inactive{ 
+  background: var(--np-blue-accent); 
+  color: #fff; 
+}
+
+/* 吹き出し三角 */
+.np-callout { 
+  position: relative; 
+}
+.np-callout::after{
+  content: "";
+  position: absolute; 
+  top: -12px; 
+  left: 40px;
+  border: 12px solid transparent; 
+  border-bottom-color: var(--np-blue-accent);
+}
+
+/* オーディエンス帯 */
+.np-audience-band{ 
+  background: var(--np-blue-accent); 
+  color: #fff; 
+}
 
   /* === Prevent horizontal scroll & accidental gestures === */
-  html, body { max-width:100%; overflow-x:hidden; }
-  body { overscroll-behavior-x: none; }      /* iOSの横オーバースクロールを抑止 */
-  .np-lock-vert { touch-action: pan-y; }     /* 縦スクロールだけ許可（横スワイプ誤作動防止） */
+html, body { 
+  max-width: 100vw; 
+  overflow-x: hidden; 
+}
+body { 
+  overscroll-behavior-x: none;      /* iOSの横オーバースクロールを抑止 */
+}
+.np-lock-vert { 
+  touch-action: pan-y;     /* 縦スクロールだけ許可（横スワイプ誤作動防止） */
+}
 
   /* iOSのフォーム自動ズーム対策（16px未満でズーム） */
   input, select, textarea { font-size: 16px; }

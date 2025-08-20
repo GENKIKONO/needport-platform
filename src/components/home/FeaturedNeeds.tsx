@@ -45,8 +45,9 @@ export default function FeaturedNeeds() {
   ];
 
   return (
-    <section className="section">
-      <div className="max-w-6xl mx-auto px-4">
+    <section className="mt-12 lg:mt-16">
+      <div className="np-fullbleed-left bg-white">
+        <div className="max-w-6xl mx-auto px-4">
         <header className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">注目のニーズ</h2>
           <p className="text-gray-600">関心が高い投稿をピックアップ</p>
@@ -152,6 +153,7 @@ export default function FeaturedNeeds() {
             </Link>
           </div>
         )}
+        </div>
       </div>
     </section>
   );
