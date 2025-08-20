@@ -11,14 +11,13 @@ export default function DualActionPanel() {
   ];
 
   return (
-    <section className="np-full-bleed-to-aside">
-      <div className="np-inner">
-        <div className="flex gap-2 -mb-px">
-          {/* 選択タブ = 面と同色 */}
+    <section className="mt-12">
+      <div className="np-bleed px-4 lg:px-8">
+        <div className="flex justify-center gap-3">
           <button
-            className={`h-12 px-4 rounded-t-lg transition-colors ${
+            className={`min-w-[220px] h-12 rounded-t-xl px-5 font-semibold border border-[var(--np-border)] transition-colors ${
               mode === "find"
-                ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
+                ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)] border-b-transparent"
                 : "bg-[var(--np-blue)] text-white"
             }`}
             onClick={() => setMode("find")}
@@ -27,9 +26,9 @@ export default function DualActionPanel() {
           </button>
 
           <button
-            className={`h-12 px-4 rounded-t-lg transition-colors ${
+            className={`min-w-[220px] h-12 rounded-t-xl px-5 font-semibold border border-[var(--np-border)] transition-colors ${
               mode === "post"
-                ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
+                ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)] border-b-transparent"
                 : "bg-[var(--np-blue)] text-white"
             }`}
             onClick={() => setMode("post")}
@@ -38,7 +37,7 @@ export default function DualActionPanel() {
           </button>
         </div>
 
-        <div className="rounded-b-lg rounded-tr-lg bg-[var(--np-blue-bg)] border border-[var(--np-border)] p-6 lg:p-7">
+        <div className="bg-[var(--np-blue-bg)] rounded-b-xl p-6 lg:p-8">
           {mode === "find" ? (
             <FindForm kochiCities={kochiCities} />
           ) : (
@@ -99,13 +98,13 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
       
       <div>
         <label htmlFor="keyword" className="block np-sub text-sm mb-2">キーワード</label>
-                  <input 
-            id="keyword"
-            name="q" 
-            type="text" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
-            placeholder="例：Webサイト制作、デザイン、システム開発"
-          />
+        <input 
+          id="keyword"
+          name="q" 
+          type="text" 
+          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
+          placeholder="例：Webサイト制作、デザイン、システム開発"
+        />
       </div>
       
       {/* よく使う市町村チップ */}
@@ -116,7 +115,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
             <button
               key={city}
               type="button"
-              className="np-chip hover:bg-[var(--np-blue-bg)] transition-colors"
+              className="px-3 py-1.5 text-[14px] bg-white text-[var(--np-blue)] border border-[var(--np-blue)] rounded-full hover:bg-[var(--np-blue)] hover:text-white transition-colors"
               onClick={() => {
                 const select = document.getElementById('city') as HTMLSelectElement;
                 if (select) {
@@ -146,14 +145,14 @@ function PostQuick() {
     <form action="/post" className="space-y-6">
       <div>
         <label htmlFor="title" className="block np-sub text-sm mb-2">タイトル簡易入力</label>
-                  <input 
-            id="title"
-            name="title" 
-            type="text" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
-            placeholder="まずは件名だけでもOK"
-            required
-          />
+        <input 
+          id="title"
+          name="title" 
+          type="text" 
+          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
+          placeholder="まずは件名だけでもOK"
+          required
+        />
       </div>
       
       <button 
