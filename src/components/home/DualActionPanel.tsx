@@ -12,37 +12,39 @@ export default function DualActionPanel() {
 
   return (
     <section className="mt-12">
-      <div className="np-bleed px-4 lg:px-8">
-        <div className="flex justify-center gap-3">
-          <button
-            className={`min-w-[220px] h-12 rounded-t-xl px-5 font-semibold border border-[var(--np-border)] transition-colors ${
-              mode === "find"
-                ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)] border-b-transparent"
-                : "bg-[var(--np-blue)] text-white"
-            }`}
-            onClick={() => setMode("find")}
-          >
-            🔎 ニーズを探す
-          </button>
+      <div className="np-bleed-x np-bleed-bg np-lock-vert py-6 lg:py-8">
+        <div className="mx-auto max-w-[1100px]">
+          <div className="flex gap-3 px-4 lg:px-0 -mb-px">
+            <button
+              className={`h-12 px-4 rounded-t-xl rounded-b-none font-semibold border transition-colors ${
+                mode === "find"
+                  ? "bg-[var(--panel-blue-bg)] text-[var(--np-ink)] border-[var(--panel-blue-border)] border-b-0"
+                  : "bg-[var(--panel-blue-accent)] text-white"
+              }`}
+              onClick={() => setMode("find")}
+            >
+              🔎 ニーズを探す
+            </button>
 
-          <button
-            className={`min-w-[220px] h-12 rounded-t-xl px-5 font-semibold border border-[var(--np-border)] transition-colors ${
-              mode === "post"
-                ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)] border-b-transparent"
-                : "bg-[var(--np-blue)] text-white"
-            }`}
-            onClick={() => setMode("post")}
-          >
-            ＋ ニーズを投稿
-          </button>
-        </div>
+            <button
+              className={`h-12 px-4 rounded-t-xl rounded-b-none font-semibold border transition-colors ${
+                mode === "post"
+                  ? "bg-[var(--panel-blue-bg)] text-[var(--np-ink)] border-[var(--panel-blue-border)] border-b-0"
+                  : "bg-[var(--panel-blue-accent)] text-white"
+              }`}
+              onClick={() => setMode("post")}
+            >
+              ＋ ニーズを投稿
+            </button>
+          </div>
 
-        <div className="bg-[var(--np-blue-bg)] rounded-b-xl p-6 lg:p-8">
-          {mode === "find" ? (
-            <FindForm kochiCities={kochiCities} />
-          ) : (
-            <PostQuick />
-          )}
+          <div className="rounded-b-xl lg:rounded-xl border border-[var(--panel-blue-border)] bg-[var(--panel-blue-bg)] p-5 lg:p-7">
+            {mode === "find" ? (
+              <FindForm kochiCities={kochiCities} />
+            ) : (
+              <PostQuick />
+            )}
+          </div>
         </div>
       </div>
     </section>
@@ -59,7 +61,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
           <select 
             id="city"
             name="city" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]"
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]"
           >
             <option value="">選択してください</option>
             <option value="高知市">高知市</option>
@@ -81,7 +83,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
           <select 
             id="category"
             name="category" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]"
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]"
           >
             <option value="">選択してください</option>
             <option value="IT・システム">IT・システム</option>
@@ -102,7 +104,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
           id="keyword"
           name="q" 
           type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
+          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]" 
           placeholder="例：Webサイト制作、デザイン、システム開発"
         />
       </div>
@@ -115,7 +117,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
             <button
               key={city}
               type="button"
-              className="px-3 py-1.5 text-[14px] bg-white text-[var(--np-blue)] border border-[var(--np-blue)] rounded-full hover:bg-[var(--np-blue)] hover:text-white transition-colors"
+              className="px-3 py-1.5 text-[14px] bg-white text-[var(--panel-blue-accent)] border border-[var(--panel-blue-accent)] rounded-full hover:bg-[var(--panel-blue-accent)] hover:text-white transition-colors"
               onClick={() => {
                 const select = document.getElementById('city') as HTMLSelectElement;
                 if (select) {
@@ -131,7 +133,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
       
       <button 
         type="submit" 
-        className="mt-6 w-full h-11 bg-[var(--np-blue)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
+        className="mt-6 w-full h-11 bg-[var(--panel-blue-accent)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
       >
         検索する
       </button>
@@ -149,7 +151,7 @@ function PostQuick() {
           id="title"
           name="title" 
           type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
+          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]" 
           placeholder="まずは件名だけでもOK"
           required
         />
@@ -157,7 +159,7 @@ function PostQuick() {
       
       <button 
         type="submit" 
-        className="mt-6 w-full h-11 bg-[var(--np-blue)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
+        className="mt-6 w-full h-11 bg-[var(--panel-blue-accent)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
       >
         投稿をはじめる
       </button>
