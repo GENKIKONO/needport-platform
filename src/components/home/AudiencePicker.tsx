@@ -2,129 +2,141 @@
 import { useState } from "react";
 import Link from "next/link";
 
+type Audience = 'general' | 'business' | 'government' | 'supporter';
+
 const AUDIENCES = [
-  { 
-    id: 'general', 
-    label: '一般の方へ', 
-    description: 'ニーズを探して賛同する', 
-    color: 'bg-blue-50 border-blue-200',
+  {
+    id: 'general' as Audience,
+    label: '一般の方へ',
+    description: 'ニーズを探して賛同する',
     icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
         <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     )
   },
-  { 
-    id: 'business', 
-    label: '企業の方へ', 
-    description: 'サービスを提供する', 
-    color: 'bg-green-50 border-green-200',
+  {
+    id: 'business' as Audience,
+    label: '企業の方へ',
+    description: '提案・受注・事業拡大',
     icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    )
-  },
-  { 
-    id: 'government', 
-    label: '自治体の方へ', 
-    description: '地域の課題を解決する', 
-    color: 'bg-purple-50 border-purple-200',
-    icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
         <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
       </svg>
     )
   },
-  { 
-    id: 'support', 
-    label: '支援者の方へ', 
-    description: 'プロジェクトを支援する', 
-    color: 'bg-orange-50 border-orange-200',
+  {
+    id: 'government' as Audience,
+    label: '自治体の方へ',
+    description: '地域課題の解決・住民サービス',
     icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
       </svg>
     )
   },
+  {
+    id: 'supporter' as Audience,
+    label: '支援者の方へ',
+    description: '地域活性化・社会貢献',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+    )
+  }
 ];
 
 const RECOMMENDATIONS = {
   general: [
-    { title: "使い方ガイド", href: "/guide/using", desc: "初めての方へ" },
-    { title: "成功事例", href: "/success/stories", desc: "実際の活用例" },
-    { title: "よくある質問", href: "/faq", desc: "Q&A" },
+    { title: 'ニーズ一覧を見る', desc: '地域のニーズを探してみよう', href: '/needs' },
+    { title: '使い方ガイド', desc: '初めての方へ', href: '/guide/using' },
+    { title: 'よくある質問', desc: 'Q&Aで解決', href: '/faq' }
   ],
   business: [
-    { title: "事業者登録", href: "/vendor/register", desc: "サービス提供を始める" },
-    { title: "提案ガイド", href: "/guide/offer", desc: "効果的な提案方法" },
-    { title: "事業者インタビュー", href: "/vendors/interviews", desc: "先輩の声" },
+    { title: '事業者登録', desc: '提案を始めよう', href: '/vendor/register' },
+    { title: '提案ガイド', desc: '効果的な提案方法', href: '/guide/offer' },
+    { title: '成功事例', desc: '他社の取り組み', href: '/success' }
   ],
   government: [
-    { title: "自治体向けガイド", href: "/guide/government", desc: "地域課題の解決" },
-    { title: "成功事例", href: "/success/stories", desc: "自治体の活用例" },
-    { title: "無料相談", href: "/support", desc: "導入サポート" },
+    { title: '自治体向けガイド', desc: '行政での活用方法', href: '/guide/government' },
+    { title: '地域課題解決', desc: '住民ニーズの把握', href: '/needs?category=government' },
+    { title: 'パートナーシップ', desc: '民間との連携', href: '/partnership' }
   ],
-  support: [
-    { title: "支援者ガイド", href: "/guide/support", desc: "支援の始め方" },
-    { title: "プロジェクト一覧", href: "/projects", desc: "支援対象の確認" },
-    { title: "支援事例", href: "/success/stories", desc: "支援の成果" },
-  ],
+  supporter: [
+    { title: '支援者ガイド', desc: '地域活性化への参加', href: '/guide/support' },
+    { title: 'ボランティア募集', desc: '活動に参加しよう', href: '/volunteer' },
+    { title: '寄付・支援', desc: '地域を応援しよう', href: '/support' }
+  ]
 };
 
 export default function AudiencePicker() {
-  const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
+  const [active, setActive] = useState<Audience>('general'); // PC/SP共通の初期値
 
   return (
     <section className="section">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">あなたはどちらですか？</h2>
-          <p className="text-gray-600">対象に応じたおすすめコンテンツをご案内します</p>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">あなたはどちらですか？</h2>
+          <p className="text-slate-600">お客様に合わせたおすすめコンテンツをご案内します</p>
         </div>
         
-        {/* オーディエンス選択 */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {AUDIENCES.map((audience) => (
+        {/* オーディエンス選択ボタン行 */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
+          {AUDIENCES.map((item) => (
             <button
-              key={audience.id}
-              onClick={() => setSelectedAudience(audience.id)}
-              className={`p-5 rounded-2xl ring-1 ring-slate-200 bg-white hover:shadow-[var(--elev-2)] transition-all text-center
-                ${selectedAudience === audience.id 
-                  ? 'ring-[var(--blue-600)] bg-[var(--blue-100)]' 
-                  : 'hover:ring-slate-300'}`}
+              key={item.id}
+              aria-pressed={active === item.id}
+              onClick={() => setActive(item.id)}
+              className={[
+                "group rounded-2xl transition shadow-sm",
+                active === item.id
+                  ? "bg-white ring-2 ring-sky-500"        // 選択時 = 青リングでハイライト
+                  : "bg-white/80 hover:bg-white"          // 非選択 = 枠線なし
+              ].join(' ')}
             >
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-[var(--blue-600)] text-white rounded-full flex items-center justify-center mb-3">
-                  {audience.icon}
+              <div className="p-5 lg:p-6 flex items-center gap-3">
+                <div className={active === item.id ? "text-sky-600" : "text-slate-500"}>
+                  {item.icon}
                 </div>
-                <h3 className="font-semibold text-[16px] text-[var(--ink-900)] mb-2">{audience.label}</h3>
-                <p className="text-sm text-[var(--ink-700)]">{audience.description}</p>
+                <div className="text-left">
+                  <div className="font-semibold text-slate-800">{item.label}</div>
+                  <div className="text-slate-500 text-sm">{item.desc}</div>
+                </div>
               </div>
             </button>
           ))}
         </div>
 
-        {/* おすすめコンテンツ */}
-        {selectedAudience && (
-          <div className="bg-slate-50 rounded-xl p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              {AUDIENCES.find(a => a.id === selectedAudience)?.label}の方へおすすめ
-            </h3>
-            <div className="grid md:grid-cols-3 gap-4">
-              {RECOMMENDATIONS[selectedAudience as keyof typeof RECOMMENDATIONS]?.map((item, index) => (
-                <Link 
-                  key={index} 
-                  href={item.href}
-                  className="block bg-white p-4 rounded-lg border hover:shadow-md transition-all"
-                >
-                  <h4 className="font-semibold text-gray-900 mb-1">{item.title}</h4>
-                  <p className="text-sm text-gray-600">{item.desc}</p>
-                </Link>
-              ))}
-            </div>
+        {/* おすすめ面（PC=常時/初期表示, SP=ボタン直下に展開） */}
+        <section className="mt-5 lg:mt-6 rounded-2xl bg-[var(--audience-surface)] p-4 lg:p-6">
+          {/* SPカルーセル（scroll-snap） */}
+          <div className="lg:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
+            {RECOMMENDATIONS[active].map((card, index) => (
+              <Link
+                key={index}
+                href={card.href}
+                className="snap-start shrink-0 w-72 rounded-xl bg-white shadow-sm p-4"
+              >
+                <h3 className="font-semibold text-slate-800">{card.title}</h3>
+                <p className="text-slate-600 text-sm mt-1">{card.desc}</p>
+              </Link>
+            ))}
           </div>
-        )}
+          {/* PCグリッド */}
+          <div className="hidden lg:grid grid-cols-3 gap-5">
+            {RECOMMENDATIONS[active].map((card, index) => (
+              <Link
+                key={index}
+                href={card.href}
+                className="rounded-xl bg-white shadow-sm p-5 hover:shadow-md transition"
+              >
+                <h3 className="font-semibold text-slate-800">{card.title}</h3>
+                <p className="text-slate-600 text-sm mt-1">{card.desc}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </section>
   );

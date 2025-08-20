@@ -33,7 +33,7 @@ export default function LeftDock() {
                 <li key={i.href}>
                   <Link className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" href={i.href}>
                     {i.icon && <span className="w-4 h-4 text-[var(--blue-600)] stroke-[1.8]">{getIcon(i.icon)}</span>}
-                    <span className="font-medium md:font-semibold text-[15px] text-[var(--ink-900)]">{i.label}</span>
+                    <span className="font-semibold text-[15px] text-slate-800">{i.label}</span>
                   </Link>
                 </li>
               ))}

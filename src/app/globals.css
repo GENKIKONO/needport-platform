@@ -58,10 +58,10 @@
   --ndp-post-accent: #1B9C75;
   
   /* 福島式付箋タブ用トークン */
-  --panel-blue-bg: #E9F3FF;      /* 面の薄青(選択タブの背景と同じ) */
-  --panel-blue-accent: #2F63B7;  /* 未選択タブ・CTAの濃い青 */
-  --panel-blue-border: #C9DCF7;  /* 面とタブの境界線 */
-  --panel-blue-text: #1F2A44;    /* 見出し等の文字色(落ち着いた濃紺) */
+  --panel-blue-bg: #E9F3FF;      /* パネル＆選択タブ */
+  --panel-blue-accent: #2F63B7;  /* 未選択タブ＆主要ボタン */
+  --panel-blue-text: #1F2A44;    /* 濃紺テキスト */
+  --audience-surface: #F3F6FA;   /* おすすめ面の地色（薄グレー） */
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
