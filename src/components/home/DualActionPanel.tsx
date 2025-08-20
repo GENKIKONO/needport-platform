@@ -3,32 +3,30 @@ import { useState } from "react";
 import Link from "next/link";
 
 export default function DualActionPanel() {
-  const [tab, setTab] = useState<'search'|'post'>('search');
+  const [activeTab, setActiveTab] = useState<'find'|'post'>('find');
   
   return (
     <section className="section">
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-8">
-          {/* 左：ニーズを探す(青系) */}
+          {/* 左：ニーズを探す */}
           <div className={`rounded-2xl ring-1 p-6 md:p-8 transition-all duration-300
-            ${tab==="search" ? "bg-[#e9f3ff] ring-[#b7d7ff]" : "bg-slate-100 ring-slate-200"}`}>
+            ${activeTab==="find" ? "bg-[var(--tab-find-bg)] ring-[var(--tab-find-active)]" : "bg-slate-100 ring-slate-200"}`}>
             
-            {/* ピル型タブ */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-900">企業/自治体のニーズを探す</h2>
+              <h2 className="text-lg font-bold text-slate-900">ニーズを探す</h2>
               <button 
-                onClick={() => setTab('search')}
+                onClick={() => setActiveTab('find')}
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-all
-                  ${tab==="search" 
-                    ? "bg-white text-sky-800 ring-1 ring-[#b7d7ff] shadow-sm" 
+                  ${activeTab==="find" 
+                    ? "bg-white text-[var(--tab-find-active)] ring-1 ring-[var(--tab-find-active)] shadow-sm" 
                     : "bg-white/60 text-slate-600 ring-1 ring-slate-200"}`}
               >
                 この面を表示
               </button>
             </div>
 
-            {/* 検索フォーム */}
-            {tab==="search" ? (
+            {activeTab==="find" ? (
               <form action="/needs" className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">所在地</label>
@@ -75,14 +73,10 @@ export default function DualActionPanel() {
                 
                 <button 
                   type="submit" 
-                  className="w-full bg-sky-600 text-white rounded-md py-3 font-medium hover:bg-sky-700 transition-colors"
+                  className="w-full bg-[var(--tab-find-active)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors"
                 >
                   検索する
                 </button>
-                
-                <p className="text-xs text-slate-500 text-center">
-                  ※入力すると /needs に遷移して検索を実行します。
-                </p>
               </form>
             ) : (
               <div className="text-slate-600 text-sm">
@@ -91,26 +85,24 @@ export default function DualActionPanel() {
             )}
           </div>
 
-          {/* 右：ニーズを投稿(緑系) */}
+          {/* 右：ニーズを投稿 */}
           <div className={`rounded-2xl ring-1 p-6 md:p-8 transition-all duration-300
-            ${tab==="post" ? "bg-[#e7fff2] ring-[#a9f0cb]" : "bg-slate-100 ring-slate-200"}`}>
+            ${activeTab==="post" ? "bg-[var(--tab-post-bg)] ring-[var(--tab-post-active)]" : "bg-slate-100 ring-slate-200"}`}>
             
-            {/* ピル型タブ */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold text-slate-900">ニーズを投稿</h2>
               <button 
-                onClick={() => setTab('post')}
+                onClick={() => setActiveTab('post')}
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-all
-                  ${tab==="post" 
-                    ? "bg-white text-emerald-800 ring-1 ring-[#a9f0cb] shadow-sm" 
+                  ${activeTab==="post" 
+                    ? "bg-white text-[var(--tab-post-active)] ring-1 ring-[var(--tab-post-active)] shadow-sm" 
                     : "bg-white/60 text-slate-600 ring-1 ring-slate-200"}`}
               >
                 この面を表示
               </button>
             </div>
 
-            {/* 投稿フォーム */}
-            {tab==="post" ? (
+            {activeTab==="post" ? (
               <form action="/post" className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">タイトル</label>
@@ -125,21 +117,10 @@ export default function DualActionPanel() {
                 
                 <button 
                   type="submit" 
-                  className="w-full bg-emerald-600 text-white rounded-md py-3 font-medium hover:bg-emerald-700 transition-colors"
+                  className="w-full bg-[var(--tab-post-active)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors"
                 >
                   投稿をはじめる
                 </button>
-                
-                <div className="space-y-2 text-xs text-slate-500">
-                  <p>詳細は次の画面で入力できます。</p>
-                  <p>
-                    投稿前のご相談は{' '}
-                    <Link href="/support" className="text-emerald-700 underline hover:no-underline">
-                      無料相談
-                    </Link>
-                    {' '}へ。
-                  </p>
-                </div>
               </form>
             ) : (
               <div className="text-slate-600 text-sm">

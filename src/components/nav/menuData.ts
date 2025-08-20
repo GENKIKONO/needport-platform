@@ -7,16 +7,17 @@ export const MENU: MenuGroup[] = [
     { label: "ニーズを投稿", href: "/post", icon: "plus" },
   ]},
   { title: "企業の『できる』", items: [
-    { label: "事業者登録", href: "/business", icon: "building" },
+    { label: "事業者登録", href: "/vendor/register", icon: "building" },
     { label: "提案ガイド", href: "/guide/offer", icon: "book" },
   ]},
   { title: "ガイド", items: [
     { label: "使い方ガイド", href: "/guide/using", icon: "guide" },
     { label: "サービス航海図", href: "/how-it-works", icon: "route" },
-    { label: "無料相談", href: "/support", icon: "support" },
+    { label: "よくある質問", href: "/faq", icon: "help" },
   ]},
   { title: "サイト情報", items: [
     { label: "お知らせ", href: "/news", icon: "megaphone" },
     { label: "このサイトについて", href: "/about", icon: "info" },
+    { label: "利用規約", href: "/terms", icon: "document" },
   ]},
 ];

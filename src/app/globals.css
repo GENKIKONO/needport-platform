@@ -6,8 +6,12 @@
   --section-y-sm: 48px;
   --section-y-lg: 72px;
   --page-bottom-safe: 96px; /* タブ+余白を96pxに統一 */
-  --header-mobile: 56px;
+  --header-mobile: 64px;
   --safe-bottom: 96px;
+  --tab-find-active: #4C7DBF;
+  --tab-find-bg: #E9F3FF;
+  --tab-post-active: #1B9C75;
+  --tab-post-bg: #E7FFF2;
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */

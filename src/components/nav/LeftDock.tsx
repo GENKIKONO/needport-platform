@@ -52,9 +52,10 @@ function getIcon(icon: string) {
     case 'book': return <BookIcon />;
     case 'guide': return <GuideIcon />;
     case 'route': return <RouteIcon />;
-    case 'support': return <SupportIcon />;
+    case 'help': return <HelpIcon />;
     case 'megaphone': return <MegaphoneIcon />;
     case 'info': return <InfoIcon />;
+    case 'document': return <DocumentIcon />;
     default: return null;
   }
 }
@@ -65,6 +66,7 @@ function BuildingIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="cu
 function BookIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V6.5A2.5 2.5 0 0 1 6.5 4H20v15.5"/></svg>; }
 function GuideIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path d="M9 12l2 2 4-4M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"/></svg>; }
 function RouteIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path d="M3 15l9-5 9 5-9 5-9-5Z"/></svg>; }
-function SupportIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>; }
+function HelpIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>; }
+function DocumentIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg>; }
 function MegaphoneIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path d="M3 11l19-7-7 19-2-8-8-2z"/></svg>; }
 function InfoIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 16v-4M12 8h.01"/></svg>; }

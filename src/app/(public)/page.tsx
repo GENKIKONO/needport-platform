@@ -1,46 +1,26 @@
 import HeroMain from "@/components/hero/HeroMain";
 import DualActionPanel from "@/components/home/DualActionPanel";
-import ShortcutGrid from "@/components/home/ShortcutGrid";
-import PromoSlider from "@/components/home/PromoSlider";
-import NewsList from "@/components/home/NewsList";
-import EventsGrid from "@/components/home/EventsGrid";
 import FeaturesCarousel from "@/components/home/FeaturesCarousel";
-import BottomHeroCTA from "@/components/home/BottomHeroCTA";
-import SupportServices from "@/components/home/SupportServices";
 import FeaturedNeeds from "@/components/home/FeaturedNeeds";
+import NewsList from "@/components/home/NewsList";
 
 export default function Home() {
   return (
     <>
-      {/* 1. HeroMain（大ビジュアル＋コピー＋小告知バナー） */}
+      {/* 1. ヒーローセクション */}
       <HeroMain />
 
-      {/* 2. DualActionPanel（色ブロックで「ニーズを探す / ニーズを投稿」切替・遷移なし） */}
+      {/* 2. タブ切替＋検索/投稿パネル（2分割色ブロック） */}
       <DualActionPanel />
 
-      {/* 3. ShortcutGrid（6枚のショートカット） */}
-      <ShortcutGrid />
-
-      {/* 4. PromoSlider（横長バナー） */}
-      <PromoSlider />
-
-      {/* 5. NewsList（お知らせ5件＋一覧へ） */}
-      <NewsList />
-
-      {/* 6. EventsGrid（イベント/特集カード） */}
-      <EventsGrid />
-
-      {/* 仙台風支援サービス */}
-      <SupportServices />
-
-      {/* 注目のニーズ */}
-      <FeaturedNeeds />
-
-      {/* 7. FeaturesCarousel（動画/記事） */}
+      {/* 3. 動画・記事（使い方動画 / 成功事例記事 / 事業者インタビュー） */}
       <FeaturesCarousel />
 
-      {/* 8. BottomHeroCTA（再CV） */}
-      <BottomHeroCTA />
+      {/* 4. 注目のニーズ（カード列＋メーター表示） */}
+      <FeaturedNeeds />
+
+      {/* 5. お知らせ（ページ下の方） */}
+      <NewsList />
     </>
   );
 }
