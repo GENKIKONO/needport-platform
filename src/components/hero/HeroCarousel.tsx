@@ -23,7 +23,7 @@ export default function HeroCarousel(){
   return (
     <section className="np-fullbleed-left np-square">
       <div className="relative overflow-hidden rounded-none">
-        <div className="min-h-[280px] md:min-h-[440px]">
+        <div className="min-h-[280px] md:min-h-[440px] pt-10 pb-8 md:pt-16 md:pb-14">
           {slides.map((s, idx) => (
             <div key={s.id}
               className={`absolute inset-0 transition-opacity duration-700 bg-gradient-to-br ${s.cls} ${idx===i?'opacity-100':'opacity-0'}`}>

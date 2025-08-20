@@ -36,14 +36,6 @@ export default function Home() {
       {/* 白背景を左右端まで */}
       <section className="np-white-bleed py-10">
         <FeaturedNeeds />
-        <div className="mt-8 text-right">
-          <Link href="/needs" className="inline-flex items-center px-5 py-3 font-semibold border-2 border-[var(--np-blue)] text-[var(--np-blue)] bg-white hover:bg-[var(--np-blue)] hover:text-white transition-all rounded-lg">
-            一覧を見る
-            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
       </section>
 
       {/* 5. 下部ヒーローCTA（フッター直前の再CV） */}

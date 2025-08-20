@@ -6,7 +6,7 @@ import AreaSelect from "@/components/fields/AreaSelect";
 // フォームコンポーネント
 function Select({ placeholder }: { placeholder: string }) {
   return (
-    <select className="np-field w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]">
+    <select className="h-12 md:h-12.5 px-4 md:px-5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md">
       <option value="">{placeholder}</option>
       {placeholder === "エリアを選択" && (
         <>
@@ -44,7 +44,7 @@ function Input({ placeholder, name, required }: { placeholder: string; name?: st
     <input 
       name={name}
       type="text" 
-      className="np-field w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
+      className="h-12 md:h-12.5 px-4 md:px-5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md" 
       placeholder={placeholder}
       required={required}
     />
@@ -55,7 +55,7 @@ function Input({ placeholder, name, required }: { placeholder: string; name?: st
 
 function Button({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <button type="submit" className={`np-btn-primary ${className}`}>
+    <button type="submit" className={`bg-[var(--panel-blue-accent)] text-white font-semibold px-5 md:px-6 py-3 md:py-3.5 leading-6 rounded-md ${className}`}>
       {children}
     </button>
   );
@@ -65,32 +65,42 @@ export default function DualActionPanel() {
   const [tab, setTab] = useState<'find'|'post'>('find');
 
   return (
-    <section className="np-bleed-left pt-6">
-      {/* 付箋タブ */}
-      <div className="np-bookmark-rail">
-        <button
-          className={`np-tab ${tab==='find'?'np-tab--active':'np-tab--inactive'}`}
-          onClick={()=>setTab('find')}
-        >
-          <span className="inline-flex items-center gap-2">
-            <SearchIcon className="w-5 h-5"/> ニーズを探す
-          </span>
-        </button>
-        <button
-          className={`np-tab ${tab==='post'?'np-tab--active':'np-tab--inactive'}`}
-          onClick={()=>setTab('post')}
-        >
-          <span className="inline-flex items-center gap-2">
-            <PlusIcon className="w-5 h-5"/> ニーズを投稿
-          </span>
-        </button>
-      </div>
+    <div className="bleed-to-aside bg-[var(--panel-blue-bg)]">
+      <div className="max-w-[1100px] mx-auto px-6 md:px-8 py-6 md:py-8">
+        {/* 付箋タブ */}
+        <ul className="flex justify-center gap-3 md:gap-6 max-w-[1100px] mx-auto px-6">
+          <li>
+            <button
+              className={`h-12 md:h-14 min-w-[220px] md:min-w-[260px] 
+                ${tab==='find' ? 'bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)]' : 'bg-[var(--panel-blue-accent)] text-white'}
+                rounded-t-xl rounded-b-none px-5 md:px-6 flex items-center justify-center font-semibold`}
+              onClick={()=>setTab('find')}
+            >
+              <span className="inline-flex items-center gap-2">
+                <SearchIcon className="w-5 h-5"/> ニーズを探す
+              </span>
+            </button>
+          </li>
+          <li>
+            <button
+              className={`h-12 md:h-14 min-w-[220px] md:min-w-[260px]
+                ${tab==='post' ? 'bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)]' : 'bg-[var(--panel-blue-accent)] text-white'}
+                rounded-t-xl rounded-b-none px-5 md:px-6 flex items-center justify-center font-semibold`}
+              onClick={()=>setTab('post')}
+            >
+              <span className="inline-flex items-center gap-2">
+                <PlusIcon className="w-5 h-5"/> ニーズを投稿
+              </span>
+            </button>
+          </li>
+        </ul>
 
-      {/* パネル（常に薄青） */}
-      <div className="np-panel np-bookmark-panel np-pad mx-auto mt-2" style={{width:'min(1100px, 96vw)'}}>
-        {tab==='find' ? <FindForm/> : <PostFormLite/>}
+        {/* フォーム */}
+        <div className="mt-6">
+          {tab==='find' ? <FindForm/> : <PostFormLite/>}
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
 

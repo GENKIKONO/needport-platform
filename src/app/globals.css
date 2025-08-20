@@ -528,6 +528,9 @@ main {
   .np-pad{ padding: 20px !important; }
   .np-gap{ gap: 20px !important; }
   .np-tab{ height: 48px; font-size: 15px; }
+  
+  header.site-header{ margin-bottom: 0; }
+  .hero .dots{ margin-top: 8px; margin-bottom: 4px; } /* インジケータの縦余白最小 */
 }
 
 /* ハンバーガー内のアイコン一貫性（線太め） */
@@ -543,6 +546,9 @@ main {
   --np-blue-700: #254F93;
   --np-ink: #0F172A;
   --np-space: 14px;             /* フィールド基本パディング */
+  
+  --dock-w: 240px;        /* 左ドック幅 */
+  --container-px: 24px;   /* コンテンツ左右パディング */
 }
 
 .np-btn-primary{
@@ -569,6 +575,21 @@ main {
 @media (max-width: 640px){
   .np-btn-primary{ font-size: 17px; padding: 15px 22px; }
   .np-card-pad{ padding: 20px; }
+}
+
+/* 薄青面を左右端まで（左はハンバーガー端） */
+.aside-layout .bleed-to-aside{
+  margin-left: calc(var(--dock-w) * -1);
+  padding-left: calc(var(--dock-w) + var(--container-px));
+  margin-right: calc(var(--container-px) * -1);
+  padding-right: var(--container-px);
+  border-radius: 0; /* 角丸禁止 */
+}
+@media (max-width: 1023px){
+  .aside-layout .bleed-to-aside{
+    margin-left: calc(50vw - 50%); /* SPは画面いっぱい */
+    padding-left: var(--container-px);
+  }
 }
 
   /* iOSのフォーム自動ズーム対策（16px未満でズーム） */
