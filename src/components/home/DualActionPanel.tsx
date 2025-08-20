@@ -1,11 +1,12 @@
 "use client";
 import { useState } from "react";
 import { MagnifyingGlassIcon as SearchIcon, PlusIcon } from "@/components/icons";
+import AreaSelect from "@/components/fields/AreaSelect";
 
 // フォームコンポーネント
 function Select({ placeholder }: { placeholder: string }) {
   return (
-    <select className="w-full rounded-md border border-slate-200/40 px-4 h-11 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]">
+    <select className="np-field w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]">
       <option value="">{placeholder}</option>
       {placeholder === "エリアを選択" && (
         <>
@@ -43,39 +44,18 @@ function Input({ placeholder, name, required }: { placeholder: string; name?: st
     <input 
       name={name}
       type="text" 
-      className="w-full rounded-md border border-slate-200/40 px-4 h-11 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
+      className="np-field w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
       placeholder={placeholder}
       required={required}
     />
   );
 }
 
-function CityChips({ cities }: { cities: string[] }) {
-  return (
-    <div>
-      <p className="text-sm text-[var(--np-ink)] mb-3">よく使うエリア</p>
-      <div className="flex flex-wrap gap-2">
-        {cities.map((city) => (
-          <button
-            key={city}
-            type="button"
-            className="px-3 py-1.5 text-[15px] bg-white text-[var(--np-blue)] border border-[var(--np-blue)] rounded-full hover:bg-[var(--np-blue)] hover:text-white transition-colors"
-            onClick={() => {
-              const select = document.getElementById('city') as HTMLSelectElement;
-              if (select) select.value = city;
-            }}
-          >
-            {city}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
+
 
 function Button({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <button type="submit" className={`h-11 rounded-lg font-semibold hover:opacity-90 transition-colors ${className}`}>
+    <button type="submit" className={`np-btn-primary ${className}`}>
       {children}
     </button>
   );
@@ -87,7 +67,7 @@ export default function DualActionPanel() {
   return (
     <section className="np-bleed-left pt-6">
       {/* 付箋タブ */}
-      <div className="np-bookmark-tabs">
+      <div className="np-bookmark-rail">
         <button
           className={`np-tab ${tab==='find'?'np-tab--active':'np-tab--inactive'}`}
           onClick={()=>setTab('find')}
@@ -107,7 +87,7 @@ export default function DualActionPanel() {
       </div>
 
       {/* パネル（常に薄青） */}
-      <div className="np-panel np-pad mx-auto mt-2" style={{width:'min(1100px, 96vw)'}}>
+      <div className="np-panel np-bookmark-panel np-pad mx-auto mt-2" style={{width:'min(1100px, 96vw)'}}>
         {tab==='find' ? <FindForm/> : <PostFormLite/>}
       </div>
     </section>
@@ -116,20 +96,17 @@ export default function DualActionPanel() {
 
 /* フォーム（ラベルはplaceholder内に寄せ、上下を1行に） */
 function FindForm(){
-  const kochiCities = [
-    "高知市", "香南市", "南国市", "土佐市", "須崎市", "四万十市", "宿毛市", "安芸市", "室戸市"
-  ];
+  const [area, setArea] = useState("");
 
   return (
     <form action="/needs" className="grid gap-4 md:gap-5">
       <div className="grid md:grid-cols-2 gap-4">
-        <Select placeholder="エリアを選択"/>
+        <AreaSelect value={area} onChange={setArea} />
         <Select placeholder="カテゴリを選択"/>
       </div>
       <Input placeholder="キーワード（例：Webサイト制作、デザイン…）"/>
-      <CityChips cities={kochiCities}/>
       <div className="mt-2">
-        <Button className="w-full md:w-auto bg-[var(--np-blue)] hover:brightness-110">検索する</Button>
+        <Button className="w-full md:w-auto">検索する</Button>
       </div>
     </form>
   );
@@ -144,7 +121,7 @@ function PostFormLite() {
         required
       />
       <div className="mt-2">
-        <Button className="w-full md:w-auto bg-[var(--np-blue)] hover:brightness-110">投稿をはじめる</Button>
+        <Button className="w-full md:w-auto">投稿をはじめる</Button>
       </div>
     </form>
   );

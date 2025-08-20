@@ -455,6 +455,19 @@ main {
   width: min(920px, 92vw);
   margin-inline: auto; /* 中央寄せ */
 }
+
+/* 付箋タブの軌道（左右端まで）を固定。回帰防止で !important を一時付与 */
+.np-bookmark-rail{
+  width: min(1120px, 96vw);
+  margin: 0 auto !important;          /* ←中央固定（回帰対策） */
+  display: flex; 
+  gap: 12px; 
+  height: 52px;
+}
+.np-bookmark-panel{
+  /* 左メニューのグレー領域まで背景を伸ばす（角丸なし） */
+  border-radius: 0;
+}
 .np-tab{
   border-radius: 12px 12px 0 0;
   height: 52px; 
@@ -522,6 +535,40 @@ main {
   width: 22px; 
   height: 22px; 
   stroke-width: 2; 
+}
+
+/* 可読性（ボタン＆フィールド余白） */
+:root{
+  --np-blue: #2F63B7;           /* 既存トークンに寄せる */
+  --np-blue-700: #254F93;
+  --np-ink: #0F172A;
+  --np-space: 14px;             /* フィールド基本パディング */
+}
+
+.np-btn-primary{
+  background: var(--np-blue);
+  color: #fff;                  /* ←白文字でコントラスト確保 */
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  padding: 14px 20px;           /* ←指で押しやすい最小44pxを満たす */
+  border-radius: 8px;
+}
+.np-btn-primary:hover{ background: var(--np-blue-700); }
+
+/* 入力系の内側余白を統一して"白"を増やす */
+.np-field{
+  padding: var(--np-space) calc(var(--np-space) + 2px);
+  border-radius: 10px;
+}
+
+/* カード内のテキストが縁に寄らないように */
+.np-card-pad{ padding: 18px 20px; }
+
+/* モバイルの行間・余白を少し広げる */
+@media (max-width: 640px){
+  .np-btn-primary{ font-size: 17px; padding: 15px 22px; }
+  .np-card-pad{ padding: 20px; }
 }
 
   /* iOSのフォーム自動ズーム対策（16px未満でズーム） */

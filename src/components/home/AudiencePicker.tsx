@@ -4,7 +4,7 @@ import Link from "next/link";
 
 function RecoCard({ title, desc }: { title: string; desc: string }) {
   return (
-    <Link href="#" className="block p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 hover:bg-white/20 transition">
+    <Link href="#" className="block np-card-pad bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 hover:bg-white/20 transition">
       <h4 className="font-semibold text-white mb-1">{title}</h4>
       <p className="text-white/80 text-sm">{desc}</p>
     </Link>

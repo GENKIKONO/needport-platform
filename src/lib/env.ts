@@ -120,3 +120,12 @@ export function getAuthProvider(): 'anon' | 'clerk' {
 export function isClerkEnabled(): boolean {
   return env.AUTH_PROVIDER === 'clerk' && !!env.CLERK_PUBLISHABLE_KEY && !!env.CLERK_SECRET_KEY;
 }
+
+export const IS_PREVIEW = process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
+
+// プレビューモード禁止の運用ルール
+export const IS_PRODUCTION = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+export const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
+
+// 本番URLのみを共有するための判定
+export const SHOULD_SHARE_PRODUCTION_URL = IS_PRODUCTION;
