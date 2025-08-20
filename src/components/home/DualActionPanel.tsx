@@ -11,21 +11,21 @@ export default function DualActionPanel() {
   ];
 
   const tabBase =
-    "h-12 px-6 flex items-center gap-2 rounded-t-xl rounded-b-none -mb-px border text-sm font-medium";
+    "h-12 px-6 flex items-center gap-2 rounded-t-xl rounded-b-none -mb-px text-sm font-medium";
 
   const tabFind = 
     tabBase +
     " tab-attach " +
     (mode === "find"
-      ? "bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)] border-[var(--panel-blue-border)]"
-      : "bg-[var(--panel-blue-accent)] text-white border-transparent hover:brightness-110");
+      ? "bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)]"
+      : "bg-[var(--panel-blue-accent)] text-white opacity-95 hover:opacity-100");
       
   const tabPost = 
     tabBase +
     " tab-attach " +
     (mode === "post"
-      ? "bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)] border-[var(--panel-blue-border)]"
-      : "bg-[var(--panel-blue-accent)] text-white border-transparent hover:brightness-110");
+      ? "bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)]"
+      : "bg-[var(--panel-blue-accent)] text-white opacity-95 hover:opacity-100");
 
   return (
     <section className="section">
@@ -59,9 +59,9 @@ export default function DualActionPanel() {
 
           {/* 面（常に薄青） */}
           <div
-            className="rounded-xl border mt-0 p-6 lg:p-7
+            className="rounded-b-2xl mt-0 p-7 lg:p-8
                        bg-[var(--panel-blue-bg)]
-                       border-[var(--panel-blue-border)]"
+                       shadow-sm"
           >
             {mode === "find" ? (
               <FindForm kochiCities={kochiCities} />
