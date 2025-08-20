@@ -56,6 +56,12 @@
   --ndp-post-bg: #E7FFF2;
   --ndp-post-border: #A9F0CB;
   --ndp-post-accent: #1B9C75;
+  
+  /* 福島式付箋タブ用トークン */
+  --panel-blue-bg: #E9F3FF;      /* 面の薄青(選択タブの背景と同じ) */
+  --panel-blue-accent: #2F63B7;  /* 未選択タブ・CTAの濃い青 */
+  --panel-blue-border: #C9DCF7;  /* 面とタブの境界線 */
+  --panel-blue-text: #1F2A44;    /* 見出し等の文字色(落ち着いた濃紺) */
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
@@ -287,6 +293,20 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   }
   .ndp-tab[aria-selected="false"]:hover{ 
     background: rgba(255,255,255,.45);
+  }
+  
+  /* タブを面と"つなぐ"ための専用クラス（付箋風） */
+  .tab-attach {
+    position: relative;
+  }
+  .tab-attach[aria-selected="true"]::after {
+    content: "";
+    position: absolute;
+    left: -1px; right: -1px; bottom: -1px;
+    height: 2px;
+    background: var(--panel-blue-bg);  /* 面と同色で下線を塗り潰し、一体化 */
+    border-bottom-left-radius: .75rem;
+    border-bottom-right-radius: .75rem;
   }
    
    /* ボタンのさざ波クリック */

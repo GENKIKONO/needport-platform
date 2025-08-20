@@ -1,5 +1,5 @@
 "use client";
-import { useState, KeyboardEvent } from "react";
+import { useState } from "react";
 
 type Mode = "find" | "post";
 
@@ -10,54 +10,63 @@ export default function DualActionPanel() {
     "高知市", "香南市", "南国市", "土佐市", "須崎市", "四万十市", "宿毛市", "安芸市", "室戸市"
   ];
 
-  const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-      setMode((m) => (m === "find" ? "post" : "find"));
-    }
-  };
+  const tabBase =
+    "h-12 px-6 flex items-center gap-2 rounded-t-xl rounded-b-none -mb-px border text-sm font-medium";
+
+  const tabFind = 
+    tabBase +
+    " tab-attach " +
+    (mode === "find"
+      ? "bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)] border-[var(--panel-blue-border)]"
+      : "bg-[var(--panel-blue-accent)] text-white border-transparent hover:brightness-110");
+      
+  const tabPost = 
+    tabBase +
+    " tab-attach " +
+    (mode === "post"
+      ? "bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)] border-[var(--panel-blue-border)]"
+      : "bg-[var(--panel-blue-accent)] text-white border-transparent hover:brightness-110");
 
   return (
     <section className="section">
       <div className="max-w-6xl mx-auto px-4">
-        <div
-          className="ndp-panel p-4 sm:p-6 lg:p-8"
-          data-mode={mode}
-          aria-label="ニーズの検索/投稿 切替エリア"
-        >
-          {/* タブ（セグメント） */}
-          <div
-            className="ndp-tabbar mb-4"
-            role="tablist"
-            aria-label="モード切替"
-            onKeyDown={onKey}
-          >
+        <div aria-label="search-or-post" className="mt-6">
+          {/* タブ行 */}
+          <div role="tablist" aria-label="need-tabs" className="flex gap-3 px-4">
             <button
-              type="button"
               role="tab"
               aria-selected={mode === "find"}
-              className="ndp-tab"
+              className={tabFind}
               onClick={() => setMode("find")}
             >
-              🔎 ニーズを探す
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              ニーズを探す
             </button>
-
             <button
-              type="button"
               role="tab"
               aria-selected={mode === "post"}
-              className="ndp-tab"
+              className={tabPost}
               onClick={() => setMode("post")}
             >
-              ＋ ニーズを投稿
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M12 4v16m8-8H4" />
+              </svg>
+              ニーズを投稿
             </button>
           </div>
 
-          {/* コンテンツ */}
-          <div>
+          {/* 面（常に薄青） */}
+          <div
+            className="rounded-xl border mt-0 p-6 lg:p-7
+                       bg-[var(--panel-blue-bg)]
+                       border-[var(--panel-blue-border)]"
+          >
             {mode === "find" ? (
-              <FindNeedsForm kochiCities={kochiCities} />
+              <FindForm kochiCities={kochiCities} />
             ) : (
-              <QuickPostForm />
+              <PostQuick />
             )}
           </div>
         </div>
@@ -67,16 +76,16 @@ export default function DualActionPanel() {
 }
 
 /** 検索フォーム */
-function FindNeedsForm({ kochiCities }: { kochiCities: string[] }) {
+function FindForm({ kochiCities }: { kochiCities: string[] }) {
   return (
     <form action="/needs" className="space-y-6">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="city" className="block text-sm font-medium text-slate-700 mb-2">所在地</label>
+          <label htmlFor="city" className="block text-sm font-medium text-[var(--panel-blue-text)] mb-2">所在地</label>
           <select 
             id="city"
             name="city" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--ndp-find-accent)] focus:border-[var(--ndp-find-accent)]"
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]"
           >
             <option value="">選択してください</option>
             <option value="高知市">高知市</option>
@@ -94,11 +103,11 @@ function FindNeedsForm({ kochiCities }: { kochiCities: string[] }) {
         </div>
         
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">カテゴリ</label>
+          <label htmlFor="category" className="block text-sm font-medium text-[var(--panel-blue-text)] mb-2">カテゴリ</label>
           <select 
             id="category"
             name="category" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--ndp-find-accent)] focus:border-[var(--ndp-find-accent)]"
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]"
           >
             <option value="">選択してください</option>
             <option value="IT・システム">IT・システム</option>
@@ -114,25 +123,25 @@ function FindNeedsForm({ kochiCities }: { kochiCities: string[] }) {
       </div>
       
       <div>
-        <label htmlFor="keyword" className="block text-sm font-medium text-slate-700 mb-2">キーワード</label>
+        <label htmlFor="keyword" className="block text-sm font-medium text-[var(--panel-blue-text)] mb-2">キーワード</label>
         <input 
           id="keyword"
           name="q" 
           type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--ndp-find-accent)] focus:border-[var(--ndp-find-accent)]" 
+          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]" 
           placeholder="例：Webサイト制作、デザイン、システム開発"
         />
       </div>
       
       {/* よく使う市町村チップ */}
       <div>
-        <p className="text-sm font-medium text-slate-700 mb-3">よく使う市町村</p>
+        <p className="text-sm font-medium text-[var(--panel-blue-text)] mb-3">よく使う市町村</p>
         <div className="flex flex-wrap gap-2">
           {kochiCities.map((city) => (
             <button
               key={city}
               type="button"
-              className="px-3 py-1 bg-white text-[var(--ndp-find-accent)] border border-[var(--ndp-find-accent)] rounded-full text-sm hover:bg-[var(--ndp-find-accent)] hover:text-white transition-colors"
+              className="px-3 py-1 bg-white text-[var(--panel-blue-accent)] border border-[var(--panel-blue-accent)] rounded-full text-sm hover:bg-[var(--panel-blue-accent)] hover:text-white transition-colors"
               onClick={() => {
                 const select = document.getElementById('city') as HTMLSelectElement;
                 if (select) {
@@ -148,7 +157,7 @@ function FindNeedsForm({ kochiCities }: { kochiCities: string[] }) {
       
       <button 
         type="submit" 
-        className="w-full bg-[var(--ndp-find-accent)] text-white rounded-xl py-3 font-semibold hover:opacity-90 transition-colors shadow-[var(--elev-1)]"
+        className="w-full bg-[var(--panel-blue-accent)] text-white rounded-xl py-3 font-semibold hover:opacity-90 transition-colors shadow-[var(--elev-1)]"
       >
         検索する
       </button>
@@ -157,16 +166,16 @@ function FindNeedsForm({ kochiCities }: { kochiCities: string[] }) {
 }
 
 /** 投稿フォーム */
-function QuickPostForm() {
+function PostQuick() {
   return (
     <form action="/post" className="space-y-6">
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-2">タイトル簡易入力</label>
+        <label htmlFor="title" className="block text-sm font-medium text-[var(--panel-blue-text)] mb-2">タイトル簡易入力</label>
         <input 
           id="title"
           name="title" 
           type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--ndp-post-accent)] focus:border-[var(--ndp-post-accent)]" 
+          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]" 
           placeholder="まずは件名だけでもOK"
           required
         />
@@ -174,7 +183,7 @@ function QuickPostForm() {
       
       <button 
         type="submit" 
-        className="w-full bg-[var(--ndp-post-accent)] text-white rounded-xl py-3 font-semibold hover:opacity-90 transition-colors shadow-[var(--elev-1)]"
+        className="w-full bg-[var(--panel-blue-accent)] text-white rounded-xl py-3 font-semibold hover:opacity-90 transition-colors shadow-[var(--elev-1)]"
       >
         投稿をはじめる
       </button>
