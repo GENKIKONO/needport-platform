@@ -12,46 +12,38 @@ export default function DualActionPanel() {
   ];
 
   return (
-    <section className="mt-12">
-      {/* タブ行：中央寄せ・幅拡大 */}
-      <div className="w-full px-3 lg:px-0">
-        <div className="np-fullbleed-left w-full max-w-none flex gap-2 -mb-px mx-auto max-w-[960px]">
-          <button
-            className={`h-14 px-6 font-semibold rounded-t-[8px] rounded-b-none -mb-px flex-1 gap-2 items-center justify-center text-[16px] lg:text-[18px] ${
-              mode === "find"
-                ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
-                : "bg-[var(--np-blue-ac)] text-white"
-            }`}
-            onClick={() => setMode("find")}
-          >
-            <MagnifyingGlassIcon className="h-5 w-5" />
-            <span>ニーズを探す</span>
-          </button>
+    <section className="np-bleed-left-to-dock bg-[var(--np-blue-50)] np-square">
+      {/* タブ行：中央寄せ・大きめ */}
+      <div className="np-tabs-center px-6 lg:px-8">
+        <button
+          className={`np-tab gap-2 items-center justify-center ${
+            mode === "find" ? "np-tab--active" : "np-tab--inactive"
+          }`}
+          onClick={() => setMode("find")}
+        >
+          <MagnifyingGlassIcon className="h-5 w-5" />
+          <span>ニーズを探す</span>
+        </button>
 
-          <button
-            className={`h-14 px-6 font-semibold rounded-t-[8px] rounded-b-none -mb-px flex-1 gap-2 items-center justify-center text-[16px] lg:text-[18px] ${
-              mode === "post"
-                ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
-                : "bg-[var(--np-blue-ac)] text-white"
-            }`}
-            onClick={() => setMode("post")}
-          >
-            <PlusIcon className="h-5 w-5" />
-            <span>ニーズを投稿</span>
-          </button>
-        </div>
+        <button
+          className={`np-tab gap-2 items-center justify-center ${
+            mode === "post" ? "np-tab--active" : "np-tab--inactive"
+          }`}
+          onClick={() => setMode("post")}
+        >
+          <PlusIcon className="h-5 w-5" />
+          <span>ニーズを投稿</span>
+        </button>
       </div>
 
       {/* 面 - フルブリード（左ドック端 or SPは画面端まで）＆枠線・影・角丸を除去 */}
-      <section
-        className="np-fullbleed-left bg-[var(--np-blue-bg)] border-0 ring-0 shadow-none rounded-none p-6 md:p-7 lg:p-8"
-      >
+      <div className="px-6 lg:px-8 pb-6 lg:pb-8">
         {mode === "find" ? (
           <FindForm kochiCities={kochiCities} />
         ) : (
           <PostQuick />
         )}
-      </section>
+      </div>
     </section>
   );
 }
@@ -135,7 +127,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
       
       <button 
         type="submit" 
-        className="mt-6 w-full h-11 bg-[var(--np-blue-ac)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
+        className="mt-6 w-full h-11 bg-[var(--np-blue-400)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
       >
         検索する
       </button>
@@ -160,7 +152,7 @@ function PostQuick() {
       
       <button 
         type="submit" 
-        className="mt-6 w-full h-11 bg-[var(--np-blue-ac)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
+        className="mt-6 w-full h-11 bg-[var(--np-blue-400)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
       >
         投稿をはじめる
       </button>
