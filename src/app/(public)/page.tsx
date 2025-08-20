@@ -2,7 +2,6 @@ import HeroMain from "@/components/hero/HeroMain";
 import DualActionPanel from "@/components/home/DualActionPanel";
 import AudiencePicker from "@/components/home/AudiencePicker";
 import FeaturedNeeds from "@/components/home/FeaturedNeeds";
-import ContentBlocks from "@/components/home/ContentBlocks";
 import BottomHeroCTA from "@/components/home/BottomHeroCTA";
 import NewsList from "@/components/home/NewsList";
 
@@ -21,13 +20,10 @@ export default function Home() {
       {/* 4. 注目のニーズ（カード列＋メーター表示） */}
       <FeaturedNeeds />
 
-      {/* 5. 動画・記事・インタビュー（学習系コンテンツ） */}
-      <ContentBlocks />
-
-      {/* 6. 下部ヒーローCTA（フッター直前の再CV） */}
+      {/* 5. 下部ヒーローCTA（フッター直前の再CV） */}
       <BottomHeroCTA />
 
-      {/* 7. お知らせ（ページ下の方） */}
+      {/* 6. お知らせ（ページ下の方） */}
       <NewsList />
     </>
   );
