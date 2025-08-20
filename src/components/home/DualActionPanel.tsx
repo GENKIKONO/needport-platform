@@ -13,15 +13,15 @@ export default function DualActionPanel() {
     <section className="section">
       <div className="max-w-6xl mx-auto px-4">
         {/* タブナビゲーション */}
-        <div className="flex mb-0" role="tablist">
+        <div className="flex mb-0 gap-2" role="tablist">
           <button
             onClick={() => setActiveTab('find')}
             role="tab"
             aria-selected={activeTab === 'find'}
-            className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 rounded-t-lg
+            className={`flex-1 py-2 px-6 text-center font-semibold transition-all duration-300 rounded-2xl shadow-[var(--elev-1)]
               ${activeTab === 'find' 
-                ? 'bg-[var(--tab-find-bg)] text-[var(--tab-find-ac)] border-b-2 border-[var(--tab-find-ac)]' 
-                : 'bg-white text-slate-600 border border-slate-200'}`}
+                ? 'bg-[var(--blue-600)] text-white' 
+                : 'bg-white text-[var(--ink-700)]'}`}
           >
             <div className="flex items-center justify-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,10 +34,10 @@ export default function DualActionPanel() {
             onClick={() => setActiveTab('post')}
             role="tab"
             aria-selected={activeTab === 'post'}
-            className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 rounded-t-lg
+            className={`flex-1 py-2 px-6 text-center font-semibold transition-all duration-300 rounded-2xl shadow-[var(--elev-1)]
               ${activeTab === 'post' 
-                ? 'bg-[var(--tab-post-bg)] text-[var(--tab-post-ac)] border-b-2 border-[var(--tab-post-ac)]' 
-                : 'bg-white text-slate-600 border border-slate-200'}`}
+                ? 'bg-[var(--em-600)] text-white' 
+                : 'bg-white text-[var(--ink-700)]'}`}
           >
             <div className="flex items-center justify-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,8 +49,8 @@ export default function DualActionPanel() {
         </div>
 
         {/* コンテンツエリア */}
-        <div className={`rounded-b-lg p-6 md:p-8 transition-all duration-300
-          ${activeTab === 'find' ? 'bg-[var(--tab-find-bg)]' : 'bg-[var(--tab-post-bg)]'}`}>
+        <div className={`rounded-2xl p-5 md:p-6 transition-all duration-300
+          ${activeTab === 'find' ? 'bg-[var(--blue-100)] ring-1 ring-[var(--ring)]' : 'bg-[var(--em-100)] ring-1 ring-[#a9f0cb]'}`}>
           
           {activeTab === 'find' ? (
             <form action="/needs" className="space-y-6">
@@ -132,7 +132,7 @@ export default function DualActionPanel() {
               
               <button 
                 type="submit" 
-                className="w-full bg-[var(--tab-find-ac)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors shadow-lg"
+                className="w-full bg-[var(--blue-600)] text-white rounded-xl py-3 font-semibold hover:opacity-90 transition-colors shadow-[var(--elev-1)]"
               >
                 検索する
               </button>
@@ -153,7 +153,7 @@ export default function DualActionPanel() {
               
               <button 
                 type="submit" 
-                className="w-full bg-[var(--tab-post-ac)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors shadow-lg"
+                className="w-full bg-[var(--em-600)] text-white rounded-xl py-3 font-semibold hover:opacity-90 transition-colors shadow-[var(--elev-1)]"
               >
                 投稿をはじめる
               </button>

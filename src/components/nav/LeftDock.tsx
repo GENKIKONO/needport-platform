@@ -2,6 +2,17 @@
 import Link from "next/link";
 import { MENU } from "./menuData";
 import Logo from "@/components/brand/Logo";
+import { 
+  HomeIcon, 
+  RectangleStackIcon, 
+  PlusCircleIcon, 
+  BuildingOfficeIcon, 
+  BookOpenIcon, 
+  InformationCircleIcon,
+  DocumentTextIcon,
+  QuestionMarkCircleIcon,
+  MapIcon
+} from "@heroicons/react/24/outline";
 
 export default function LeftDock() {
   return (
@@ -9,20 +20,20 @@ export default function LeftDock() {
       {/* ロゴ（船）/サイト名 */}
       <div className="flex items-center gap-2 p-4 border-b">
         <Logo className="w-7 h-7" />
-        <span className="font-semibold">NeedPort</span>
+        <span className="font-semibold text-[var(--ink-900)]">NeedPort</span>
       </div>
       
       {/* メニュー（アイコン+テキスト） */}
       <nav className="flex-1 px-2 py-4 space-y-6">
         {MENU.map(g => (
           <div key={g.title}>
-            <div className="px-2 text-xs font-semibold text-slate-500 mb-2">{g.title}</div>
+            <div className="px-2 text-xs font-semibold text-[var(--ink-500)] mb-2">{g.title}</div>
             <ul className="space-y-1">
               {g.items.map(i => (
                 <li key={i.href}>
-                  <Link className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-slate-50 transition-colors" href={i.href}>
-                    {i.icon && <span className="w-4 h-4">{getIcon(i.icon)}</span>}
-                    <span>{i.label}</span>
+                  <Link className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" href={i.href}>
+                    {i.icon && <span className="w-4 h-4 text-[var(--blue-600)] stroke-[1.8]">{getIcon(i.icon)}</span>}
+                    <span className="font-medium md:font-semibold text-[15px] text-[var(--ink-900)]">{i.label}</span>
                   </Link>
                 </li>
               ))}
@@ -32,11 +43,11 @@ export default function LeftDock() {
       </nav>
       
       {/* 二つのボタン（横並び）：一般ログイン / 事業者ログイン */}
-      <div className="p-4 border-t space-y-2">
-        <Link href="/signup" className="block w-full bg-sky-600 text-white text-center py-2 rounded-md hover:bg-sky-700 transition-colors">
+      <div className="p-4 border-t space-y-3">
+        <Link href="/signup" className="block w-full bg-gradient-to-r from-[var(--blue-600)] to-[var(--blue-700)] text-white text-center py-3 rounded-xl font-semibold shadow-[var(--elev-1)] hover:opacity-95 transition-all">
           一般ログイン
         </Link>
-        <Link href="/vendor/register" className="block w-full bg-emerald-600 text-white text-center py-2 rounded-md hover:bg-emerald-700 transition-colors">
+        <Link href="/vendor/register" className="block w-full border-2 border-[var(--blue-600)] text-[var(--blue-700)] bg-white text-center py-3 rounded-xl font-semibold hover:bg-[var(--blue-100)] transition-all">
           事業者ログイン
         </Link>
       </div>
