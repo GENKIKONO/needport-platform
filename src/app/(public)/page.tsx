@@ -3,14 +3,49 @@ import ServiceFlow from '@/components/ServiceFlow';
 import HomeSoon from '@/components/HomeSoon';
 import HomeCategories from '@/components/HomeCategories';
 import HomeFeatured from '@/components/HomeFeatured';
+import Image from 'next/image';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+// 画像ヒーローセクション
+function MarketingHero() {
+  return (
+    <section className="relative overflow-hidden rounded-2xl mb-10">
+      <Image
+        src="/images/hero/port.jpg"
+        alt="NeedPort"
+        width={2400}
+        height={1200}
+        className="w-full h-[44vh] min-h-[320px] object-cover"
+        priority
+      />
+      <div className="absolute inset-0 bg-black/35" aria-hidden="true" />
+      <div className="absolute inset-0 flex items-center">
+        <div className="mx-auto max-w-6xl px-6">
+          <h1 className="text-white text-3xl md:text-5xl font-bold drop-shadow">
+            NeedPortが描く未来
+          </h1>
+          <p className="mt-3 text-white/90 text-base md:text-lg">
+            生活から生まれるリアルなニーズが集まり、共鳴し、形になる。
+          </p>
+          <div className="mt-6 flex gap-3">
+            <a href="/needs/new" className="btn btn-primary">ニーズを投稿</a>
+            <a href="/needs" className="btn btn-white">ニーズを探す</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function Home() {
   return (
-    <main className="space-y-12 bg-white">
-      {/* 1. 注目のニーズ - 必ず表示 */}
+    <main className="px-4 md:px-6 lg:px-8">
+      {/* 1. 画像ヒーロー - 必ず先頭に表示 */}
+      <MarketingHero />
+      
+      {/* 2. 注目のニーズ - 直下に表示 */}
       <section className="section">
         <header className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">注目のニーズ</h2>
@@ -29,14 +64,7 @@ export default async function Home() {
         <AudiencePicker />
       </section>
 
-      <div className="wave-divider"></div>
 
-      {/* 3. Hero (Existing) */}
-      <section className="section">
-        <Hero />
-      </section>
-
-      <div className="wave-divider"></div>
 
       {/* 4. Flow：ここに集約（スマホ=カルーセル、PC=6カード+船） */}
       <section className="section">
