@@ -6,6 +6,8 @@
   --section-y-sm: 48px;
   --section-y-lg: 72px;
   --page-bottom-safe: 96px; /* タブ+余白を96pxに統一 */
+  --header-mobile: 56px;
+  --safe-bottom: 96px;
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
@@ -19,6 +21,16 @@
 
 main { 
   padding-bottom: var(--page-bottom-safe); 
+}
+
+/* スマホ時の上余白 */
+.pt-header { 
+  padding-top: var(--header-mobile); 
+}
+
+/* ページ最下部の安全領域 */
+.pb-safe-bottom {
+  padding-bottom: var(--safe-bottom);
 }
 
 /* 安全な下余白ユーティリティ */
