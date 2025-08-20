@@ -12,14 +12,15 @@ export default function DualActionPanel() {
 
   return (
     <section className="mt-12">
-      <div className="np-bleed-x np-bleed-bg np-lock-vert py-6 lg:py-8">
+      <div className="np-fullbleed-left">
         <div className="mx-auto max-w-[1100px]">
-          <div className="flex gap-3 px-4 lg:px-0 -mb-px">
+          {/* タブ行 - 左右端まで */}
+          <div className="flex w-full">
             <button
-              className={`h-12 px-4 rounded-t-xl rounded-b-none font-semibold border transition-colors ${
+              className={`h-12 px-6 -mb-px rounded-t-[8px] rounded-b-none font-semibold flex-1 ${
                 mode === "find"
-                  ? "bg-[var(--panel-blue-bg)] text-[var(--np-ink)] border-[var(--panel-blue-border)] border-b-0"
-                  : "bg-[var(--panel-blue-accent)] text-white"
+                  ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
+                  : "bg-[var(--np-blue-ac)] text-white"
               }`}
               onClick={() => setMode("find")}
             >
@@ -27,10 +28,10 @@ export default function DualActionPanel() {
             </button>
 
             <button
-              className={`h-12 px-4 rounded-t-xl rounded-b-none font-semibold border transition-colors ${
+              className={`h-12 px-6 -mb-px rounded-t-[8px] rounded-b-none font-semibold flex-1 ${
                 mode === "post"
-                  ? "bg-[var(--panel-blue-bg)] text-[var(--np-ink)] border-[var(--panel-blue-border)] border-b-0"
-                  : "bg-[var(--panel-blue-accent)] text-white"
+                  ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
+                  : "bg-[var(--np-blue-ac)] text-white"
               }`}
               onClick={() => setMode("post")}
             >
@@ -38,7 +39,8 @@ export default function DualActionPanel() {
             </button>
           </div>
 
-          <div className="rounded-b-xl lg:rounded-xl border border-[var(--panel-blue-border)] bg-[var(--panel-blue-bg)] p-5 lg:p-7">
+          {/* 面 - 左端まで */}
+          <div className="bg-[var(--np-blue-bg)] border border-[var(--np-blue-border)] p-6 md:p-7 lg:p-8 rounded-[var(--np-radius)]">
             {mode === "find" ? (
               <FindForm kochiCities={kochiCities} />
             ) : (
@@ -54,16 +56,16 @@ export default function DualActionPanel() {
 /** 検索フォーム */
 function FindForm({ kochiCities }: { kochiCities: string[] }) {
   return (
-    <form action="/needs" className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-4">
+    <form action="/needs" className="space-y-4 md:space-y-5">
+      <div className="grid md:grid-cols-2 gap-4 md:gap-5">
         <div>
-          <label htmlFor="city" className="block np-sub text-sm mb-2">所在地</label>
           <select 
             id="city"
             name="city" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]"
+            aria-label="エリア"
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
           >
-            <option value="">選択してください</option>
+            <option value="">エリアを選択</option>
             <option value="高知市">高知市</option>
             <option value="室戸市">室戸市</option>
             <option value="安芸市">安芸市</option>
@@ -79,13 +81,13 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
         </div>
         
         <div>
-          <label htmlFor="category" className="block np-sub text-sm mb-2">カテゴリ</label>
           <select 
             id="category"
             name="category" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]"
+            aria-label="カテゴリ"
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
           >
-            <option value="">選択してください</option>
+            <option value="">カテゴリを選択</option>
             <option value="IT・システム">IT・システム</option>
             <option value="デザイン・クリエイティブ">デザイン・クリエイティブ</option>
             <option value="マーケティング">マーケティング</option>
@@ -99,25 +101,24 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
       </div>
       
       <div>
-        <label htmlFor="keyword" className="block np-sub text-sm mb-2">キーワード</label>
         <input 
           id="keyword"
           name="q" 
           type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]" 
-          placeholder="例：Webサイト制作、デザイン、システム開発"
+          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
+          placeholder="キーワード（例：Webサイト制作、デザイン、システム開発）"
         />
       </div>
       
       {/* よく使う市町村チップ */}
       <div>
-        <p className="np-sub text-sm mb-3">よく使う市町村</p>
+        <p className="text-sm text-[var(--np-ink)] mb-3">よく使うエリア</p>
         <div className="flex flex-wrap gap-2">
           {kochiCities.map((city) => (
             <button
               key={city}
               type="button"
-              className="px-3 py-1.5 text-[14px] bg-white text-[var(--panel-blue-accent)] border border-[var(--panel-blue-accent)] rounded-full hover:bg-[var(--panel-blue-accent)] hover:text-white transition-colors"
+              className="px-3 py-1.5 text-[15px] bg-white text-[var(--np-blue-ac)] border border-[var(--np-blue-ac)] rounded-full hover:bg-[var(--np-blue-ac)] hover:text-white transition-colors"
               onClick={() => {
                 const select = document.getElementById('city') as HTMLSelectElement;
                 if (select) {
@@ -133,7 +134,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
       
       <button 
         type="submit" 
-        className="mt-6 w-full h-11 bg-[var(--panel-blue-accent)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
+        className="mt-6 w-full h-11 bg-[var(--np-blue-ac)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
       >
         検索する
       </button>
@@ -144,22 +145,21 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
 /** 投稿フォーム */
 function PostQuick() {
   return (
-    <form action="/post" className="space-y-6">
+    <form action="/post" className="space-y-4 md:space-y-5">
       <div>
-        <label htmlFor="title" className="block np-sub text-sm mb-2">タイトル簡易入力</label>
         <input 
           id="title"
           name="title" 
           type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--panel-blue-accent)] focus:border-[var(--panel-blue-accent)]" 
-          placeholder="まずは件名だけでもOK"
+          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
+          placeholder="タイトル（まずは件名だけでもOK）"
           required
         />
       </div>
       
       <button 
         type="submit" 
-        className="mt-6 w-full h-11 bg-[var(--panel-blue-accent)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
+        className="mt-6 w-full h-11 bg-[var(--np-blue-ac)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
       >
         投稿をはじめる
       </button>
