@@ -35,7 +35,7 @@ export default function HeroCarousel(){
           ))}
         </div>
         {/* ドット */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 mt-4 mb-2">
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 mt-3 mb-1">
           {slides.map((_, idx) => (
             <button key={idx} aria-label={`slide ${idx+1}`}
               onClick={()=>setI(idx)}

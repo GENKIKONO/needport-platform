@@ -578,19 +578,45 @@ main {
   .np-card-pad{ padding: 20px; }
 }
 
-/* 検索タブなどを 左ドック端→右端 まで伸ばす */
+/* 左ドック端→右端まで。100vwを使わず親幅基準にする */
 .bleed-to-aside{
-  margin-left: var(--dock-w);
-  width: calc(100vw - var(--dock-w));
+  box-sizing: border-box;
+  margin-left: var(--dock-w, 264px);
+  width: calc(100% - var(--dock-w, 264px));
   border-radius: 0 !important;
+  padding-inline: 24px; /* 端がベタ付きにならない最小ガター */
+}
+@media (max-width: 1024px){
+  .bleed-to-aside{
+    margin-left: 0;
+    width: 100%;
+    padding-inline: 16px;
+  }
 }
 
-/* ヒーローと次ブロックの間に薄い白帯 */
-.white-sep{ height: 12px; background:#fff; }
+/* 検索タブ列の中央"切れ目"（白1px） */
+.tab-row {
+  position: relative;
+}
+.tab-row::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: #fff;      /* 白の切れ目 */
+  opacity: .9;
+  transform: translateX(-.5px);
+  pointer-events: none;
+}
 
-/* 付箋タブの中央ブロック共通 */
+/* ヒーローと検索タブの間に薄い白帯（高さは最小限） */
+.white-sep{ height: 12px; background: #fff; }
+
+/* 中央寄せコンテナ（98uJbfMuM相当の幅） */
 .center-container{
-  max-width: var(--container-max);
+  max-width: 1100px;
   margin-inline: auto;
   padding-inline: 20px;
 }
@@ -609,10 +635,6 @@ main {
 /* 横スクロール誤作動防止 */
 html, body{ overflow-x: hidden; }
 main{ touch-action: pan-y; }
-
-@media (max-width: 1024px){
-  .bleed-to-aside{ margin-left: 0; width: 100vw; }
-}
 
   /* iOSのフォーム自動ズーム対策（16px未満でズーム） */
   input, select, textarea { font-size: 16px; }

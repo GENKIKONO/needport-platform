@@ -35,7 +35,7 @@ export default function AudiencePicker(){
   return (
     <section className="center-container mt-10">
       {/* 98uJbfMuM版のタブUI */}
-      <div className="np-bookmark-tabs flex justify-center gap-4">
+      <div className="flex justify-center gap-4">
         {['一般の方へ','企業の方へ','自治体の方へ'].map((label,i)=>(
           <button
             key={label}
@@ -49,11 +49,8 @@ export default function AudiencePicker(){
         ))}
       </div>
 
-      {/* 面：常に薄青。タブ直下に三角 */}
-      <div ref={recoRef} className="relative bg-[#1F5DB31A] rounded-xl border border-[#C9DCF7] mt-3 p-6">
-        <span className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2
-                         w-0 h-0 border-l-[12px] border-r-[12px] border-b-[12px]
-                         border-l-transparent border-r-transparent border-b-[#1F5DB31A]"></span>
+      {/* おすすめ面：以前のデザインに復元 */}
+      <div ref={recoRef} className="relative mt-4 rounded-xl border border-[#C9DCF7] bg-[#1F5DB31A] p-6">
         <h3 className="font-bold mb-3 text-[var(--np-ink)]">
           {['一般の方へのおすすめコンテンツ','企業の方へのおすすめコンテンツ','自治体の方へのおすすめコンテンツ'][active]}
         </h3>

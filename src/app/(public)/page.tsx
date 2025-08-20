@@ -12,7 +12,7 @@ export default function Home() {
       {/* 1. ヒーローセクション */}
       <HeroCarousel />
 
-      {/* ヒーロー直下に白帯 */}
+      {/* ===== 追加：ヒーロー下の白い"切れ目"帯 ===== */}
       <div className="white-sep" />
 
       {/* 1.5. モバイルログイン2ボタン帯（SPのみ） */}

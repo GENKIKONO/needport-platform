@@ -65,9 +65,9 @@ export default function DualActionPanel() {
   const [tab, setTab] = useState<'find'|'post'>('find');
 
   return (
-    <div className="bleed-to-aside bg-[var(--panel-blue-bg)]">
-      <div className="max-w-[1100px] mx-auto px-6 md:px-8 py-6 md:py-8">
-        {/* 付箋タブ */}
+    <div className="bg-[var(--panel-blue-bg)] py-6 md:py-8">
+      {/* タブ行（ここに白い縦"切れ目"を入れる） */}
+      <div className="tab-row">
         <ul className="flex justify-center gap-3 md:gap-6 max-w-[1100px] mx-auto px-6">
           <li>
             <button
@@ -94,11 +94,11 @@ export default function DualActionPanel() {
             </button>
           </li>
         </ul>
+      </div>
 
-        {/* フォーム */}
-        <div className="mt-6">
-          {tab==='find' ? <FindForm/> : <PostFormLite/>}
-        </div>
+      {/* フォーム */}
+      <div className="mt-6 max-w-[1100px] mx-auto px-6 md:px-8">
+        {tab==='find' ? <FindForm/> : <PostFormLite/>}
       </div>
     </div>
   );

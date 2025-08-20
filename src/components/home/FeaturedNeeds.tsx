@@ -131,8 +131,8 @@ export default function FeaturedNeeds() {
               ))}
             </div>
             
-            {/* 一覧を見るボタン（中央下のみ） */}
-            <div className="center-container mt-6 text-center">
+            {/* 上部の右寄せボタンは削除済み */}
+            <div className="center-container mt-8 text-center">
               <Link 
                 href="/needs" 
                 className="btn-outline inline-flex items-center px-5 py-3 font-semibold border-2 border-[var(--np-blue)] text-[var(--np-blue)] bg-white hover:bg-[var(--np-blue)] hover:text-white transition-all rounded-lg"
