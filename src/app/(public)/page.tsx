@@ -1,65 +1,47 @@
-import Hero from '@/components/Hero';
+import HomeTabs from "@/components/home/HomeTabs";
+import { getFlags } from "@/lib/admin/flags";
 import ServiceFlow from '@/components/ServiceFlow';
 import HomeSoon from '@/components/HomeSoon';
 import HomeCategories from '@/components/HomeCategories';
 import HomeFeatured from '@/components/HomeFeatured';
-import HomeTabs from '@/components/home/HomeTabs';
 import Image from 'next/image';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// 画像ヒーローセクション
-function MarketingHero() {
+export default async function Home() {
+  const flags = await getFlags();
+  const heroImage = "/hero.jpg"; // 固定でhero.jpgを使用
+
   return (
-    <section className="relative overflow-hidden rounded-2xl mb-10 mt-3 sm:mt-4 lg:mt-0">
-      <Image
-        src="/images/hero/port.jpg"
-        alt="NeedPort"
-        width={2400}
-        height={1200}
-        className="w-full h-[44vh] min-h-[320px] object-cover"
-        priority
-      />
-      <div className="absolute inset-0 bg-black/35" aria-hidden="true" />
-      <div className="absolute inset-0 flex items-center">
-        <div className="mx-auto max-w-6xl px-6">
-          <h1 className="text-white text-3xl md:text-5xl font-bold drop-shadow">
-            NeedPortが描く未来
-          </h1>
-          <p className="mt-3 text-white/90 text-base md:text-lg">
-            生活から生まれるリアルなニーズが集まり、共鳴し、形になる。
-          </p>
-          <div className="mt-6 flex gap-3">
-            <a href="/needs/new" className="btn btn-primary">ニーズを投稿</a>
-            <a href="/needs" className="btn btn-white">ニーズを探す</a>
+    <>
+      <section className="mt-2">
+        <div className={`rounded-2xl overflow-hidden ${heroImage ? "bg-cover bg-center" : "bg-gray-300"}`}
+             style={heroImage ? { backgroundImage: `url(${heroImage})` } : undefined}>
+          <div className="px-6 py-10 md:px-10 md:py-14 bg-black/0">
+            <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow">NeedPortが描く未来</h1>
+            <p className="mt-3 max-w-2xl text-white/90">
+              生活から生まれるリアルなニーズが集まり、共鳴し、形になる。
+            </p>
+            <div className="mt-6 flex gap-4">
+              <a className="rounded bg-sky-600 text-white px-4 py-2" href="/needs/new">ニーズを投稿</a>
+              <a className="rounded bg-white/90 text-sky-700 px-4 py-2" href="/needs">ニーズを探す</a>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-export default async function Home() {
-  return (
-    <main className="px-4 md:px-6 lg:px-8">
-      {/* 1. 画像ヒーロー - 必ず先頭に表示 */}
-      <MarketingHero />
-      
-      {/* 2. タブ切替＋検索ブロック */}
       <HomeTabs />
-      
-      {/* 3. 支援サービスセクション */}
+
+      {/* 以降：支援サービス、オーディエンス、注目のニーズ（既存を再配置） */}
       <section className="section">
         <SupportServices />
       </section>
       
-      {/* 4. オーディエンス切替 */}
       <section className="section">
         <AudiencePicker />
       </section>
       
-      {/* 5. 注目のニーズ - ここに移動 */}
       <section className="section">
         <header className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">注目のニーズ</h2>
@@ -67,32 +49,7 @@ export default async function Home() {
         </header>
         <HomeFeatured />
       </section>
-
-
-
-      {/* 4. Flow：ここに集約（スマホ=カルーセル、PC=6カード+船） */}
-      <section className="section">
-        <ServiceFlow />
-      </section>
-
-      <div className="wave-divider"></div>
-
-      {/* 5. 既存セクション */}
-      <section className="section">
-        <HomeSoon />
-      </section>
-
-      <div className="wave-divider"></div>
-
-      <section className="section">
-        <HomeCategories />
-      </section>
-
-      <div className="wave-divider"></div>
-
-      {/* 6. 下部ヒーローCTA */}
-      <BottomHeroCTA />
-    </main>
+    </>
   );
 }
 

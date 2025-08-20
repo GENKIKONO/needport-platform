@@ -33,6 +33,9 @@ main {
   padding-bottom: var(--safe-bottom);
 }
 
+/* フォーム用ユーティリティ */
+.input{ @apply w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm; }
+
 /* 安全な下余白ユーティリティ */
 .pb-safe {
   padding-bottom: max(6rem, 12vh);
