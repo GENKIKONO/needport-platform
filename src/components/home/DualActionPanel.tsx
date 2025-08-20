@@ -8,26 +8,45 @@ export default function DualActionPanel() {
   return (
     <section className="section">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* 左：ニーズを探す */}
-          <div className={`rounded-2xl ring-1 p-6 md:p-8 transition-all duration-300
-            ${activeTab==="find" ? "bg-[var(--tab-find-bg)] ring-[var(--tab-find-active)]" : "bg-slate-100 ring-slate-200"}`}>
-            
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-900">ニーズを探す</h2>
-              <button 
-                onClick={() => setActiveTab('find')}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-all
-                  ${activeTab==="find" 
-                    ? "bg-white text-[var(--tab-find-active)] ring-1 ring-[var(--tab-find-active)] shadow-sm" 
-                    : "bg-white/60 text-slate-600 ring-1 ring-slate-200"}`}
-              >
-                この面を表示
-              </button>
+        {/* タブナビゲーション */}
+        <div className="flex mb-6">
+          <button
+            onClick={() => setActiveTab('find')}
+            className={`flex-1 py-3 px-6 text-center font-medium transition-all duration-300 rounded-t-lg
+              ${activeTab === 'find' 
+                ? 'bg-[var(--tab-find-bg)] text-[var(--tab-find-ac)] border-b-2 border-[var(--tab-find-ac)]' 
+                : 'bg-white text-slate-600 border border-slate-200'}`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              ニーズを探す
             </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('post')}
+            className={`flex-1 py-3 px-6 text-center font-medium transition-all duration-300 rounded-t-lg
+              ${activeTab === 'post' 
+                ? 'bg-[var(--tab-post-bg)] text-[var(--tab-post-ac)] border-b-2 border-[var(--tab-post-ac)]' 
+                : 'bg-white text-slate-600 border border-slate-200'}`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M12 4v16m8-8H4" />
+              </svg>
+              ニーズを投稿
+            </div>
+          </button>
+        </div>
 
-            {activeTab==="find" ? (
-              <form action="/needs" className="space-y-4">
+        {/* コンテンツエリア */}
+        <div className={`rounded-b-lg p-6 md:p-8 transition-all duration-300
+          ${activeTab === 'find' ? 'bg-[var(--tab-find-bg)]' : 'bg-[var(--tab-post-bg)]'}`}>
+          
+          {activeTab === 'find' ? (
+            <form action="/needs" className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">所在地</label>
                   <select name="city" className="w-full rounded-md border px-3 py-2 bg-white">
@@ -60,74 +79,46 @@ export default function DualActionPanel() {
                     <option value="その他">その他</option>
                   </select>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">キーワード</label>
-                  <input 
-                    name="q" 
-                    type="text" 
-                    className="w-full rounded-md border px-3 py-2 bg-white" 
-                    placeholder="例：Webサイト制作、デザイン、システム開発"
-                  />
-                </div>
-                
-                <button 
-                  type="submit" 
-                  className="w-full bg-[var(--tab-find-active)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors"
-                >
-                  検索する
-                </button>
-              </form>
-            ) : (
-              <div className="text-slate-600 text-sm">
-                「この面を表示」を押すと検索フォームが現れます。
               </div>
-            )}
-          </div>
-
-          {/* 右：ニーズを投稿 */}
-          <div className={`rounded-2xl ring-1 p-6 md:p-8 transition-all duration-300
-            ${activeTab==="post" ? "bg-[var(--tab-post-bg)] ring-[var(--tab-post-active)]" : "bg-slate-100 ring-slate-200"}`}>
-            
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-900">ニーズを投稿</h2>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">キーワード</label>
+                <input 
+                  name="q" 
+                  type="text" 
+                  className="w-full rounded-md border px-3 py-2 bg-white" 
+                  placeholder="例：Webサイト制作、デザイン、システム開発"
+                />
+              </div>
+              
               <button 
-                onClick={() => setActiveTab('post')}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-all
-                  ${activeTab==="post" 
-                    ? "bg-white text-[var(--tab-post-active)] ring-1 ring-[var(--tab-post-active)] shadow-sm" 
-                    : "bg-white/60 text-slate-600 ring-1 ring-slate-200"}`}
+                type="submit" 
+                className="w-full bg-[var(--tab-find-ac)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors"
               >
-                この面を表示
+                検索する
               </button>
-            </div>
-
-            {activeTab==="post" ? (
-              <form action="/post" className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">タイトル</label>
-                  <input 
-                    name="title" 
-                    type="text" 
-                    className="w-full rounded-md border px-3 py-2 bg-white" 
-                    placeholder="まずは件名だけでもOK"
-                    required
-                  />
-                </div>
-                
-                <button 
-                  type="submit" 
-                  className="w-full bg-[var(--tab-post-active)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors"
-                >
-                  投稿をはじめる
-                </button>
-              </form>
-            ) : (
-              <div className="text-slate-600 text-sm">
-                「この面を表示」を押すと投稿フォームが現れます。
+            </form>
+          ) : (
+            <form action="/post" className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">タイトル</label>
+                <input 
+                  name="title" 
+                  type="text" 
+                  className="w-full rounded-md border px-3 py-2 bg-white" 
+                  placeholder="まずは件名だけでもOK"
+                  required
+                />
               </div>
-            )}
-          </div>
+              
+              <button 
+                type="submit" 
+                className="w-full bg-[var(--tab-post-ac)] text-white rounded-md py-3 font-medium hover:opacity-90 transition-colors"
+              >
+                投稿をはじめる
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </section>

@@ -8,10 +8,13 @@
   --page-bottom-safe: 96px; /* タブ+余白を96pxに統一 */
   --header-mobile: 64px;
   --safe-bottom: 96px;
-  --tab-find-active: #4C7DBF;
   --tab-find-bg: #E9F3FF;
-  --tab-post-active: #1B9C75;
+  --tab-find-ac: #4C7DBF;
   --tab-post-bg: #E7FFF2;
+  --tab-post-ac: #1B9C75;
+  --chip-interest: #6B7280;
+  --chip-consider: #0EA5E9;
+  --chip-buy: #10B981;
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
