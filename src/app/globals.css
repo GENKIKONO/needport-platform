@@ -336,17 +336,18 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   }
 
   /* === Full-bleed helpers (福島準拠) === */
-  .np-fullbleed-left{ 
-    margin-left: calc(var(--aside-left, 0px) * -1); 
-    padding-left: calc(var(--aside-left, 0px)); 
+  :root{ --aside-left: 0px; } /* レイアウト側で左ドック幅を代入してOK */
+  .np-fullbleed-left{
+    margin-left: calc(var(--aside-left) * -1);
+    padding-left: calc(var(--aside-left));
   }
-  @media (max-width: 1023px){ 
-    .np-fullbleed-left{ 
-      margin-left: -1rem; 
-      padding-left: 1rem; 
-      margin-right:-1rem; 
-      padding-right:1rem; 
-    } 
+  @media (max-width:1024px){
+    .np-fullbleed-left{
+      margin-left: calc(50vw - 50%);   /* 画面端まで */
+      margin-right: calc(50vw - 50%);
+      padding-left: 0;
+      padding-right: 0;
+    }
   }
 
   /* === Prevent horizontal scroll & accidental gestures === */

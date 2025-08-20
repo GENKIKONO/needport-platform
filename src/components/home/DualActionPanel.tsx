@@ -12,43 +12,41 @@ export default function DualActionPanel() {
 
   return (
     <section className="mt-12">
-      <div className="np-fullbleed-left">
-        <div className="mx-auto max-w-[1100px]">
-          {/* タブ行 - 左右端まで */}
-          <div className="flex w-full">
-            <button
-              className={`h-12 px-6 -mb-px rounded-t-[8px] rounded-b-none font-semibold flex-1 ${
-                mode === "find"
-                  ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
-                  : "bg-[var(--np-blue-ac)] text-white"
-              }`}
-              onClick={() => setMode("find")}
-            >
-              🔎 ニーズを探す
-            </button>
+      {/* タブ行 - 左右いっぱいに（面と一体化）＆枠線禁止 */}
+      <div className="np-fullbleed-left w-full max-w-none flex gap-2 -mb-px">
+        <button
+          className={`h-12 px-6 font-semibold rounded-t-[8px] rounded-b-none -mb-px ${
+            mode === "find"
+              ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
+              : "bg-[var(--np-blue-ac)] text-white"
+          }`}
+          onClick={() => setMode("find")}
+        >
+          🔎 ニーズを探す
+        </button>
 
-            <button
-              className={`h-12 px-6 -mb-px rounded-t-[8px] rounded-b-none font-semibold flex-1 ${
-                mode === "post"
-                  ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
-                  : "bg-[var(--np-blue-ac)] text-white"
-              }`}
-              onClick={() => setMode("post")}
-            >
-              ＋ ニーズを投稿
-            </button>
-          </div>
-
-          {/* 面 - 左端まで */}
-          <div className="bg-[var(--np-blue-bg)] border border-[var(--np-blue-border)] p-6 md:p-7 lg:p-8 rounded-[var(--np-radius)]">
-            {mode === "find" ? (
-              <FindForm kochiCities={kochiCities} />
-            ) : (
-              <PostQuick />
-            )}
-          </div>
-        </div>
+        <button
+          className={`h-12 px-6 font-semibold rounded-t-[8px] rounded-b-none -mb-px ${
+            mode === "post"
+              ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
+              : "bg-[var(--np-blue-ac)] text-white"
+          }`}
+          onClick={() => setMode("post")}
+        >
+          ＋ ニーズを投稿
+        </button>
       </div>
+
+      {/* 面 - フルブリード（左ドック端 or SPは画面端まで）＆枠線・影・角丸を除去 */}
+      <section
+        className="np-fullbleed-left bg-[var(--np-blue-bg)] border-0 ring-0 shadow-none rounded-none p-6 md:p-7 lg:p-8"
+      >
+        {mode === "find" ? (
+          <FindForm kochiCities={kochiCities} />
+        ) : (
+          <PostQuick />
+        )}
+      </section>
     </section>
   );
 }
