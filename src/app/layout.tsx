@@ -73,6 +73,7 @@ export default async function RootLayout({
   return (
     <html lang="ja" className={inter.className}>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#111827" />
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="icon" href="/favicon.ico" />

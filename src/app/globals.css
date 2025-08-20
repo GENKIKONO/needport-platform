@@ -334,6 +334,36 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
     border-right:10px solid transparent;
     border-bottom:10px solid var(--np-blue); /* 帯と同色 */
   }
+
+  /* === Full-bleed helpers (mobile) === */
+  @media (max-width: 1024px){
+    .np-bleed-x {
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      padding-left: max(env(safe-area-inset-left), 16px);
+      padding-right: max(env(safe-area-inset-right), 16px);
+      border-radius: 0 !important; /* 角丸を抑える */
+    }
+    .np-bleed-bg {
+      background: var(--panel-blue-bg, #E9F3FF);
+    }
+  }
+
+  /* === Prevent horizontal scroll & accidental gestures === */
+  html, body { overflow-x: hidden; }
+  body { overscroll-behavior-x: none; }      /* iOSの横オーバースクロールを抑止 */
+  .np-lock-vert { touch-action: pan-y; }     /* 縦スクロールだけ許可（横スワイプ誤作動防止） */
+
+  /* iOSのフォーム自動ズーム対策（16px未満でズーム） */
+  input, select, textarea { font-size: 16px; }
+
+  /* 付箋タブ：未選択タブ=濃青, 選択タブ=薄青（面と同色） */
+  :root{
+    --panel-blue-bg:#E9F3FF;
+    --panel-blue-accent:#2F63B7;
+    --panel-blue-border:#C9DCF7;
+    --np-ink:#1F2A44;
+  }
   
   /* タイポの底上げ */
   .np-heading{ font-weight: 700; color: var(--np-ink); }

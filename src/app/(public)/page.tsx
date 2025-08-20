@@ -1,4 +1,4 @@
-import HeroMain from "@/components/hero/HeroMain";
+import HeroCarousel from "@/components/hero/HeroCarousel";
 import DualActionPanel from "@/components/home/DualActionPanel";
 import AudiencePicker from "@/components/home/AudiencePicker";
 import FeaturedNeeds from "@/components/home/FeaturedNeeds";
@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <>
       {/* 1. ヒーローセクション */}
-      <HeroMain />
+      <HeroCarousel />
 
       {/* 2. タブ切替＋検索/投稿パネル（2分割色ブロック） */}
       <DualActionPanel />
