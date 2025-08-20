@@ -130,11 +130,15 @@ export default async function RootLayout({
         <ErrorBoundary>
           <ClientErrorCatcher />
           <ToastProvider>
-            <div className="lg:hidden">
-              <AppHeader />
-            </div>
+            {/* 上部トップバーは使わない */}
+            {false && (
+              <div className="lg:hidden">
+                <AppHeader />
+              </div>
+            )}
             {children}
-            {process.env.NEXT_PUBLIC_DISABLE_BOTTOMNAV === '1' ? null : <BottomNav />}
+            {/* 画面下のタブも使わない */}
+            {false && process.env.NEXT_PUBLIC_DISABLE_BOTTOMNAV === '1' ? null : <BottomNav />}
             
             {/* PWA Install Prompt */}
             <PwaPrompt />
