@@ -15,7 +15,7 @@ export default function DualActionPanel() {
     <section className="mt-12">
       {/* タブ行：中央寄せ・幅拡大 */}
       <div className="w-full px-3 lg:px-0">
-        <div className="np-fullbleed-left w-full max-w-none flex gap-2 -mb-px mx-auto max-w-[980px]">
+        <div className="np-fullbleed-left w-full max-w-none flex gap-2 -mb-px mx-auto max-w-[960px]">
           <button
             className={`h-14 px-6 font-semibold rounded-t-[8px] rounded-b-none -mb-px flex-1 gap-2 items-center justify-center text-[16px] lg:text-[18px] ${
               mode === "find"
@@ -62,13 +62,12 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
     <form action="/needs" className="space-y-4 md:space-y-5">
       <div className="grid md:grid-cols-2 gap-4 md:gap-5">
         <div>
-          <select 
-            id="city"
-            name="city" 
-            aria-label="エリア"
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
-          >
-            <option value="">エリアを選択</option>
+                  <select 
+          id="city"
+          name="city" 
+          className="w-full rounded-md border border-slate-200/40 px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
+        >
+          <option value="">エリアを選択</option>
             <option value="高知市">高知市</option>
             <option value="室戸市">室戸市</option>
             <option value="安芸市">安芸市</option>
@@ -84,13 +83,12 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
         </div>
         
         <div>
-          <select 
-            id="category"
-            name="category" 
-            aria-label="カテゴリ"
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
-          >
-            <option value="">カテゴリを選択</option>
+                  <select 
+          id="category"
+          name="category" 
+          className="w-full rounded-md border border-slate-200/40 px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
+        >
+          <option value="">カテゴリを選択</option>
             <option value="IT・システム">IT・システム</option>
             <option value="デザイン・クリエイティブ">デザイン・クリエイティブ</option>
             <option value="マーケティング">マーケティング</option>
@@ -108,7 +106,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
           id="keyword"
           name="q" 
           type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
+          className="w-full rounded-md border border-slate-200/40 px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
           placeholder="キーワード（例：Webサイト制作、デザイン、システム開発）"
         />
       </div>
@@ -154,7 +152,7 @@ function PostQuick() {
           id="title"
           name="title" 
           type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
+          className="w-full rounded-md border border-slate-200/40 px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
           placeholder="タイトル（まずは件名だけでもOK）"
           required
         />

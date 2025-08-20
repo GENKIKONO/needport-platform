@@ -70,9 +70,9 @@ export default function AudiencePicker() {
                 <button
                   onClick={() => setActive(item.id)}
                   aria-current={isActive}
-                  className={`w-full rounded-[8px] border-[1.5px] bg-white p-4 text-left transition ${
+                  className={`w-full rounded-none border-2 bg-white p-4 text-left transition ${
                     isActive 
-                      ? "border-[var(--np-blue-ac)]" 
+                      ? "border-[var(--np-blue-accent)] ring-2 ring-[var(--np-blue-accent)]" 
                       : "border-slate-300"
                   }`}
                 >
@@ -81,7 +81,7 @@ export default function AudiencePicker() {
                 {isActive && (
                   <div className="absolute left-10 -bottom-2 w-0 h-0
                     border-x-8 border-x-transparent border-t-8
-                    border-t-[var(--np-blue-ac)]" />
+                    border-t-[var(--np-blue-accent)]" />
                 )}
               </div>
             );
@@ -90,7 +90,7 @@ export default function AudiencePicker() {
 
         {/* おすすめ帯 */}
         <div className="relative mx-auto max-w-5xl mt-4 px-4 lg:px-6">
-          <div className="bg-[var(--np-blue-ac)] text-white rounded-[10px] p-5">
+          <div className="bg-[var(--np-blue-accent)] text-white rounded-none p-5">
             <h3 className="font-bold text-[16px] mb-4">
               {active === 'general' && '一般の方へのおすすめコンテンツ'}
               {active === 'company' && '企業の方へのおすすめコンテンツ'}

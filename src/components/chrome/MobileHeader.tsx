@@ -43,10 +43,10 @@ export default function MobileHeader() {
           
           {/* ログインボタン */}
           <div className="px-4 py-3 border-t space-y-2">
-            <Link href="/signup" className="block w-full bg-sky-600 text-white text-center py-2 rounded-md" onClick={() => setOpen(false)}>
+            <Link href="/signup" className="block w-full bg-gradient-to-r from-[var(--np-blue-accent)] to-[var(--np-blue)] text-white text-center py-2 rounded-md" onClick={() => setOpen(false)}>
               一般ログイン
             </Link>
-            <Link href="/vendor/register" className="block w-full bg-emerald-600 text-white text-center py-2 rounded-md" onClick={() => setOpen(false)}>
+            <Link href="/vendor/register" className="block w-full bg-white text-[var(--np-blue-accent)] border border-[var(--np-blue-accent)] text-center py-2 rounded-md" onClick={() => setOpen(false)}>
               事業者ログイン
             </Link>
           </div>
