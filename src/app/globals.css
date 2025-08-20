@@ -373,6 +373,21 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   }
 }
 
+/* full-bleedの徹底（左ドック端まで） */
+:root { 
+  --aside-w: 256px; 
+  --content-gap: 24px; 
+}
+
+.np-full-bleed-to-aside{
+  margin-left: calc(var(--aside-w) * -1);
+  padding-left: calc(var(--aside-w) + var(--content-gap));
+  margin-right: 0;
+  padding-right: var(--content-gap);
+  border-radius: 0 !important;
+  border: 0 !important;
+}
+
 /* 付箋タブ */
 .np-tab { 
   border-radius: 0; 
@@ -418,7 +433,10 @@ body {
 }
 
 /* スマホ横スクロール禁止 */
-html, body { overflow-x: hidden; }
+html, body { 
+  overflow-x: hidden; 
+  max-width: 100vw;
+}
 
 /* ヒーロー＆検索パネルは角丸ゼロ */
 .np-square { border-radius: 0 !important; }

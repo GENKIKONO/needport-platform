@@ -14,7 +14,8 @@ export default function DualActionPanel() {
   return (
     <section className="np-bleed-left-to-dock bg-[var(--np-blue-50)] np-square">
       {/* タブ行：中央寄せ・大きめ */}
-      <div className="np-tabs-center px-6 lg:px-8">
+      <div className="max-w-[1100px] mx-auto px-4">
+        <div className="w-full grid grid-cols-2 gap-3">
         <button
           className={`np-tab gap-2 items-center justify-center ${
             mode === "find" ? "np-tab--active" : "np-tab--inactive"
@@ -34,10 +35,11 @@ export default function DualActionPanel() {
           <PlusIcon className="h-5 w-5" />
           <span>ニーズを投稿</span>
         </button>
+        </div>
       </div>
 
       {/* 面 - フルブリード（左ドック端 or SPは画面端まで）＆枠線・影・角丸を除去 */}
-      <div className="px-6 lg:px-8 pb-6 lg:pb-8">
+      <div className="max-w-[1100px] mx-auto px-4 pb-6 lg:pb-8">
         {mode === "find" ? (
           <FindForm kochiCities={kochiCities} />
         ) : (
@@ -54,12 +56,12 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
     <form action="/needs" className="space-y-4 md:space-y-5">
       <div className="grid md:grid-cols-2 gap-4 md:gap-5">
         <div>
-                  <select 
-          id="city"
-          name="city" 
-          className="w-full rounded-md border border-slate-200/40 px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
-        >
-          <option value="">エリアを選択</option>
+                                   <select
+                   id="city"
+                   name="city" 
+                   className="w-full rounded-md border border-slate-200/40 px-4 h-11 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
+                 >
+                   <option value="">エリアを選択</option>
             <option value="高知市">高知市</option>
             <option value="室戸市">室戸市</option>
             <option value="安芸市">安芸市</option>
@@ -75,12 +77,12 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
         </div>
         
         <div>
-                  <select 
-          id="category"
-          name="category" 
-          className="w-full rounded-md border border-slate-200/40 px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
-        >
-          <option value="">カテゴリを選択</option>
+                                   <select
+                   id="category"
+                   name="category" 
+                   className="w-full rounded-md border border-slate-200/40 px-4 h-11 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
+                 >
+                   <option value="">カテゴリを選択</option>
             <option value="IT・システム">IT・システム</option>
             <option value="デザイン・クリエイティブ">デザイン・クリエイティブ</option>
             <option value="マーケティング">マーケティング</option>
@@ -94,13 +96,13 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
       </div>
       
       <div>
-        <input 
-          id="keyword"
-          name="q" 
-          type="text" 
-          className="w-full rounded-md border border-slate-200/40 px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
-          placeholder="キーワード（例：Webサイト制作、デザイン、システム開発）"
-        />
+                         <input 
+                   id="keyword"
+                   name="q" 
+                   type="text" 
+                   className="w-full rounded-md border border-slate-200/40 px-4 h-11 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
+                   placeholder="キーワード（例：Webサイト制作、デザイン、システム開発）"
+                 />
       </div>
       
       {/* よく使う市町村チップ */}
@@ -140,14 +142,14 @@ function PostQuick() {
   return (
     <form action="/post" className="space-y-4 md:space-y-5">
       <div>
-        <input 
-          id="title"
-          name="title" 
-          type="text" 
-          className="w-full rounded-md border border-slate-200/40 px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
-          placeholder="タイトル（まずは件名だけでもOK）"
-          required
-        />
+                         <input 
+                   id="title"
+                   name="title" 
+                   type="text" 
+                   className="w-full rounded-md border border-slate-200/40 px-4 h-11 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
+                   placeholder="タイトル（まずは件名だけでもOK）"
+                   required
+                 />
       </div>
       
       <button 

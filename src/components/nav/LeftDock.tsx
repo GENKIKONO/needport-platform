@@ -3,18 +3,17 @@ import Link from "next/link";
 import { MENU } from "./menuData";
 import Logo from "@/components/brand/Logo";
 import { 
-  HomeIcon, 
   ListBulletIcon, 
   PlusIcon, 
   BuildingOffice2Icon, 
   BookOpenIcon, 
-  GraduationCapIcon,
+  AcademicCapIcon,
   MapIcon,
   QuestionMarkCircleIcon,
   MegaphoneIcon,
   InformationCircleIcon,
   DocumentTextIcon
-} from "@heroicons/react/24/outline";
+} from "@/components/icons";
 
 export default function LeftDock() {
   return (
@@ -33,9 +32,9 @@ export default function LeftDock() {
             <ul className="space-y-1">
               {g.items.map(i => (
                 <li key={i.href}>
-                  <Link className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" href={i.href}>
-                    {i.icon && <span className="np-dock-icon text-[var(--blue-600)]">{getIcon(i.icon)}</span>}
-                    <span className="font-semibold text-[15px]">{i.label}</span>
+                  <Link className="flex items-center gap-2.5 rounded-md px-3 py-2.5 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" href={i.href}>
+                    {i.icon && <span className="h-5 w-5 stroke-[1.75] text-[var(--blue-600)]">{getIcon(i.icon)}</span>}
+                    <span className="font-medium text-[15px]">{i.label}</span>
                   </Link>
                 </li>
               ))}
@@ -63,7 +62,7 @@ function getIcon(icon: string) {
     case 'plus': return <PlusIcon />;
     case 'building': return <BuildingOffice2Icon />;
     case 'book': return <BookOpenIcon />;
-    case 'guide': return <GraduationCapIcon />;
+    case 'guide': return <AcademicCapIcon />;
     case 'route': return <MapIcon />;
     case 'help': return <QuestionMarkCircleIcon />;
     case 'megaphone': return <MegaphoneIcon />;

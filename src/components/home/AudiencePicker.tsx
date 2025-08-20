@@ -89,8 +89,8 @@ export default function AudiencePicker() {
         </div>
 
         {/* おすすめ帯 */}
-        <div className="relative px-6 lg:px-8">
-          <div className="np-reco-wrap max-w-[min(960px,100%)] mx-auto">
+        <div className="relative max-w-[1100px] mx-auto px-4">
+          <div className="np-reco-wrap">
             <div className="np-reco-arrow" />
             <h3 className="font-bold text-[16px] mb-4">
               {active === 'general' && '一般の方へのおすすめコンテンツ'}
@@ -111,8 +111,8 @@ export default function AudiencePicker() {
                 </Link>
               ))}
             </div>
-            {/* PCグリッド */}
-            <div className="hidden lg:grid grid-cols-3 gap-5">
+                                   {/* PCグリッド */}
+                       <div className="hidden lg:grid grid-cols-3 gap-4">
               {RECOMMENDATIONS[active].map((card, index) => (
                 <Link
                   key={index}
@@ -127,7 +127,7 @@ export default function AudiencePicker() {
           </div>
         </div>
         {/* 白セクションとの間隔 */}
-        <div style={{height:'var(--np-section-gap)'}} />
+        <div style={{height:'calc(var(--np-section-gap) + 24px)'}} />
       </div>
     </section>
   );
