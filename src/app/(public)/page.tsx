@@ -3,6 +3,7 @@ import ServiceFlow from '@/components/ServiceFlow';
 import HomeSoon from '@/components/HomeSoon';
 import HomeCategories from '@/components/HomeCategories';
 import HomeFeatured from '@/components/HomeFeatured';
+import HomeTabs from '@/components/home/HomeTabs';
 import Image from 'next/image';
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export const revalidate = 0;
 // 画像ヒーローセクション
 function MarketingHero() {
   return (
-    <section className="relative overflow-hidden rounded-2xl mb-10">
+    <section className="relative overflow-hidden rounded-2xl mb-10 mt-3 sm:mt-4 lg:mt-0">
       <Image
         src="/images/hero/port.jpg"
         alt="NeedPort"
@@ -45,23 +46,26 @@ export default async function Home() {
       {/* 1. 画像ヒーロー - 必ず先頭に表示 */}
       <MarketingHero />
       
-      {/* 2. 注目のニーズ - 直下に表示 */}
+      {/* 2. タブ切替＋検索ブロック */}
+      <HomeTabs />
+      
+      {/* 3. 支援サービスセクション */}
+      <section className="section">
+        <SupportServices />
+      </section>
+      
+      {/* 4. オーディエンス切替 */}
+      <section className="section">
+        <AudiencePicker />
+      </section>
+      
+      {/* 5. 注目のニーズ - ここに移動 */}
       <section className="section">
         <header className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">注目のニーズ</h2>
           <p className="text-gray-600">関心が高い投稿をピックアップ</p>
         </header>
         <HomeFeatured />
-      </section>
-
-      <div className="wave-divider"></div>
-
-      {/* 2. 支援サービスセクション */}
-      <section className="section">
-        <SupportServices />
-      </section>
-      <section className="section">
-        <AudiencePicker />
       </section>
 
 

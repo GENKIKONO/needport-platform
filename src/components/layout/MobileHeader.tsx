@@ -1,9 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import Logo from '../brand/Logo';
 
+// 左ドックと同じメニュー配列（共通化）
 const navGroups = [
   {
     title: "みんなの『欲しい』",
@@ -36,8 +37,6 @@ const navGroups = [
     ]
   }
 ];
-
-
 
 const getIcon = (iconName: string) => {
   const icons = {
@@ -91,69 +90,98 @@ const getIcon = (iconName: string) => {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
     ),
-    search: (
-      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-    ),
-    user: (
-      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    ),
   };
   return icons[iconName as keyof typeof icons] || icons.info;
 };
 
-export default function LeftDock() {
-  const pathname = usePathname();
+export default function MobileHeader() {
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="hidden lg:flex flex-col h-full" aria-label="サイトナビ">
-      {/* ロゴ */}
-      <div className="p-6 border-b border-gray-100">
-        <Link href="/" className="flex items-center gap-2" aria-label="NeedPortホーム">
-          <Logo />
-        </Link>
-      </div>
+    <>
+      {/* ヘッダー */}
+      <header className="lg:hidden sticky top-0 z-40 h-[56px] bg-white/90 backdrop-blur border-b border-gray-200">
+        <div className="flex items-center justify-between h-full px-4">
+          {/* ロゴ */}
+          <Link href="/" className="flex items-center gap-2" aria-label="NeedPortホーム">
+            <Logo />
+          </Link>
+          
+          {/* ハンバーガーボタン */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            aria-label="メニューを開く"
+            aria-expanded={isOpen}
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </header>
 
-      {/* メインナビゲーション */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        {/* ナビゲーショングループ */}
-        {navGroups.map((group, groupIndex) => (
-          <div key={groupIndex} className="mb-6">
-            <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-              {group.title}
-            </h3>
-            <div className="space-y-1">
-              {group.items.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <span className="text-gray-500" aria-hidden="true">{getIcon(item.icon)}</span>
-                    {item.label}
-                  </Link>
-                );
-              })}
+      {/* ドロワー */}
+      {isOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          {/* オーバーレイ */}
+          <div 
+            className="absolute inset-0 bg-black/50" 
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
+          
+          {/* ドロワー */}
+          <div className="absolute right-0 top-0 h-full w-80 max-w-[80vw] bg-white shadow-xl">
+            <div className="flex flex-col h-full">
+              {/* ヘッダー */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <Logo />
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  aria-label="メニューを閉じる"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* メニュー */}
+              <div className="flex-1 p-4 overflow-y-auto">
+                {navGroups.map((group, groupIndex) => (
+                  <div key={groupIndex} className="mb-6">
+                    <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      {group.title}
+                    </h3>
+                    <div className="space-y-1">
+                      {group.items.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                        >
+                          <span className="text-gray-500" aria-hidden="true">{getIcon(item.icon)}</span>
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* フッター */}
+              <div className="p-4 border-t border-gray-200">
+                <div className="text-xs text-gray-400 text-center">
+                  © 2024 NeedPort
+                </div>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* フッター */}
-      <div className="p-4 border-t border-gray-100">
-        <div className="text-xs text-gray-400 text-center">
-          © 2024 NeedPort
         </div>
-      </div>
-    </nav>
+      )}
+    </>
   );
 }
