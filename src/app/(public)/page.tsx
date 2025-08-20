@@ -12,6 +12,9 @@ export default function Home() {
       {/* 1. ヒーローセクション */}
       <HeroCarousel />
 
+      {/* ヒーロー直下に白帯 */}
+      <div className="white-sep" />
+
       {/* 1.5. モバイルログイン2ボタン帯（SPのみ） */}
       <div className="lg:hidden np-fullbleed-left bg-white border-b">
         <div className="flex gap-2 p-4">
@@ -24,8 +27,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 2. タブ切替＋検索/投稿パネル（2分割色ブロック） */}
-      <DualActionPanel />
+      {/* 2. タブ切替＋検索/投稿パネル（左右フルブリード） */}
+      <section className="bleed-to-aside">
+        <DualActionPanel />
+      </section>
 
       {/* 3. オーディエンスピッカー（ユーザ別おすすめ） */}
       <AudiencePicker />
@@ -33,13 +38,13 @@ export default function Home() {
       {/* 間隔をしっかり確保 */}
       <div className="h-6 md:h-10" />
 
-      {/* 白背景を左右端まで */}
-      <section className="np-white-bleed py-10">
+      {/* 注目のニーズ（白背景・中央配置） */}
+      <section className="center-container py-10">
         <FeaturedNeeds />
       </section>
 
       {/* 5. 下部ヒーローCTA（フッター直前の再CV） */}
-      <div className="np-white-bleed py-12">
+      <div className="center-container py-12">
         <BottomHeroCTA />
       </div>
 

@@ -19,7 +19,7 @@ export default function AreaSelect({ value = "", onChange }: Props){
   return (
     <div className="space-y-2">
       <select
-        className="h-12 md:h-12.5 px-4 md:px-5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md"
+        className="form-pad h-12 md:h-12.5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md"
         value={KOCHI_CITIES.concat(KOCHI_TOWNS).includes(value as any) ? value : (value?OTHER:"")}
         onChange={(e)=>handle(e.target.value)}
       >
@@ -35,7 +35,7 @@ export default function AreaSelect({ value = "", onChange }: Props){
 
       { (value===OTHER || (!!value && !KOCHI_ALL.includes(value as any))) && (
         <input
-          className="h-12 md:h-12.5 px-4 md:px-5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md mt-3"
+          className="form-pad h-12 md:h-12.5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md mt-3"
           placeholder="エリアを入力（例：●●郡××村）"
           value={custom}
           onChange={(e)=>{ setCustom(e.target.value); onChange(e.target.value || OTHER); }}

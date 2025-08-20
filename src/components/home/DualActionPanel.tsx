@@ -6,7 +6,7 @@ import AreaSelect from "@/components/fields/AreaSelect";
 // フォームコンポーネント
 function Select({ placeholder }: { placeholder: string }) {
   return (
-    <select className="h-12 md:h-12.5 px-4 md:px-5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md">
+    <select className="form-pad h-12 md:h-12.5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md">
       <option value="">{placeholder}</option>
       {placeholder === "エリアを選択" && (
         <>
@@ -44,7 +44,7 @@ function Input({ placeholder, name, required }: { placeholder: string; name?: st
     <input 
       name={name}
       type="text" 
-      className="h-12 md:h-12.5 px-4 md:px-5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md" 
+      className="form-pad h-12 md:h-12.5 text-[15px] w-full border border-slate-200/40 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)] rounded-md" 
       placeholder={placeholder}
       required={required}
     />
@@ -55,7 +55,7 @@ function Input({ placeholder, name, required }: { placeholder: string; name?: st
 
 function Button({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <button type="submit" className={`bg-[var(--panel-blue-accent)] text-white font-semibold px-5 md:px-6 py-3 md:py-3.5 leading-6 rounded-md ${className}`}>
+    <button type="submit" className={`btn-primary bg-[var(--panel-blue-accent)] rounded-md ${className}`}>
       {children}
     </button>
   );

@@ -33,25 +33,28 @@ export default function AudiencePicker(){
   },[active]);
 
   return (
-    <section className="mt-10" style={{width:'min(1100px, 96vw)', marginInline:'auto'}}>
-      {/* カード行—左右の余白を広めに */}
-      <div className="grid grid-cols-3 gap-4 md:gap-6">
+    <section className="center-container mt-10">
+      {/* 98uJbfMuM版のタブUI */}
+      <div className="np-bookmark-tabs flex justify-center gap-4">
         {['一般の方へ','企業の方へ','自治体の方へ'].map((label,i)=>(
           <button
             key={label}
             ref={cardsRef[i] as any}
             onClick={()=>setActive(i as 0|1|2)}
-            className={`rounded-xl border px-5 py-4 text-[15px] font-semibold
-             ${active===i?'border-[var(--np-blue)] text-[var(--np-ink)] bg-white shadow-sm':'border-slate-300 bg-white/70'}`}
+            className={`h-12 md:h-14 min-w-[180px] md:min-w-[220px] rounded-t-xl rounded-b-none px-5 md:px-6 flex items-center justify-center font-semibold
+             ${active===i?'bg-[#1F5DB31A] text-[var(--np-ink)] border border-[#C9DCF7]':'bg-[#2F63B7] text-white'}`}
           >
             {label}
           </button>
         ))}
       </div>
 
-      {/* 推奨ブロック（青）。幅を検索バー級に拡張 */}
-      <div ref={recoRef} className="np-reco mt-4 md:mt-5" style={{width:'100%'}}>
-        <h3 className="font-bold mb-3 text-white/95">
+      {/* 面：常に薄青。タブ直下に三角 */}
+      <div ref={recoRef} className="relative bg-[#1F5DB31A] rounded-xl border border-[#C9DCF7] mt-3 p-6">
+        <span className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2
+                         w-0 h-0 border-l-[12px] border-r-[12px] border-b-[12px]
+                         border-l-transparent border-r-transparent border-b-[#1F5DB31A]"></span>
+        <h3 className="font-bold mb-3 text-[var(--np-ink)]">
           {['一般の方へのおすすめコンテンツ','企業の方へのおすすめコンテンツ','自治体の方へのおすすめコンテンツ'][active]}
         </h3>
         <div className="grid md:grid-cols-3 gap-3">

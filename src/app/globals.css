@@ -547,7 +547,8 @@ main {
   --np-ink: #0F172A;
   --np-space: 14px;             /* フィールド基本パディング */
   
-  --dock-w: 240px;        /* 左ドック幅 */
+  --dock-w: 264px;           /* 左ドック幅（PC） */
+  --container-max: 1100px;   /* 中央コンテンツ最大幅 */
   --container-px: 24px;   /* コンテンツ左右パディング */
 }
 
@@ -577,19 +578,40 @@ main {
   .np-card-pad{ padding: 20px; }
 }
 
-/* 薄青面を左右端まで（左はハンバーガー端） */
-.aside-layout .bleed-to-aside{
-  margin-left: calc(var(--dock-w) * -1);
-  padding-left: calc(var(--dock-w) + var(--container-px));
-  margin-right: calc(var(--container-px) * -1);
-  padding-right: var(--container-px);
-  border-radius: 0; /* 角丸禁止 */
+/* 検索タブなどを 左ドック端→右端 まで伸ばす */
+.bleed-to-aside{
+  margin-left: var(--dock-w);
+  width: calc(100vw - var(--dock-w));
+  border-radius: 0 !important;
 }
-@media (max-width: 1023px){
-  .aside-layout .bleed-to-aside{
-    margin-left: calc(50vw - 50%); /* SPは画面いっぱい */
-    padding-left: var(--container-px);
-  }
+
+/* ヒーローと次ブロックの間に薄い白帯 */
+.white-sep{ height: 12px; background:#fff; }
+
+/* 付箋タブの中央ブロック共通 */
+.center-container{
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+/* ボタンの可読性向上（白文字/余白UP） */
+.btn-primary{
+  color: #fff !important;
+  font-weight: 600;
+  padding: 12px 20px !important; /* SPでも44px以上のタップ面確保 */
+}
+
+/* 入力やチップの内側余白を少し増やす */
+.form-pad{ padding: 12px 14px !important; }
+.chip{ padding: 6px 12px !important; }
+
+/* 横スクロール誤作動防止 */
+html, body{ overflow-x: hidden; }
+main{ touch-action: pan-y; }
+
+@media (max-width: 1024px){
+  .bleed-to-aside{ margin-left: 0; width: 100vw; }
 }
 
   /* iOSのフォーム自動ズーム対策（16px未満でズーム） */

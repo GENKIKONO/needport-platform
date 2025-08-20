@@ -23,7 +23,7 @@ export default function HeroCarousel(){
   return (
     <section className="np-fullbleed-left np-square">
       <div className="relative overflow-hidden rounded-none">
-        <div className="min-h-[280px] md:min-h-[440px] pt-10 pb-8 md:pt-16 md:pb-14">
+        <div className="min-h-[280px] md:min-h-[440px] pt-10 pb-8 sm:pt-12 sm:pb-10">
           {slides.map((s, idx) => (
             <div key={s.id}
               className={`absolute inset-0 transition-opacity duration-700 bg-gradient-to-br ${s.cls} ${idx===i?'opacity-100':'opacity-0'}`}>
@@ -35,7 +35,7 @@ export default function HeroCarousel(){
           ))}
         </div>
         {/* ドット */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 mt-4 mb-2">
           {slides.map((_, idx) => (
             <button key={idx} aria-label={`slide ${idx+1}`}
               onClick={()=>setI(idx)}
