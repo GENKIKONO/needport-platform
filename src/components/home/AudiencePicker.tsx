@@ -56,89 +56,72 @@ const RECOMMENDATIONS = {
 };
 
 export default function AudiencePicker() {
-  const [aud, setAud] = useState<Audience>('general'); // PC初期＝general
+  const [active, setActive] = useState<Audience>('general'); // PC初期＝general
 
   return (
-    <section className="mt-10">
-      {/* 外側の薄グレー帯（PCは左ドック端まで） */}
-      <div className="relative bg-[var(--np-surface)] rounded-xl lg:rounded-2xl np-full-bleed-to-aside py-6 lg:py-8">
-        {/* 3カード横並び（線だけ） */}
+    <section className="mt-12">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* カード行 */}
         <div className="mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-3 gap-4 px-4 lg:px-6">
           {AUDIENCES.map((item) => {
-            const active = aud === item.id;
+            const isActive = active === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => setAud(item.id)}
-                aria-current={active}
-                className={`relative bg-white rounded-xl px-4 py-5 text-left transition border ${
-                  active 
+                onClick={() => setActive(item.id)}
+                aria-current={isActive}
+                className={`bg-white rounded-xl px-4 py-5 text-left transition ${
+                  isActive 
                     ? "border-2 border-[var(--np-blue)] shadow-sm" 
-                    : "border-[var(--np-border)]"
+                    : "border border-[var(--np-border)]"
                 }`}
               >
-                {/* コネクタ（選択時のみ） */}
-                {active && (
-                  <span 
-                    aria-hidden
-                    className="absolute left-1/2 -bottom-2 -translate-x-1/2 w-4 h-2
-                               bg-white border-x border-b border-[var(--np-blue)]
-                               rounded-b-[6px]" 
-                  />
-                )}
-                {/* アイコン＋ラベル */}
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 text-[var(--np-blue)] ${
-                    active ? "scale-[1.06] -translate-y-[1px] transition" : ""
-                  }`}>
-                    {item.icon}
-                  </div>
-                  <span className="font-semibold text-[15px] text-[var(--np-ink)]">{item.label}</span>
-                </div>
+                <span className="font-semibold text-[15px] text-[var(--np-ink)]">{item.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* 白い内容ボックス（カード群の直下・コネクタ受け） */}
+        {/* おすすめ帯 */}
         <div className="relative mx-auto max-w-5xl mt-6 px-4 lg:px-6">
-          <div className="relative bg-white rounded-xl border border-[var(--np-border)] p-5 lg:p-7">
-            {/* 受けの凹み（上辺中央） */}
+          <div className="relative bg-[var(--np-blue)] text-white rounded-xl p-5 lg:p-7">
+            {/* 三角ノッチ：選択カードの中央に合わせる */}
             <span 
-              aria-hidden
-              className="absolute left-1/2 -top-[7px] -translate-x-1/2 w-8 h-[14px]
-                         bg-[var(--np-surface)] rounded-t-[10px] border-x border-t border-[var(--np-border)]" 
+              className="speech-notch" 
+              style={{
+                left: active === 'general' ? '16.6%' : active === 'company' ? '50%' : '83.4%', 
+                top: '-10px'
+              }} 
             />
-            {/* 見出し行（選択によってテキストだけ変わる） */}
-            <h3 className="mb-4 font-semibold text-[15px] text-[var(--np-ink)]">
-              {aud === 'general' && '一般の方へのおすすめコンテンツ'}
-              {aud === 'company' && '企業の方へのおすすめコンテンツ'}
-              {aud === 'gov' && '自治体の方へのおすすめコンテンツ'}
+            <h3 className="font-bold text-[16px] mb-4">
+              {active === 'general' && '一般の方へのおすすめコンテンツ'}
+              {active === 'company' && '企業の方へのおすすめコンテンツ'}
+              {active === 'gov' && '自治体の方へのおすすめコンテンツ'}
             </h3>
 
             {/* おすすめカード：SPカルーセル（scroll-snap） */}
             <div className="lg:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
-              {RECOMMENDATIONS[aud].map((card, index) => (
+              {RECOMMENDATIONS[active].map((card, index) => (
                 <Link
                   key={index}
                   href={card.href}
-                  className="snap-start shrink-0 w-72 rounded-xl bg-white shadow-sm p-4"
+                  className="snap-start shrink-0 w-72 rounded-xl bg-white/10 backdrop-blur-sm p-4 border border-white/20"
                 >
-                  <h3 className="font-semibold text-slate-800">{card.title}</h3>
-                  <p className="text-slate-600 text-sm mt-1">{card.desc}</p>
+                  <h3 className="font-semibold text-white">{card.title}</h3>
+                  <p className="text-white/80 text-sm mt-1">{card.desc}</p>
                 </Link>
               ))}
             </div>
             {/* PCグリッド */}
             <div className="hidden lg:grid grid-cols-3 gap-5">
-              {RECOMMENDATIONS[aud].map((card, index) => (
+              {RECOMMENDATIONS[active].map((card, index) => (
                 <Link
                   key={index}
                   href={card.href}
-                  className="rounded-xl bg-white shadow-sm p-5 hover:shadow-md transition"
+                  className="rounded-xl bg-white/10 backdrop-blur-sm p-5 border border-white/20 hover:bg-white/20 transition"
                 >
-                  <h3 className="font-semibold text-slate-800">{card.title}</h3>
-                  <p className="text-slate-600 text-sm mt-1">{card.desc}</p>
+                  <h3 className="font-semibold text-white">{card.title}</h3>
+                  <p className="text-white/80 text-sm mt-1">{card.desc}</p>
                 </Link>
               ))}
             </div>

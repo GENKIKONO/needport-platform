@@ -64,11 +64,10 @@
   --audience-surface: #F3F6FA;   /* おすすめ面の地色（薄グレー） */
   
   /* 福島式UI統一トークン */
-  --np-blue: #2F63B7;        /* 濃青（強調/未選択タブ/強線） */
-  --np-blue-bg: #E9F3FF;     /* 薄青（付箋パネル） */
-  --np-ink: #1F2A44;         /* 濃紺テキスト */
-  --np-border: #C9DCF7;      /* 淡い境界線 */
-  --np-surface: #F5F7FB;     /* 薄グレー面（カード群の外側帯） */
+  --np-blue: #2F63B7;       /* 濃青：未選択タブ・おすすめ帯の塗り */
+  --np-blue-bg: #E9F3FF;    /* 薄青：付箋タブ選択面 & パネル */
+  --np-ink: #1F2A44;        /* 濃紺テキスト */
+  --np-border: #C9DCF7;     /* 淡い境界線 */
   
   --aside-w: 280px;          /* PC左ドック幅 */
 }
@@ -318,13 +317,22 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
     border-bottom-right-radius: .75rem;
   }
   
-  /* 面を左ドック端まで広げる（PCのみ） */
-  .np-full-bleed-to-aside{ /* 左ドック端まで伸ばす（PCのみ） */
-    margin-left: calc(var(--np-aside-offset, -24px));
-    padding-left: calc(var(--np-aside-pad, 24px));
+  /* コンテンツ列の左右いっぱいまで（左ドックにはみ出さない） */
+  .np-bleed {
+    /* 親が px-4 lg:px-8 前提。数値が違えばここを合わせる */
+    margin-left:  -1rem;   /* -mx-4 と同等 */
+    margin-right: -1rem;
   }
-  @media (max-width: 1023px){
-    .np-full-bleed-to-aside{ margin-left: 0; padding-left: 0; }
+  @media (min-width:1024px){
+    .np-bleed { margin-left: -2rem; margin-right: -2rem; } /* -mx-8 */
+  }
+
+  /* 三角ノッチ（吹き出し） */
+  .speech-notch {
+    position:absolute; content:""; width:0; height:0; 
+    border-left:10px solid transparent;
+    border-right:10px solid transparent;
+    border-bottom:10px solid var(--np-blue); /* 帯と同色 */
   }
   
   /* タイポの底上げ */
