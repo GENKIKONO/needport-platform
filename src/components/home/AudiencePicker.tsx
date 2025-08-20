@@ -89,8 +89,9 @@ export default function AudiencePicker() {
         </div>
 
         {/* おすすめ帯 */}
-        <div className="relative mx-auto max-w-5xl mt-4 px-4 lg:px-6">
-          <div className="bg-[var(--np-blue-accent)] text-white rounded-none p-5">
+        <div className="relative px-6 lg:px-8">
+          <div className="np-reco-wrap max-w-[min(960px,100%)] mx-auto">
+            <div className="np-reco-arrow" />
             <h3 className="font-bold text-[16px] mb-4">
               {active === 'general' && '一般の方へのおすすめコンテンツ'}
               {active === 'company' && '企業の方へのおすすめコンテンツ'}
@@ -125,6 +126,8 @@ export default function AudiencePicker() {
             </div>
           </div>
         </div>
+        {/* 白セクションとの間隔 */}
+        <div style={{height:'var(--np-section-gap)'}} />
       </div>
     </section>
   );

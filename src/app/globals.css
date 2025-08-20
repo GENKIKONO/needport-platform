@@ -71,6 +71,13 @@
   --np-border: #C9DCF7;     /* 淡い境界線 */
   
   --aside-w: 280px;          /* PC左ドック幅 */
+  
+  /* 最終調整用トークン */
+  --np-blue-50: #E9F3FF;
+  --np-blue-400: #2F63B7;
+  --np-section-gap: 64px;     /* セクション間の標準余白 ↑↓ */
+  --np-card-radius: 10px;     /* 角丸は控えめ。ヒーロー/パネルは0 */
+  --left-dock-w: 264px;      /* 左ドックの実寸に合わせて調整 */
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
@@ -351,6 +358,21 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   }
 }
 
+/* full-bleed: 左ドック端まで伸ばす（PCのみ） */
+@media (min-width:1024px){
+  .np-bleed-left{
+    margin-left: calc(-1 * var(--content-left-gap, 24px));
+    /* 左ドックがあるレイアウトなら以下で揃える */
+    padding-left: calc(var(--content-left-gap, 24px));
+    border-radius: 0 !important;
+  }
+  .np-bleed-left-to-dock{
+    margin-left: calc(-1 * var(--content-left-gap, 24px));
+    width: calc(100% + var(--content-left-gap, 24px));
+    border-radius: 0 !important;
+  }
+}
+
 /* 付箋タブ */
 .np-tab { 
   border-radius: 0; 
@@ -393,6 +415,63 @@ body {
 }
 .np-lock-vert { 
   touch-action: pan-y;     /* 縦スクロールだけ許可（横スワイプ誤作動防止） */
+}
+
+/* スマホ横スクロール禁止 */
+html, body { overflow-x: hidden; }
+
+/* ヒーロー＆検索パネルは角丸ゼロ */
+.np-square { border-radius: 0 !important; }
+
+/* タイポ強化 */
+.np-h { color: var(--np-ink); font-weight: 700; }
+.np-sub { color: #64748b; font-weight: 500; }
+
+/* タブを中央・大きめに */
+.np-tabs-center { 
+  display: flex; 
+  justify-content: center; 
+  gap: 16px; 
+}
+.np-tab { 
+  height: 48px; 
+  padding: 0 24px; 
+  font-weight: 700; 
+}
+.np-tab--active {
+  background: var(--np-blue-50); 
+  color: var(--np-ink);
+  border: none; 
+  box-shadow: none;
+}
+.np-tab--inactive {
+  background: var(--np-blue-400); 
+  color: #fff; 
+  border: none;
+}
+
+/* おすすめ帯（吹き出しのベース） */
+.np-reco-wrap {
+  background: var(--np-blue-400); 
+  color: #fff;
+  border-radius: 12px; 
+  padding: 20px; 
+}
+.np-reco-arrow { /* 上向きの小さな三角 */
+  width: 0; height: 0; 
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent; 
+  border-bottom: 10px solid var(--np-blue-400);
+  position: absolute; 
+  top: -10px; 
+  left: 48px;  /* カード下中央寄せに移動可 */
+}
+
+/* 左ドックのアイコンを太く */
+.np-dock-icon { 
+  width: 20px; 
+  height: 20px; 
+  stroke-width: 2.2; 
 }
 
   /* iOSのフォーム自動ズーム対策（16px未満でズーム） */

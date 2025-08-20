@@ -21,7 +21,7 @@ export default function HeroCarousel(){
   }, [prefersReduced]);
 
   return (
-    <section className="np-fullbleed-left">
+    <section className="np-fullbleed-left np-square">
       <div className="relative overflow-hidden rounded-none">
         <div className="min-h-[280px] md:min-h-[440px]">
           {slides.map((s, idx) => (

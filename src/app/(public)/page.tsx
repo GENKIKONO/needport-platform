@@ -13,7 +13,7 @@ export default function Home() {
 
       {/* 1.5. モバイルログイン2ボタン帯（SPのみ） */}
       <div className="lg:hidden np-fullbleed-left bg-white border-b">
-        <div className="flex gap-2 p-4">
+        <div className="flex gap-2 p-4 mt-4">
           <a href="/signup" className="flex-1 bg-gradient-to-r from-[var(--np-blue-accent)] to-[var(--np-blue)] text-white text-center py-3 rounded-md font-semibold">
             一般ログイン
           </a>
