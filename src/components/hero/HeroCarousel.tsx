@@ -21,9 +21,9 @@ export default function HeroCarousel(){
   }, [prefersReduced]);
 
   return (
-    <section className="np-bleed-x">
-      <div className="relative overflow-hidden rounded-none lg:rounded-2xl">
-        <div className="h-[56vw] max-h-[420px]">
+    <section className="np-fullbleed-left">
+      <div className="relative overflow-hidden rounded-none">
+        <div className="min-h-[280px] md:min-h-[440px]">
           {slides.map((s, idx) => (
             <div key={s.id}
               className={`absolute inset-0 transition-opacity duration-700 bg-gradient-to-br ${s.cls} ${idx===i?'opacity-100':'opacity-0'}`}>
