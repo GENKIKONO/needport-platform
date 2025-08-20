@@ -19,7 +19,7 @@ export default function DualActionPanel() {
             className={`h-12 px-4 rounded-t-lg transition-colors ${
               mode === "find"
                 ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
-                : "bg-[var(--np-blue-ac)] text-white"
+                : "bg-[var(--np-blue)] text-white"
             }`}
             onClick={() => setMode("find")}
           >
@@ -30,7 +30,7 @@ export default function DualActionPanel() {
             className={`h-12 px-4 rounded-t-lg transition-colors ${
               mode === "post"
                 ? "bg-[var(--np-blue-bg)] text-[var(--np-ink)]"
-                : "bg-[var(--np-blue-ac)] text-white"
+                : "bg-[var(--np-blue)] text-white"
             }`}
             onClick={() => setMode("post")}
           >
@@ -38,7 +38,7 @@ export default function DualActionPanel() {
           </button>
         </div>
 
-        <div className="rounded-b-lg rounded-tr-lg bg-[var(--np-blue-bg)] border border-[var(--np-blue-border)] p-6 lg:p-7">
+        <div className="rounded-b-lg rounded-tr-lg bg-[var(--np-blue-bg)] border border-[var(--np-border)] p-6 lg:p-7">
           {mode === "find" ? (
             <FindForm kochiCities={kochiCities} />
           ) : (
@@ -60,7 +60,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
           <select 
             id="city"
             name="city" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]"
           >
             <option value="">選択してください</option>
             <option value="高知市">高知市</option>
@@ -82,7 +82,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
           <select 
             id="category"
             name="category" 
-            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]"
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]"
           >
             <option value="">選択してください</option>
             <option value="IT・システム">IT・システム</option>
@@ -99,13 +99,13 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
       
       <div>
         <label htmlFor="keyword" className="block np-sub text-sm mb-2">キーワード</label>
-        <input 
-          id="keyword"
-          name="q" 
-          type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
-          placeholder="例：Webサイト制作、デザイン、システム開発"
-        />
+                  <input 
+            id="keyword"
+            name="q" 
+            type="text" 
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
+            placeholder="例：Webサイト制作、デザイン、システム開発"
+          />
       </div>
       
       {/* よく使う市町村チップ */}
@@ -132,7 +132,7 @@ function FindForm({ kochiCities }: { kochiCities: string[] }) {
       
       <button 
         type="submit" 
-        className="mt-6 w-full h-11 bg-[var(--np-blue-ac)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
+        className="mt-6 w-full h-11 bg-[var(--np-blue)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
       >
         検索する
       </button>
@@ -146,19 +146,19 @@ function PostQuick() {
     <form action="/post" className="space-y-6">
       <div>
         <label htmlFor="title" className="block np-sub text-sm mb-2">タイトル簡易入力</label>
-        <input 
-          id="title"
-          name="title" 
-          type="text" 
-          className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue-ac)] focus:border-[var(--np-blue-ac)]" 
-          placeholder="まずは件名だけでもOK"
-          required
-        />
+                  <input 
+            id="title"
+            name="title" 
+            type="text" 
+            className="w-full rounded-md border px-3 py-2 bg-white focus:ring-2 focus:ring-[var(--np-blue)] focus:border-[var(--np-blue)]" 
+            placeholder="まずは件名だけでもOK"
+            required
+          />
       </div>
       
       <button 
         type="submit" 
-        className="mt-6 w-full h-11 bg-[var(--np-blue-ac)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
+        className="mt-6 w-full h-11 bg-[var(--np-blue)] text-white rounded-lg font-semibold hover:opacity-90 transition-colors"
       >
         投稿をはじめる
       </button>

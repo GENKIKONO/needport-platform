@@ -64,10 +64,11 @@
   --audience-surface: #F3F6FA;   /* おすすめ面の地色（薄グレー） */
   
   /* 福島式UI統一トークン */
-  --np-blue-bg: #E9F3FF;     /* 面＆選択タブ */
-  --np-blue-ac: #2F63B7;     /* 未選択タブ/主要ボタン */
-  --np-blue-border: #C9DCF7; /* 薄い境界 */
+  --np-blue: #2F63B7;        /* 濃青（強調/未選択タブ/強線） */
+  --np-blue-bg: #E9F3FF;     /* 薄青（付箋パネル） */
   --np-ink: #1F2A44;         /* 濃紺テキスト */
+  --np-border: #C9DCF7;      /* 淡い境界線 */
+  --np-surface: #F5F7FB;     /* 薄グレー面（カード群の外側帯） */
   
   --aside-w: 280px;          /* PC左ドック幅 */
 }
@@ -318,16 +319,12 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   }
   
   /* 面を左ドック端まで広げる（PCのみ） */
-  @media (min-width: 1024px){
-    .np-full-bleed-to-aside{
-      border-radius: 12px;
-      margin-left: 0; padding-left: 0;
-    }
-    /* コンテンツだけに左右の余白を戻す */
-    .np-full-bleed-to-aside > .np-inner{
-      padding-left: 0;         /* 左はドック端に揃える */
-      padding-right: 24px;     /* 右は通常の余白 */
-    }
+  .np-full-bleed-to-aside{ /* 左ドック端まで伸ばす（PCのみ） */
+    margin-left: calc(var(--np-aside-offset, -24px));
+    padding-left: calc(var(--np-aside-pad, 24px));
+  }
+  @media (max-width: 1023px){
+    .np-full-bleed-to-aside{ margin-left: 0; padding-left: 0; }
   }
   
   /* タイポの底上げ */
@@ -336,16 +333,16 @@ main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
   .np-body{ font-weight: 500; color: var(--np-ink); }
   
   /* 市町村チップの読みやすさ */
-  .np-chip{
-    padding: 6px 12px;
-    border-radius: 9999px;
-    border: 1px solid var(--np-blue-border);
+  .np-chip{ 
+    padding: 6px 12px; 
+    border-radius: 999px; 
+    border: 1px solid var(--np-border);
     line-height: 1.2;
     font-weight: 600;
     color: var(--np-ink);
     background: #fff;
   }
-  .np-chip:focus{ outline: 2px solid var(--np-blue-ac); outline-offset: 2px; }
+  .np-chip:focus{ outline: 2px solid var(--np-blue); outline-offset: 2px; }
    
    /* ボタンのさざ波クリック */
    .btn-wave { position: relative; overflow: hidden; }
