@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { MagnifyingGlassIcon as SearchIcon, PlusIcon } from "@/components/icons";
 import AreaSelect from "@/components/fields/AreaSelect";
 
@@ -63,44 +63,77 @@ function Button({ children, className }: { children: React.ReactNode; className?
 
 export default function DualActionPanel() {
   const [tab, setTab] = useState<'find'|'post'>('find');
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  const handleTabChange = useCallback((newTab: 'find'|'post') => {
+    setTab(newTab);
+  }, []);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent, currentTab: 'find'|'post') => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const newTab = currentTab === 'find' ? 'post' : 'find';
+      setTab(newTab);
+      // Focus the new tab
+      const newTabElement = tabsRef.current?.querySelector(`button[data-tab="${newTab}"]`) as HTMLButtonElement;
+      newTabElement?.focus();
+    }
+  }, []);
 
   return (
-    <div className="bleed-to-aside bg-[var(--panel-blue-bg)]">
-      <div className="max-w-[1100px] mx-auto px-6 md:px-8 py-6 md:py-8">
-        {/* 付箋タブ */}
-        <ul className="flex justify-center gap-3 md:gap-6 max-w-[1100px] mx-auto px-6">
-          <li>
+    <section className="relative mx-auto max-w-screen-xl px-4 sm:px-6">
+      {/* ブルー背景 */}
+      <div className="absolute inset-x-0 -top-6 h-[88px] sm:h-[104px] bg-[#CFE8FA] rounded-b-3xl" aria-hidden="true" />
+      
+      {/* 付箋タブ */}
+      <div 
+        ref={tabsRef}
+        role="tablist" 
+        aria-label="検索種別" 
+        className="relative z-10 flex sm:flex-row flex-col justify-center gap-2 sm:gap-4"
+      >
+        {(['find', 'post'] as const).map((tabKey) => {
+          const active = tab === tabKey;
+          const label = tabKey === 'find' ? 'ニーズを探す' : 'ニーズを投稿';
+          const Icon = tabKey === 'find' ? SearchIcon : PlusIcon;
+          
+          return (
             <button
-              className={`h-12 md:h-14 min-w-[220px] md:min-w-[260px] 
-                ${tab==='find' ? 'bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)]' : 'bg-[var(--panel-blue-accent)] text-white'}
-                rounded-t-xl rounded-b-none px-5 md:px-6 flex items-center justify-center font-semibold`}
-              onClick={()=>setTab('find')}
+              key={tabKey}
+              data-tab={tabKey}
+              role="tab"
+              id={`tab-${tabKey}`}
+              aria-controls={`panel-${tabKey}`}
+              aria-selected={active}
+              onClick={() => handleTabChange(tabKey)}
+              onKeyDown={(e) => handleKeyDown(e, tabKey)}
+              className={[
+                "inline-flex items-center rounded-2xl px-4 sm:px-5 py-2 sm:py-2.5 text-sm sm:text-base font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400",
+                active
+                  ? "bg-white text-slate-900 shadow-[0_6px_0_0_#9EC8E6] -mb-1"
+                  : "bg-white/70 text-slate-600 shadow-sm hover:bg-white hover:shadow"
+              ].join(' ')}
             >
-              <span className="inline-flex items-center gap-2">
-                <SearchIcon className="w-5 h-5"/> ニーズを探す
-              </span>
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              {label}
             </button>
-          </li>
-          <li>
-            <button
-              className={`h-12 md:h-14 min-w-[220px] md:min-w-[260px]
-                ${tab==='post' ? 'bg-[var(--panel-blue-bg)] text-[var(--panel-blue-text)]' : 'bg-[var(--panel-blue-accent)] text-white'}
-                rounded-t-xl rounded-b-none px-5 md:px-6 flex items-center justify-center font-semibold`}
-              onClick={()=>setTab('post')}
-            >
-              <span className="inline-flex items-center gap-2">
-                <PlusIcon className="w-5 h-5"/> ニーズを投稿
-              </span>
-            </button>
-          </li>
-        </ul>
+          );
+        })}
+      </div>
 
-        {/* フォーム */}
-        <div className="mt-6">
-          {tab==='find' ? <FindForm/> : <PostFormLite/>}
+      {/* フォームコンテナ */}
+      <div className="relative z-0 -mt-2 sm:-mt-4">
+        <div className="rounded-2xl bg-white shadow-lg p-4 sm:p-6">
+          <div
+            role="tabpanel"
+            id={`panel-${tab}`}
+            aria-labelledby={`tab-${tab}`}
+          >
+            {tab === 'find' ? <FindForm/> : <PostFormLite/>}
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -109,14 +142,23 @@ function FindForm(){
   const [area, setArea] = useState("");
 
   return (
-    <form action="/needs" className="grid gap-4 md:gap-5">
-      <div className="grid md:grid-cols-2 gap-4">
-        <AreaSelect value={area} onChange={setArea} />
-        <Select placeholder="カテゴリを選択"/>
+    <form action="/needs" className="space-y-3 sm:space-y-4">
+      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+        <div className="w-full sm:flex-1">
+          <AreaSelect value={area} onChange={setArea} />
+        </div>
+        
+        <div className="w-px h-6 bg-slate-300 sm:block hidden" aria-hidden="true" />
+        
+        <div className="w-full sm:flex-1">
+          <Select placeholder="カテゴリを選択"/>
+        </div>
       </div>
+      
       <Input placeholder="キーワード（例：Webサイト制作、デザイン…）"/>
-      <div className="mt-2">
-        <Button className="w-full md:w-auto">検索する</Button>
+      
+      <div className="pt-2">
+        <Button className="w-full sm:w-auto">検索する</Button>
       </div>
     </form>
   );
@@ -124,14 +166,14 @@ function FindForm(){
 
 function PostFormLite() {
   return (
-    <form action="/post" className="grid gap-4">
+    <form action="/post" className="space-y-3 sm:space-y-4">
       <Input 
         name="title" 
         placeholder="タイトル（まずは件名だけでもOK）"
         required
       />
-      <div className="mt-2">
-        <Button className="w-full md:w-auto">投稿をはじめる</Button>
+      <div className="pt-2">
+        <Button className="w-full sm:w-auto">投稿をはじめる</Button>
       </div>
     </form>
   );
