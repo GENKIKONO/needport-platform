@@ -48,16 +48,16 @@ export default function NeedsSearchPanel({
   return (
     <section className={`relative mx-auto max-w-6xl px-4 sm:px-6 ${className}`}>
       {/* 付箋バー（紙の土台） */}
-      <div className="relative rounded-2xl bg-[#B9D9F2] pb-3 pt-2 sm:pt-3">
+      <div className="relative rounded-none bg-[#B9D9F2] pb-3 pt-2 sm:pt-3">
         {/* 紙（PAPER）帯：タブの紙 */}
-        <div className="absolute left-4 right-4 top-2 h-[56px] sm:h-[60px] bg-[#CFE4F7] rounded-2xl" aria-hidden />
+        <div className="absolute left-0 right-0 top-0 h-[56px] sm:h-[60px] bg-[#CFE4F7] rounded-none" aria-hidden />
 
         {/* タブリスト */}
         <div
           ref={listRef}
           role="tablist"
           aria-label="ニーズ操作"
-          className="relative z-10 mx-4 flex items-stretch gap-4"
+          className="relative overflow-visible mx-4 flex items-stretch gap-4"
         >
           {/* ニーズを探す */}
           <button
@@ -67,7 +67,7 @@ export default function NeedsSearchPanel({
             aria-selected={tab === "search"}
             onClick={() => setTab("search")}
             className={[
-              "group relative flex-1 rounded-2xl text-center font-extrabold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 transition",
+              "group relative flex-1 rounded-none text-center font-extrabold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 transition",
               "h-[56px] sm:h-[60px]",
               tab === "search"
                 ? "text-white"
@@ -75,18 +75,18 @@ export default function NeedsSearchPanel({
             ].join(" ")}
           >
             {/* 紙 */}
-            <span className="absolute inset-0 rounded-2xl bg-[#CFE4F7]" aria-hidden />
+            <span className="absolute inset-0 rounded-none bg-[#CFE4F7] z-0" aria-hidden />
             {/* アクティブの濃青キャップ（非選択時は透明） */}
             <span
               className={[
-                "absolute inset-0 rounded-2xl border",
+                "absolute inset-0 rounded-none border",
                 tab === "search"
-                  ? "bg-[#2C76A6] border-[#2F7CC0] shadow-[0_6px_0_0_rgba(47,124,192,0.35)]"
-                  : "bg-transparent border-transparent"
+                  ? "bg-[#2C76A6] border-[#2F7CC0] shadow-[0_4px_0_0_rgba(47,124,192,0.25)] z-10"
+                  : "bg-transparent border-transparent shadow-none z-0"
               ].join(" ")}
               aria-hidden
             />
-            <span className="relative inline-flex h-full items-center justify-center gap-2 px-6">
+            <span className="relative z-10 inline-flex h-full items-center justify-center gap-2 px-6">
               <SearchIcon className={tab === "search" ? "h-5 w-5 text-white" : "h-5 w-5 text-[#196AA6]"} />
               ニーズを探す
             </span>
@@ -100,24 +100,24 @@ export default function NeedsSearchPanel({
             aria-selected={tab === "post"}
             onClick={() => setTab("post")}
             className={[
-              "group relative flex-1 rounded-2xl text-center font-extrabold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 transition",
+              "group relative flex-1 rounded-none text-center font-extrabold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 transition",
               "h-[56px] sm:h-[60px]",
               tab === "post"
                 ? "text-white"
                 : "text-[#1F2937]"
             ].join(" ")}
           >
-            <span className="absolute inset-0 rounded-2xl bg-[#CFE4F7]" aria-hidden />
+            <span className="absolute inset-0 rounded-none bg-[#CFE4F7] z-0" aria-hidden />
             <span
               className={[
-                "absolute inset-0 rounded-2xl border",
+                "absolute inset-0 rounded-none border",
                 tab === "post"
-                  ? "bg-[#2C76A6] border-[#2F7CC0] shadow-[0_6px_0_0_rgba(47,124,192,0.35)]"
-                  : "bg-transparent border-transparent"
+                  ? "bg-[#2C76A6] border-[#2F7CC0] shadow-[0_4px_0_0_rgba(47,124,192,0.25)] z-10"
+                  : "bg-transparent border-transparent shadow-none z-0"
               ].join(" ")}
               aria-hidden
             />
-            <span className="relative inline-flex h-full items-center justify-center gap-2 px-6">
+            <span className="relative z-10 inline-flex h-full items-center justify-center gap-2 px-6">
               <Plus className={tab === "post" ? "h-5 w-5 text-white" : "h-5 w-5 text-[#196AA6]"} />
               ニーズを投稿する
             </span>
