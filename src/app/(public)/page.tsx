@@ -1,7 +1,6 @@
 import Link from "next/link";
 import HeroCarousel from "@/components/hero/HeroCarousel";
 import NeedsSearchPanel from "@/components/needs/NeedsSearchPanel";
-import SearchTabs from "@/components/search/SearchTabs";
 import AudiencePicker from "@/components/home/AudiencePicker";
 import FeaturedNeeds from "@/components/home/FeaturedNeeds";
 import BottomHeroCTA from "@/components/home/BottomHeroCTA";
@@ -27,11 +26,6 @@ export default function Home() {
 
       {/* 2. ニーズ検索パネル（スクショ準拠） */}
       <NeedsSearchPanel defaultTab="search" />
-
-      {/* 2.5. 企業・求人検索タブ */}
-      <div className="mt-10">
-        <SearchTabs />
-      </div>
 
       {/* 3. オーディエンスピッカー（ユーザ別おすすめ） */}
       <AudiencePicker />
