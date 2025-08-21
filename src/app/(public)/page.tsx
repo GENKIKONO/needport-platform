@@ -1,6 +1,7 @@
 import Link from "next/link";
 import HeroCarousel from "@/components/hero/HeroCarousel";
 import DualActionPanel from "@/components/home/DualActionPanel";
+import SearchTabs from "@/components/search/SearchTabs";
 import AudiencePicker from "@/components/home/AudiencePicker";
 import FeaturedNeeds from "@/components/home/FeaturedNeeds";
 import BottomHeroCTA from "@/components/home/BottomHeroCTA";
@@ -26,6 +27,11 @@ export default function Home() {
 
       {/* 2. タブ切替＋検索/投稿パネル（2分割色ブロック） */}
       <DualActionPanel />
+
+      {/* 2.5. 企業・求人検索タブ */}
+      <div className="mt-8 lg:mt-12">
+        <SearchTabs />
+      </div>
 
       {/* 3. オーディエンスピッカー（ユーザ別おすすめ） */}
       <AudiencePicker />
