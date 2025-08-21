@@ -3,6 +3,7 @@ import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Building2, Briefcase, MapPin } from "lucide-react";
 import type { SearchTabsProps, SearchTabType, CompanyQuery, JobQuery } from "@/types/search";
+import { tabActive, tabInactive, tabBase, barBg, searchButton, formCard, iconColor } from "@/components/ui/tabStyles";
 
 // ダミーマスタデータ
 const PREFECTURES = [
@@ -76,7 +77,7 @@ export default function SearchTabs({
   ];
 
   return (
-    <section className={`bg-[#E6F1F9] rounded-b-3xl pb-8 ${className}`}>
+    <section className={`${barBg} pb-8 ${className}`}>
       {/* タブ */}
       <div 
         ref={tabsRef}
@@ -96,10 +97,8 @@ export default function SearchTabs({
               aria-selected={isActive}
               onClick={() => handleTabChange(key)}
               onKeyDown={(e) => handleKeyDown(e, key)}
-              className={`flex-1 flex items-center justify-center rounded-t-lg py-3 font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
-                isActive
-                  ? "bg-[#2C76A6] text-white"
-                  : "bg-[#CFE4F7] text-gray-800 hover:bg-[#B8D8F0]"
+              className={`${tabBase} flex-1 ${
+                isActive ? tabActive : tabInactive
               }`}
             >
               <Icon className="w-5 h-5 mr-2" />
@@ -111,7 +110,7 @@ export default function SearchTabs({
 
       {/* 検索フォーム */}
       <div className="max-w-4xl mx-auto mt-4 px-4">
-        <div className="bg-white rounded-2xl shadow p-4 sm:p-6">
+        <div className={formCard}>
           {activeTab === 'company' ? (
             <div
               role="tabpanel"
@@ -121,7 +120,7 @@ export default function SearchTabs({
               <form onSubmit={handleCompanySearch} className="space-y-3 sm:space-y-4">
                 <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
                   <div className="flex items-center bg-white rounded-lg border px-3 py-2 flex-1 w-full">
-                    <MapPin className="w-4 h-4 text-sky-700 mr-2 flex-shrink-0" />
+                    <MapPin className={`w-4 h-4 ${iconColor} mr-2 flex-shrink-0`} />
                     <select 
                       className="flex-1 outline-none"
                       value={companyQuery.prefecture || ''}
@@ -137,7 +136,7 @@ export default function SearchTabs({
                   <span className="text-gray-400 hidden sm:inline-block">×</span>
                   
                   <div className="flex items-center bg-white rounded-lg border px-3 py-2 flex-1 w-full">
-                    <Briefcase className="w-4 h-4 text-sky-700 mr-2 flex-shrink-0" />
+                    <Briefcase className={`w-4 h-4 ${iconColor} mr-2 flex-shrink-0`} />
                     <select 
                       className="flex-1 outline-none"
                       value={companyQuery.industry || ''}
@@ -152,7 +151,7 @@ export default function SearchTabs({
                   
                   <button 
                     type="submit"
-                    className="bg-[#0B5FA6] text-white rounded-lg px-6 py-2 font-semibold flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 hover:bg-[#094A85]"
+                    className={searchButton}
                   >
                     <Search className="w-5 h-5 mr-2" />
                     検索
@@ -168,7 +167,7 @@ export default function SearchTabs({
                     onChange={(e) => setCompanyQuery(prev => ({ ...prev, name: e.target.value || undefined }))}
                   />
                   <button type="submit" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded">
-                    <Search className="w-5 h-5 text-[#0B5FA6]" />
+                    <Search className={`w-5 h-5 ${iconColor}`} />
                   </button>
                 </div>
                 
@@ -186,7 +185,7 @@ export default function SearchTabs({
               <form onSubmit={handleJobSearch} className="space-y-3 sm:space-y-4">
                 <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
                   <div className="flex items-center bg-white rounded-lg border px-3 py-2 flex-1 w-full">
-                    <MapPin className="w-4 h-4 text-sky-700 mr-2 flex-shrink-0" />
+                    <MapPin className={`w-4 h-4 ${iconColor} mr-2 flex-shrink-0`} />
                     <select 
                       className="flex-1 outline-none"
                       value={jobQuery.prefecture || ''}
@@ -202,7 +201,7 @@ export default function SearchTabs({
                   <span className="text-gray-400 hidden sm:inline-block">×</span>
                   
                   <div className="flex items-center bg-white rounded-lg border px-3 py-2 flex-1 w-full">
-                    <Briefcase className="w-4 h-4 text-sky-700 mr-2 flex-shrink-0" />
+                    <Briefcase className={`w-4 h-4 ${iconColor} mr-2 flex-shrink-0`} />
                     <select 
                       className="flex-1 outline-none"
                       value={jobQuery.occupation || ''}
@@ -217,7 +216,7 @@ export default function SearchTabs({
                   
                   <button 
                     type="submit"
-                    className="bg-[#0B5FA6] text-white rounded-lg px-6 py-2 font-semibold flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 hover:bg-[#094A85]"
+                    className={searchButton}
                   >
                     <Search className="w-5 h-5 mr-2" />
                     検索
@@ -233,7 +232,7 @@ export default function SearchTabs({
                     onChange={(e) => setJobQuery(prev => ({ ...prev, keyword: e.target.value || undefined }))}
                   />
                   <button type="submit" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded">
-                    <Search className="w-5 h-5 text-[#0B5FA6]" />
+                    <Search className={`w-5 h-5 ${iconColor}`} />
                   </button>
                 </div>
                 
