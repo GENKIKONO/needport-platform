@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Search as SearchIcon, Plus, MapPin } from "lucide-react";
 import { CATEGORIES } from "@/constants/master";
 import { KOCHI_AREAS, AREA_ETC } from "@/constants/kochi-areas";
+import PageContainer from "@/components/layout/PageContainer";
 
 export default function NeedsUnifiedPanel() {
   const router = useRouter();
@@ -72,11 +73,8 @@ export default function NeedsUnifiedPanel() {
   }, []);
 
   return (
-    <section className="relative w-full">
-      {/* 一枚板のSURFACE */}
-      <div className="relative w-full bg-[#CFE4F7]">
-        {/* 内側の最大幅と余白だけ制御（板はフルブリード） */}
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 sm:py-6">
+    <section className="relative w-full bg-[#CFE4F7]">
+      <PageContainer className="py-4 sm:py-6">
 
           {/* タブ（選択=板と同色で溶ける／非選択=濃青キャップ） */}
           <div ref={listRef} role="tablist" aria-label="ニーズ操作" className="flex gap-8">
@@ -97,7 +95,7 @@ export default function NeedsUnifiedPanel() {
                 />
               )}
               <SearchIcon className={tab === "search" ? "h-5 w-5 text-[#196AA6]" : "h-5 w-5 text-white"} />
-              <span className={tab === "search" ? "text-[#1F2937]" : "text-white"}>ニーズを探す</span>
+              <span className={`${tab === "search" ? "text-[#1F2937]" : "text-white"} not-italic normal-case [writing-mode:horizontal-tb] whitespace-nowrap`}>ニーズを探す</span>
             </button>
 
             {/* ニーズを投稿する */}
@@ -113,7 +111,7 @@ export default function NeedsUnifiedPanel() {
                 <span aria-hidden className="absolute inset-0 -z-10 bg-[#2C76A6] border border-[#2F7CC0] shadow-[0_4px_0_0_rgba(47,124,192,0.25)]" />
               )}
               <Plus className={tab === "post" ? "h-5 w-5 text-[#196AA6]" : "h-5 w-5 text-white"} />
-              <span className={tab === "post" ? "text-[#1F2937]" : "text-white"}>ニーズを投稿する</span>
+              <span className={`${tab === "post" ? "text-[#1F2937]" : "text-white"} not-italic normal-case [writing-mode:horizontal-tb] whitespace-nowrap`}>ニーズを投稿する</span>
             </button>
           </div>
 
@@ -121,13 +119,13 @@ export default function NeedsUnifiedPanel() {
           <div className="mt-4 sm:mt-6">
             {/* tab=search */}
             <div role="tabpanel" id={ids.search + "-panel"} aria-labelledby={ids.search + "-tab"} hidden={tab !== "search"}>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <label className="flex items-center rounded-xl bg-white/70 backdrop-blur-[1px] border border-white/50 px-3.5 py-2.5 gap-2">
-                  <svg className="h-5 w-5 text-[#196AA6]" viewBox="0 0 24 24" fill="none"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" stroke="currentColor" strokeWidth="1.8"/></svg>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="flex items-center rounded-xl bg-white/70 backdrop-blur-[1px] border border-white/50 px-3.5 py-2.5 gap-2 min-w-0">
+                  <svg className="h-5 w-5 text-[#196AA6] shrink-0" viewBox="0 0 24 24" fill="none"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" stroke="currentColor" strokeWidth="1.8"/></svg>
                   <select
                     value={area}
                     onChange={(e) => { setArea(e.target.value); if (e.target.value !== AREA_ETC) setAreaEtc(""); }}
-                    className="flex-1 bg-transparent outline-none text-[#1F2937]"
+                    className="flex-1 bg-transparent outline-none text-[#1F2937] min-w-0"
                   >
                     <option value="">エリアを選択</option>
                     {KOCHI_AREAS.map((a) => (
@@ -136,12 +134,12 @@ export default function NeedsUnifiedPanel() {
                     <option value={AREA_ETC}>{AREA_ETC}</option>
                   </select>
                 </label>
-                <label className="flex items-center rounded-xl bg-white/70 backdrop-blur-[1px] border border-white/50 px-3.5 py-2.5">
-                  <svg className="mr-2 h-5 w-5 text-[#196AA6]" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2"/></svg>
+                <label className="flex items-center rounded-xl bg-white/70 backdrop-blur-[1px] border border-white/50 px-3.5 py-2.5 gap-2 min-w-0">
+                  <svg className="h-5 w-5 text-[#196AA6] shrink-0" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2"/></svg>
                   <select 
                     value={category} 
                     onChange={e => setCategory(e.target.value)} 
-                    className="flex-1 bg-transparent outline-none text-[#1F2937]"
+                    className="flex-1 bg-transparent outline-none text-[#1F2937] min-w-0"
                   >
                     <option value="">カテゴリを選択</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -165,7 +163,7 @@ export default function NeedsUnifiedPanel() {
                   value={keyword}
                   onChange={e => setKeyword(e.target.value)}
                   placeholder="キーワード（例：Webサイト制作、デザイン…）"
-                  className="flex-1 rounded-xl bg-white/70 border border-white/50 px-4 py-2.5 outline-none placeholder:text-slate-500"
+                  className="flex-1 rounded-xl bg-white/70 border border-white/50 px-4 py-2.5 outline-none placeholder:text-slate-500 min-w-0"
                 />
                 <button 
                   disabled={area === AREA_ETC && areaEtc.trim() === ""}
@@ -211,8 +209,7 @@ export default function NeedsUnifiedPanel() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+        </PageContainer>
+      </section>
+    );
+  }

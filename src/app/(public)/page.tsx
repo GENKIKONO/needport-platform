@@ -5,6 +5,7 @@ import AudiencePicker from "@/components/home/AudiencePicker";
 import FeaturedNeeds from "@/components/home/FeaturedNeeds";
 import BottomHeroCTA from "@/components/home/BottomHeroCTA";
 import NewsList from "@/components/home/NewsList";
+import PageContainer from "@/components/layout/PageContainer";
 
 export default function Home() {
   return (
@@ -22,14 +23,18 @@ export default function Home() {
       <div className="h-6 md:h-10" />
 
       {/* 白背景を左右端まで */}
-      <section className="np-white-bleed py-10">
-        <FeaturedNeeds />
+      <section className="w-full bg-white py-10">
+        <PageContainer>
+          <FeaturedNeeds />
+        </PageContainer>
       </section>
 
       {/* 5. 下部ヒーローCTA（フッター直前の再CV） */}
-      <div className="np-white-bleed py-12">
-        <BottomHeroCTA />
-      </div>
+      <section className="w-full bg-white py-12">
+        <PageContainer>
+          <BottomHeroCTA />
+        </PageContainer>
+      </section>
 
       {/* 6. お知らせ（ページ下の方） */}
       <NewsList />

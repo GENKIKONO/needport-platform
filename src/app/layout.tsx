@@ -127,10 +127,11 @@ export default async function RootLayout({
           `
         }} />
       </head>
-      <body>
-        <ErrorBoundary>
-          <ClientErrorCatcher />
-          <ToastProvider>
+      <body className="antialiased [overflow-anchor:none] overflow-x-hidden">
+        <div id="app-root" className="min-h-[100svh]">
+          <ErrorBoundary>
+            <ClientErrorCatcher />
+            <ToastProvider>
             {/* 上部トップバーは使わない */}
             {false && (
               <div className="lg:hidden">
@@ -157,6 +158,7 @@ export default async function RootLayout({
             <Analytics />
           </ToastProvider>
         </ErrorBoundary>
+        </div>
       </body>
     </html>
   );
