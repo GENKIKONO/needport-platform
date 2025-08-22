@@ -1,10 +1,72 @@
 "use client";
-import { useState, useId } from "react";
+import { useState, useId, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Search as SearchIcon, Plus, MapPin } from "lucide-react";
+import { AREAS, CATEGORIES } from "@/constants/master";
 
 export default function NeedsUnifiedPanel() {
+  const router = useRouter();
   const [tab, setTab] = useState<"search" | "post">("search");
   const ids = { search: useId(), post: useId() };
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Search tab state
+  const [area, setArea] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
+  const [keyword, setKeyword] = useState<string>("");
+
+  // Post tab state
+  const [title, setTitle] = useState<string>("");
+  const [desc, setDesc] = useState<string>("");
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (area) params.set("area", area);
+    if (category) params.set("category", category);
+    if (keyword) params.set("q", keyword);
+    router.push(`/needs?${params.toString()}`);
+  };
+
+  const handlePostContinue = () => {
+    const params = new URLSearchParams();
+    if (title) params.set("title", encodeURIComponent(title));
+    if (desc) params.set("desc", encodeURIComponent(desc));
+    router.push(`/needs/new?${params.toString()}`);
+  };
+
+  // キーボードナビゲーション
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!listRef.current) return;
+      
+      const tabs = Array.from(listRef.current.querySelectorAll('[role="tab"]')) as HTMLButtonElement[];
+      const currentIndex = tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true');
+      
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          const prevIndex = currentIndex > 0 ? currentIndex - 1 : tabs.length - 1;
+          tabs[prevIndex]?.click();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          const nextIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0;
+          tabs[nextIndex]?.click();
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          tabs[currentIndex]?.click();
+          break;
+      }
+    };
+
+    const listElement = listRef.current;
+    if (listElement) {
+      listElement.addEventListener('keydown', handleKeyDown);
+      return () => listElement.removeEventListener('keydown', handleKeyDown);
+    }
+  }, []);
 
   return (
     <section className="relative w-full">
@@ -14,7 +76,7 @@ export default function NeedsUnifiedPanel() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 sm:py-6">
 
           {/* タブ（選択=板と同色で溶ける／非選択=濃青キャップ） */}
-          <div role="tablist" aria-label="ニーズ操作" className="flex gap-8">
+          <div ref={listRef} role="tablist" aria-label="ニーズ操作" className="flex gap-8">
             {/* ニーズを探す */}
             <button
               role="tab"
@@ -24,7 +86,7 @@ export default function NeedsUnifiedPanel() {
               onClick={() => setTab("search")}
               className="relative inline-flex items-center gap-2 h-[52px] px-16 font-extrabold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
             >
-              {/* 選択時=サーフェスと同色 → 何も被せない。非選択時のみ濃青キャップをかぶせる */}
+              {/* 非選択のときだけ濃青キャップを描く */}
               {tab !== "search" && (
                 <span
                   aria-hidden
@@ -59,14 +121,24 @@ export default function NeedsUnifiedPanel() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <label className="flex items-center rounded-xl bg-white/70 backdrop-blur-[1px] border border-white/50 px-3.5 py-2.5">
                   <MapPin className="mr-2 h-5 w-5 text-[#196AA6]" />
-                  <select className="flex-1 bg-transparent outline-none text-[#1F2937]">
-                    <option>エリアを選択</option>
+                  <select 
+                    value={area} 
+                    onChange={e => setArea(e.target.value)} 
+                    className="flex-1 bg-transparent outline-none text-[#1F2937]"
+                  >
+                    <option value="">エリアを選択</option>
+                    {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
                   </select>
                 </label>
                 <label className="flex items-center rounded-xl bg-white/70 backdrop-blur-[1px] border border-white/50 px-3.5 py-2.5">
                   <svg className="mr-2 h-5 w-5 text-[#196AA6]" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2"/></svg>
-                  <select className="flex-1 bg-transparent outline-none text-[#1F2937]">
-                    <option>カテゴリを選択</option>
+                  <select 
+                    value={category} 
+                    onChange={e => setCategory(e.target.value)} 
+                    className="flex-1 bg-transparent outline-none text-[#1F2937]"
+                  >
+                    <option value="">カテゴリを選択</option>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </label>
               </div>
@@ -74,10 +146,15 @@ export default function NeedsUnifiedPanel() {
               <div className="mt-3 flex flex-col sm:flex-row gap-3">
                 <input
                   type="text"
+                  value={keyword}
+                  onChange={e => setKeyword(e.target.value)}
                   placeholder="キーワード（例：Webサイト制作、デザイン…）"
                   className="flex-1 rounded-xl bg-white/70 border border-white/50 px-4 py-2.5 outline-none placeholder:text-slate-500"
                 />
-                <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B5FA6] text-white h-12 px-6 font-semibold">
+                <button 
+                  onClick={handleSearch}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B5FA6] text-white h-12 px-6 font-semibold"
+                >
                   <SearchIcon className="h-5 w-5" />
                   検索する
                 </button>
@@ -86,11 +163,31 @@ export default function NeedsUnifiedPanel() {
 
             {/* tab=post */}
             <div role="tabpanel" id={ids.post + "-panel"} aria-labelledby={ids.post + "-tab"} hidden={tab !== "post"}>
-              <div className="flex items-center justify-center py-6">
-                <a href="/needs/new" className="inline-flex items-center gap-2 rounded-xl bg-[#0B5FA6] text-white h-12 px-6 font-semibold">
-                  <Plus className="h-5 w-5" />
-                  ニーズを投稿する
-                </a>
+              <div className="space-y-3">
+                <input
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder="タイトル（必須）"
+                  className="w-full rounded-xl bg-white/70 border border-white/50 px-4 py-2.5 outline-none"
+                />
+                <textarea
+                  value={desc}
+                  onChange={e => setDesc(e.target.value)}
+                  placeholder="内容（任意）"
+                  rows={3}
+                  className="w-full rounded-xl bg-white/70 border border-white/50 px-4 py-2.5 outline-none resize-none"
+                />
+                <div className="flex gap-3">
+                  <a href="/needs/new" className="inline-flex items-center gap-2 rounded-xl bg-[#0B5FA6] text-white h-12 px-6 font-semibold">
+                    新規投稿ページで詳細入力
+                  </a>
+                  <button
+                    onClick={handlePostContinue}
+                    className="rounded-xl bg-[#0B5FA6] text-white h-12 px-6 font-semibold"
+                  >
+                    この内容で続行
+                  </button>
+                </div>
               </div>
             </div>
           </div>
