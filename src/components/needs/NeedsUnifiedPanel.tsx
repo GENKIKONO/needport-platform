@@ -2,7 +2,8 @@
 import { useState, useId, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search as SearchIcon, Plus, MapPin } from "lucide-react";
-import { AREAS, CATEGORIES } from "@/constants/master";
+import { CATEGORIES } from "@/constants/master";
+import { KOCHI_AREAS, AREA_ETC } from "@/constants/kochi-areas";
 
 export default function NeedsUnifiedPanel() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function NeedsUnifiedPanel() {
 
   // Search tab state
   const [area, setArea] = useState<string>("");
+  const [areaEtc, setAreaEtc] = useState<string>("");
   const [category, setCategory] = useState<string>("");
   const [keyword, setKeyword] = useState<string>("");
 
@@ -21,7 +23,8 @@ export default function NeedsUnifiedPanel() {
 
   const handleSearch = () => {
     const params = new URLSearchParams();
-    if (area) params.set("area", area);
+    const selectedArea = area === AREA_ETC ? areaEtc.trim() : area;
+    if (selectedArea) params.set("area", selectedArea);
     if (category) params.set("category", category);
     if (keyword) params.set("q", keyword);
     router.push(`/needs?${params.toString()}`);
@@ -119,15 +122,18 @@ export default function NeedsUnifiedPanel() {
             {/* tab=search */}
             <div role="tabpanel" id={ids.search + "-panel"} aria-labelledby={ids.search + "-tab"} hidden={tab !== "search"}>
               <div className="grid sm:grid-cols-2 gap-4">
-                <label className="flex items-center rounded-xl bg-white/70 backdrop-blur-[1px] border border-white/50 px-3.5 py-2.5">
-                  <MapPin className="mr-2 h-5 w-5 text-[#196AA6]" />
-                  <select 
-                    value={area} 
-                    onChange={e => setArea(e.target.value)} 
+                <label className="flex items-center rounded-xl bg-white/70 backdrop-blur-[1px] border border-white/50 px-3.5 py-2.5 gap-2">
+                  <svg className="h-5 w-5 text-[#196AA6]" viewBox="0 0 24 24" fill="none"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" stroke="currentColor" strokeWidth="1.8"/></svg>
+                  <select
+                    value={area}
+                    onChange={(e) => { setArea(e.target.value); if (e.target.value !== AREA_ETC) setAreaEtc(""); }}
                     className="flex-1 bg-transparent outline-none text-[#1F2937]"
                   >
                     <option value="">エリアを選択</option>
-                    {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+                    {KOCHI_AREAS.map((a) => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                    <option value={AREA_ETC}>{AREA_ETC}</option>
                   </select>
                 </label>
                 <label className="flex items-center rounded-xl bg-white/70 backdrop-blur-[1px] border border-white/50 px-3.5 py-2.5">
@@ -143,6 +149,16 @@ export default function NeedsUnifiedPanel() {
                 </label>
               </div>
 
+              {/* その他が選ばれたら自由入力を出す */}
+              {area === AREA_ETC && (
+                <input
+                  value={areaEtc}
+                  onChange={(e) => setAreaEtc(e.target.value)}
+                  placeholder="エリアを入力（例：〇〇地区、△△周辺 など）"
+                  className="mt-3 w-full rounded-xl bg-white/70 border border-white/50 px-4 py-2.5 outline-none placeholder:text-slate-500"
+                />
+              )}
+
               <div className="mt-3 flex flex-col sm:flex-row gap-3">
                 <input
                   type="text"
@@ -152,8 +168,12 @@ export default function NeedsUnifiedPanel() {
                   className="flex-1 rounded-xl bg-white/70 border border-white/50 px-4 py-2.5 outline-none placeholder:text-slate-500"
                 />
                 <button 
+                  disabled={area === AREA_ETC && areaEtc.trim() === ""}
                   onClick={handleSearch}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B5FA6] text-white h-12 px-6 font-semibold"
+                  className={
+                    "inline-flex items-center justify-center gap-2 rounded-xl h-12 px-6 font-semibold " +
+                    (area === AREA_ETC && areaEtc.trim() === "" ? "bg-[#9fb9d1] text-white/80 cursor-not-allowed" : "bg-[#0B5FA6] text-white")
+                  }
                 >
                   <SearchIcon className="h-5 w-5" />
                   検索する
