@@ -44,5 +44,10 @@ export const events = {
     trackEvent(actor, 'need.continue', { needId }),
   
   needClose: (actor: string, needId: string) => 
-    trackEvent(actor, 'need.close', { needId })
+    trackEvent(actor, 'need.close', { needId }),
+  
+  serviceOverview: {
+    view: (actor: string, section: string) => 
+      trackEvent(actor, 'serviceOverview.view', { section })
+  }
 };

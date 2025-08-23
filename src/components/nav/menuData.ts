@@ -25,6 +25,7 @@ export const MENU: MenuGroup[] = [
   ]},
   { title: "ガイド", items: [
     { label: "使い方ガイド", href: "/guide/using", icon: BookOpenIcon },
+    { label: "サービスの流れ", href: "/service-overview", icon: InformationCircleIcon },
     { label: "サービス航海図", href: "/how-it-works", icon: MapIcon },
     { label: "よくある質問", href: "/faq", icon: QuestionMarkCircleIcon },
   ]},
