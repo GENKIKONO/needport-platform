@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { requireFullVerification, createAuthErrorResponse } from '@/lib/server/auth-guard';
 import { rateLimit, RATE_LIMITS } from '@/lib/rateLimit';
 import { auditHelpers } from '@/lib/audit';
+import { computeMatchingFee, PaymentMethod } from '@/lib/fees';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -38,13 +39,35 @@ export async function POST(req: NextRequest) {
 
     // Parse request
     const body = await req.json();
-    const { matchId, businessId, amount, currency = 'JPY' } = body;
+    const { matchId, businessId, quantity, unitPrice, method, currency = 'JPY' } = body;
 
-    if (!matchId || !businessId || !amount || amount <= 0) {
+    if (!matchId || !businessId || !quantity || !unitPrice || !method) {
       return NextResponse.json({ 
-        error: 'Missing required fields: matchId, businessId, amount' 
+        error: 'Missing required fields: matchId, businessId, quantity, unitPrice, method' 
       }, { status: 400 });
     }
+
+    if (quantity <= 0 || unitPrice <= 0) {
+      return NextResponse.json({ 
+        error: 'Invalid quantity or unitPrice' 
+      }, { status: 400 });
+    }
+
+    // Validate payment method
+    if (!['card', 'bank'].includes(method)) {
+      return NextResponse.json({ 
+        error: 'Invalid payment method' 
+      }, { status: 400 });
+    }
+
+    // Server-side fee calculation (prevent client tampering)
+    const feeCalculation = computeMatchingFee({ 
+      quantity, 
+      unitPrice, 
+      method: method as PaymentMethod 
+    });
+    
+    const amount = feeCalculation.fee;
 
     // Verify actor is businessId
     if (userId !== businessId) {
@@ -67,7 +90,7 @@ export async function POST(req: NextRequest) {
     // Check match exists and is pending
     const { data: match, error: matchError } = await admin
       .from('matches')
-      .select('id, need_id, business_id, status, amount')
+      .select('id, need_id, business_id, status')
       .eq('id', matchId)
       .eq('business_id', businessId)
       .eq('status', 'pending')
@@ -77,13 +100,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ 
         error: 'Match not found or not in pending status' 
       }, { status: 404 });
-    }
-
-    // Verify amount matches
-    if (match.amount !== amount) {
-      return NextResponse.json({ 
-        error: 'Amount mismatch' 
-      }, { status: 400 });
     }
 
     // Get business profile for Stripe customer
@@ -116,7 +132,23 @@ export async function POST(req: NextRequest) {
         .eq('id', profile.id);
     }
 
-    // Create Checkout Session
+    // Handle bank transfer (no Stripe checkout)
+    if (method === 'bank') {
+      // For MVP, return bank transfer instructions
+      return NextResponse.json({ 
+        method: 'bank',
+        amount,
+        instructions: {
+          bank_name: 'サンプル銀行',
+          account_number: '1234567890',
+          account_name: 'NeedPort株式会社',
+          reference: `Match-${matchId}`,
+        },
+        message: '銀行振込の場合は、上記口座にお振込みください。振込確認後、マッチングが完了します。'
+      });
+    }
+
+    // Create Stripe Checkout Session for card payments
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'payment',
@@ -126,7 +158,7 @@ export async function POST(req: NextRequest) {
             currency: currency.toLowerCase(),
             product_data: {
               name: `マッチングフィー - Need ${match.need_id}`,
-              description: `ニーズマッチング手数料`,
+              description: `ニーズマッチング手数料（${feeCalculation.rate * 100}%）`,
             },
             unit_amount: amount, // Amount in smallest currency unit (yen)
           },
@@ -139,12 +171,20 @@ export async function POST(req: NextRequest) {
         match_id: matchId,
         business_id: businessId,
         need_id: match.need_id,
+        quantity: quantity.toString(),
+        unit_price: unitPrice.toString(),
+        method: method,
+        calculated_rate: feeCalculation.rate.toString(),
       },
       payment_intent_data: {
         metadata: {
           match_id: matchId,
           business_id: businessId,
           need_id: match.need_id,
+          quantity: quantity.toString(),
+          unit_price: unitPrice.toString(),
+          method: method,
+          calculated_rate: feeCalculation.rate.toString(),
         },
       },
     });
