@@ -31,6 +31,9 @@ export async function GET(
         prejoin_count,
         created_at,
         updated_at,
+        status,
+        last_activity_at,
+        user_id,
         profiles!created_by (
           id,
           clerk_user_id

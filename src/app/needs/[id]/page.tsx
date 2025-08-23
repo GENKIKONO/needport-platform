@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
+import { getDevSession } from "@/lib/devAuth";
+import LifecycleActions from "@/components/needs/LifecycleActions";
+import { NeedStatus } from "@/lib/needs/lifecycle";
 
 type NeedDetail = {
   id: string;
@@ -16,6 +19,9 @@ type NeedDetail = {
   prejoin_count?: number;
   created_at: string;
   updated_at: string;
+  status?: string;
+  last_activity_at?: string;
+  user_id?: string;
   profiles?: {
     id: string;
     clerk_user_id: string;
@@ -32,6 +38,7 @@ export default function NeedDetailPage() {
   const [need, setNeed] = useState<NeedDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
+  const devSession = getDevSession();
 
   useEffect(() => {
     // 個別APIからデータを取得（段階開示対応）
@@ -71,6 +78,16 @@ export default function NeedDetailPage() {
       toast("コピーに失敗しました", "error");
     }
   };
+
+  const handleLifecycleUpdate = () => {
+    // 楽観更新のため、ページを再読み込み
+    window.location.reload();
+  };
+
+  // 投稿者かどうかを判定
+  const isOwner = devSession && need?.user_id === devSession.userId;
+  const isAdmin = devSession?.role === 'admin';
+  const canManage = isOwner || isAdmin;
 
   if (loading) {
     return (
@@ -112,14 +129,40 @@ export default function NeedDetailPage() {
       
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <div className="flex items-start justify-between mb-4">
-          <h1 className="text-3xl font-bold">{need.title}</h1>
-          <button
-            onClick={handleShare}
-            className="ml-4 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-            aria-label="このページを共有"
-          >
-            共有
-          </button>
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold">{need.title}</h1>
+              {need.status && (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  need.status === 'active' ? 'bg-green-100 text-green-800' :
+                  need.status === 'closed' ? 'bg-gray-100 text-gray-800' :
+                  'bg-blue-100 text-blue-800'
+                }`}>
+                  {need.status === 'active' ? 'アクティブ' :
+                   need.status === 'closed' ? '完了' : '保管'}
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {canManage && (
+              <div className="hidden sm:block">
+                <LifecycleActions
+                  needId={need.id}
+                  status={(need.status as NeedStatus) || 'active'}
+                  onSuccess={handleLifecycleUpdate}
+                />
+              </div>
+            )}
+            <button
+              onClick={handleShare}
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              aria-label="このページを共有"
+            >
+              共有
+            </button>
+          </div>
         </div>
         
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
@@ -143,6 +186,17 @@ export default function NeedDetailPage() {
             </>
           )}
         </div>
+
+        {/* モバイル用ライフサイクル操作 */}
+        {canManage && (
+          <div className="sm:hidden mb-4">
+            <LifecycleActions
+              needId={need.id}
+              status={(need.status as NeedStatus) || 'active'}
+              onSuccess={handleLifecycleUpdate}
+            />
+          </div>
+        )}
 
         {need.summary && (
           <div className="prose max-w-none mb-4">

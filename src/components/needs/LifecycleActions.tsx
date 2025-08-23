@@ -32,7 +32,8 @@ export default function LifecycleActions({
       });
 
       if (!response.ok) {
-        throw new Error('継続に失敗しました');
+        const errorData = await response.json();
+        throw new Error(errorData.error || '継続に失敗しました');
       }
 
       onSuccess();
@@ -41,7 +42,7 @@ export default function LifecycleActions({
       alert('ニーズを継続しました');
     } catch (error) {
       console.error('Error continuing need:', error);
-      alert('継続に失敗しました');
+      alert(error instanceof Error ? error.message : '継続に失敗しました');
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +60,8 @@ export default function LifecycleActions({
       });
 
       if (!response.ok) {
-        throw new Error('完了に失敗しました');
+        const errorData = await response.json();
+        throw new Error(errorData.error || '完了に失敗しました');
       }
 
       onSuccess();
@@ -69,7 +71,7 @@ export default function LifecycleActions({
       alert('ニーズを完了しました');
     } catch (error) {
       console.error('Error closing need:', error);
-      alert('完了に失敗しました');
+      alert(error instanceof Error ? error.message : '完了に失敗しました');
     } finally {
       setIsLoading(false);
     }
