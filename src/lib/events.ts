@@ -10,6 +10,12 @@ export async function trackEvent(
   payload?: EventPayload
 ): Promise<void> {
   try {
+    // Supabase環境変数がない場合は開発ログのみ
+    if (!process.env.SUPABASE_URL) {
+      console.debug('Event tracked (dev):', { actor, type, payload });
+      return;
+    }
+    
     const supabase = createAdminClient();
     
     await supabase

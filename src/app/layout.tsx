@@ -104,10 +104,7 @@ export default async function RootLayout({
           </>
         )}
         
-        {/* Skip link for accessibility */}
-        <a href="#content" className="skip-link">
-          メインコンテンツにスキップ
-        </a>
+        {/* Skip link for accessibility - moved to body */}
         
         {/* CSP nonce for inline scripts */}
         <script nonce={nonce} dangerouslySetInnerHTML={{
@@ -128,6 +125,10 @@ export default async function RootLayout({
         }} />
       </head>
       <body className="antialiased [overflow-anchor:none] overflow-x-hidden">
+        {/* Skip link for accessibility */}
+        <a href="#content" className="skip-link">
+          メインコンテンツにスキップ
+        </a>
         <div id="app-root" className="min-h-[100svh]">
           <ErrorBoundary>
             <ClientErrorCatcher />

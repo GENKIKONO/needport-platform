@@ -1,17 +1,14 @@
 'use client';
-import { events } from '@/lib/events';
-import { AnchorIcon } from '@heroicons/react/24/outline';
-import { getDevSession } from '@/lib/devAuth';
+// アイコンは一時的に無効化
 
 export default function PermissionsTable() {
-  const devSession = getDevSession();
-  events.serviceOverview.view(devSession?.userId || 'anonymous', 'permissions');
+  // イベント追跡は一時的に無効化
   
   return (
     <section className="space-y-4">
       <div>
         <h2 className="text-xl font-bold text-[var(--c-blue-strong)] flex items-center gap-2 sm:gap-2 lg:gap-3">
-          <AnchorIcon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-[var(--c-blue)]" />
+          <span className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-[var(--c-blue)]">⚓</span>
           ユーザーごとの権限
         </h2>
         <p className="mt-2 text-sm text-[var(--c-text-muted)]">
