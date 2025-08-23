@@ -9,7 +9,10 @@ export const VendorSchema = z.object({
   phone: z.string().min(8, '電話番号は8文字以上で入力してください'),
   representative: z.string().min(2, '代表者名は2文字以上で入力してください'),
   description: z.string().min(30, '事業紹介は30文字以上で入力してください').max(2000, '事業紹介は2000文字以内で入力してください'),
-  capabilities: z.array(z.string()).min(1, 'できることを1つ以上入力してください'),
+  capabilities: z.array(z.object({
+    title: z.string().min(1, 'タイトルを入力してください'),
+    detail: z.string().optional()
+  })).min(1, 'できることを1つ以上入力してください'),
   agreeTerms: z.literal(true, { 
     errorMap: () => ({ message: '利用規約への同意が必要です' }) 
   }),

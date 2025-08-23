@@ -4,6 +4,7 @@ import { getOrCreateUserByEmail } from "@/lib/trust/store";
 import { getFlags } from "@/lib/admin/flags";
 import { randomUUID } from "crypto";
 import { NeedSchema } from "@/lib/validation/needExtended";
+import { getDevSession } from "@/lib/devAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -120,10 +121,17 @@ export async function POST(req: NextRequest) {
 
   const { title, body, summary, area, category, quantity, unitPrice, desiredTiming, privacy } = parsed.data;
   
-  // uidの取得または生成
-  let uid = req.cookies.get("uid")?.value;
-  if (!uid) {
-    uid = randomUUID();
+  // 開発認証からユーザID取得
+  const devSession = getDevSession();
+  const uid = devSession?.userId || randomUUID();
+  
+  // スパムチェック
+  const spamCheck = checkSpam(title + ' ' + body);
+  if (spamCheck.isSpam) {
+    return NextResponse.json({ 
+      error: "spam_detected", 
+      reason: spamCheck.reason 
+    }, { status: 422 });
   }
   
   // 概算金額の計算
@@ -140,7 +148,7 @@ export async function POST(req: NextRequest) {
   });
 
   // レスポンス作成
-  const response = NextResponse.json(need, { status: 201 });
+  const response = NextResponse.json({ id: need.id }, { status: 201 });
   
   // uidをCookieに設定（180日間有効）
   response.cookies.set("uid", uid, {
@@ -152,4 +160,35 @@ export async function POST(req: NextRequest) {
   });
   
   return response;
+}
+
+// スパムチェック関数
+function checkSpam(text: string): { isSpam: boolean; reason?: string } {
+  const lowerText = text.toLowerCase();
+  
+  // URL連打チェック
+  const urlCount = (lowerText.match(/https?:\/\/[^\s]+/g) || []).length;
+  if (urlCount >= 5) {
+    return { isSpam: true, reason: "Too many URLs" };
+  }
+  
+  // 連続同文チェック（簡易版）
+  const words = lowerText.split(/\s+/);
+  const wordGroups = [];
+  for (let i = 0; i <= words.length - 5; i++) {
+    wordGroups.push(words.slice(i, i + 5).join(' '));
+  }
+  
+  const wordCounts = new Map<string, number>();
+  wordGroups.forEach(group => {
+    wordCounts.set(group, (wordCounts.get(group) || 0) + 1);
+  });
+  
+  for (const [group, count] of wordCounts) {
+    if (count >= 2) {
+      return { isSpam: true, reason: "Repeated text detected" };
+    }
+  }
+  
+  return { isSpam: false };
 }

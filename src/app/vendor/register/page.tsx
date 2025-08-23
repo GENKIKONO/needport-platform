@@ -22,20 +22,74 @@ export default function VendorRegisterPage() {
 
   // 下書き保存
   useEffect(() => {
-    const sub = watch((v) => localStorage.setItem('vendor.draft', JSON.stringify(v)));
-    const raw = localStorage.getItem('vendor.draft'); 
-    if (raw) { 
-      try { 
-        methods.reset(JSON.parse(raw)); 
-      } catch {} 
-    }
+    const saveDraft = async (data: any) => {
+      try {
+        await fetch(`/api/drafts/vendor`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payload: data })
+        });
+      } catch (error) {
+        console.error('Draft save error:', error);
+      }
+    };
+
+    const sub = watch((v) => {
+      // 5秒debounce
+      const timeoutId = setTimeout(() => saveDraft(v), 5000);
+      return () => clearTimeout(timeoutId);
+    });
+
+    // 初期化時にドラフト復元
+    const loadDraft = async () => {
+      try {
+        const response = await fetch('/api/drafts/vendor');
+        if (response.ok) {
+          const draft = await response.json();
+          if (draft && draft.payload) {
+            methods.reset(draft.payload);
+          }
+        }
+      } catch (error) {
+        console.error('Draft load error:', error);
+      }
+    };
+
+    loadDraft();
     return () => sub.unsubscribe();
   }, [watch, methods]);
 
-  const onFiles = (files: File[]) => {
-    const up = files.map(f => ({ name: f.name, url: URL.createObjectURL(f) }));
-    const cur = watch('attachments') || [];
-    setValue('attachments', [...cur, ...up], { shouldValidate: true });
+  const onFiles = async (files: File[]) => {
+    try {
+      for (const file of files) {
+        const formData = {
+          kind: 'vendor',
+          name: file.name,
+          mime: file.type,
+          size: file.size
+        };
+
+        const response = await fetch('/api/uploads/pending', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const result = await response.json();
+        const cur = watch('attachments') || [];
+        setValue('attachments', [...cur, {
+          name: file.name,
+          url: result.previewUrl
+        }], { shouldValidate: true });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('ファイルのアップロードに失敗しました');
+    }
   };
 
   const next = () => setStep(s => Math.min(TOTAL, s + 1));
@@ -54,10 +108,19 @@ export default function VendorRegisterPage() {
         body: JSON.stringify(data) 
       });
       if (!res.ok) { 
-        alert('登録に失敗しました'); 
+        const error = await res.json();
+        alert(`登録に失敗しました: ${error.error || 'Unknown error'}`); 
         return; 
       }
-      localStorage.removeItem('vendor.draft');
+      
+      // ドラフト削除
+      try {
+        await fetch('/api/drafts/vendor', { method: 'DELETE' });
+      } catch (e) {
+        console.error('Draft delete error:', e);
+      }
+      
+      alert('事業者登録を受け付けました。審査中です（1-3営業日）');
       location.href = '/me?vendor=1';
     } catch (error) {
       alert('登録に失敗しました');
