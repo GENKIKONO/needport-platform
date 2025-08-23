@@ -2,34 +2,31 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getDevSession } from '@/lib/devAuth';
 import { redirect } from 'next/navigation';
 
-interface AuditLog {
+interface Event {
   id: string;
   actor: string;
-  action: string;
-  target?: string;
-  metadata?: any;
+  type: string;
+  payload?: any;
   created_at: string;
 }
 
-interface AuditPageProps {
+interface EventsPageProps {
   searchParams: {
     actor?: string;
-    action?: string;
-    start_date?: string;
-    end_date?: string;
+    type?: string;
     page?: string;
   };
 }
 
-async function getAuditLogs(searchParams: AuditPageProps['searchParams']): Promise<{ logs: AuditLog[], total: number }> {
+async function getEvents(searchParams: EventsPageProps['searchParams']): Promise<{ events: Event[], total: number }> {
   const supabase = createAdminClient();
   
   const page = parseInt(searchParams.page || '1');
-  const limit = 50;
+  const limit = 200; // 最大200件
   const offset = (page - 1) * limit;
   
   let query = supabase
-    .from('audit_logs')
+    .from('events')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false });
 
@@ -38,76 +35,67 @@ async function getAuditLogs(searchParams: AuditPageProps['searchParams']): Promi
     query = query.ilike('actor', `%${searchParams.actor}%`);
   }
 
-  if (searchParams.action) {
-    query = query.eq('action', searchParams.action);
-  }
-
-  if (searchParams.start_date) {
-    query = query.gte('created_at', searchParams.start_date);
-  }
-
-  if (searchParams.end_date) {
-    query = query.lte('created_at', searchParams.end_date + 'T23:59:59');
+  if (searchParams.type) {
+    query = query.eq('type', searchParams.type);
   }
 
   const { data, error, count } = await query.range(offset, offset + limit - 1);
 
   if (error) {
-    console.error('Error fetching audit logs:', error);
-    return { logs: [], total: 0 };
+    console.error('Error fetching events:', error);
+    return { events: [], total: 0 };
   }
 
-  return { logs: data || [], total: count || 0 };
+  return { events: data || [], total: count || 0 };
 }
 
-function formatAction(action: string): string {
-  const actionMap: Record<string, string> = {
-    'message.create': 'メッセージ作成',
-    'match.mark_paid_manual': '手動支払い',
-    'need.continue': 'ニーズ継続',
-    'need.close': 'ニーズ完了',
+function formatEventType(type: string): string {
+  const typeMap: Record<string, string> = {
     'need.view': 'ニーズ閲覧',
     'kaichu.filter': '海中フィルタ',
-    'room.message': 'ルームメッセージ'
+    'match.mark_paid_manual': '手動支払い',
+    'room.message': 'ルームメッセージ',
+    'need.continue': 'ニーズ継続',
+    'need.close': 'ニーズ完了'
   };
   
-  return actionMap[action] || action;
+  return typeMap[type] || type;
 }
 
-function formatMetadata(metadata: any): string {
-  if (!metadata) return '';
+function formatPayload(payload: any): string {
+  if (!payload) return '';
   
-  if (typeof metadata === 'object') {
-    return Object.entries(metadata)
+  if (typeof payload === 'object') {
+    return Object.entries(payload)
       .map(([key, value]) => `${key}: ${value}`)
       .join(', ');
   }
   
-  return String(metadata);
+  return String(payload);
 }
 
-export default async function AuditPage(props: AuditPageProps) {
+export default async function EventsPage(props: EventsPageProps) {
   const devSession = getDevSession();
   if (!devSession || devSession.role !== 'admin') {
     redirect('/admin/login');
   }
 
-  const { logs, total } = await getAuditLogs(props.searchParams);
+  const { events, total } = await getEvents(props.searchParams);
   const page = parseInt(props.searchParams.page || '1');
-  const totalPages = Math.ceil(total / 50);
+  const totalPages = Math.ceil(total / 200);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">監査ログ</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">イベントログ</h1>
         <p className="text-gray-600">
-          システム内の操作履歴を表示しています（{total}件）
+          ユーザー行動の詳細ログを表示しています（最新{total}件）
         </p>
       </div>
 
       {/* フィルタ */}
       <div className="bg-gray-50 rounded-lg p-4 mb-6">
-        <form method="GET" className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <form method="GET" className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">アクター</label>
             <input
@@ -120,41 +108,20 @@ export default async function AuditPage(props: AuditPageProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">アクション</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">イベントタイプ</label>
             <select
-              name="action"
-              defaultValue={props.searchParams.action}
+              name="type"
+              defaultValue={props.searchParams.type}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">すべて</option>
-              <option value="message.create">メッセージ作成</option>
-              <option value="match.mark_paid_manual">手動支払い</option>
-              <option value="need.continue">ニーズ継続</option>
-              <option value="need.close">ニーズ完了</option>
               <option value="need.view">ニーズ閲覧</option>
               <option value="kaichu.filter">海中フィルタ</option>
+              <option value="match.mark_paid_manual">手動支払い</option>
               <option value="room.message">ルームメッセージ</option>
+              <option value="need.continue">ニーズ継続</option>
+              <option value="need.close">ニーズ完了</option>
             </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">開始日</label>
-            <input
-              type="date"
-              name="start_date"
-              defaultValue={props.searchParams.start_date}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">終了日</label>
-            <input
-              type="date"
-              name="end_date"
-              defaultValue={props.searchParams.end_date}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
           </div>
 
           <div className="flex items-end">
@@ -165,10 +132,19 @@ export default async function AuditPage(props: AuditPageProps) {
               検索
             </button>
           </div>
+
+          <div className="flex items-end">
+            <a
+              href="/admin/events"
+              className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-center"
+            >
+              リセット
+            </a>
+          </div>
         </form>
       </div>
 
-      {/* ログ一覧 */}
+      {/* イベント一覧 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -181,10 +157,7 @@ export default async function AuditPage(props: AuditPageProps) {
                   アクター
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  アクション
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ターゲット
+                  イベント
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   詳細
@@ -192,32 +165,25 @@ export default async function AuditPage(props: AuditPageProps) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {logs.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50">
+              {events.map((event) => (
+                <tr key={event.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(log.created_at).toLocaleString('ja-JP')}
+                    {new Date(event.created_at).toLocaleString('ja-JP')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                      {log.actor}
+                      {event.actor}
                     </code>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {formatAction(log.action)}
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      {formatEventType(event.type)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {log.target && (
-                      <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                        {log.target}
-                      </code>
-                    )}
-                  </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {log.metadata && (
+                    {event.payload && (
                       <div className="text-xs text-gray-600 max-w-xs truncate">
-                        {formatMetadata(log.metadata)}
+                        {formatPayload(event.payload)}
                       </div>
                     )}
                   </td>
@@ -227,9 +193,9 @@ export default async function AuditPage(props: AuditPageProps) {
           </table>
         </div>
 
-        {logs.length === 0 && (
+        {events.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">該当するログが見つかりませんでした</p>
+            <p className="text-gray-500">該当するイベントが見つかりませんでした</p>
           </div>
         )}
       </div>
@@ -240,7 +206,7 @@ export default async function AuditPage(props: AuditPageProps) {
           <div className="flex space-x-2">
             {page > 1 && (
               <a
-                href={`/admin/audit?${new URLSearchParams({
+                href={`/admin/events?${new URLSearchParams({
                   ...props.searchParams,
                   page: (page - 1).toString()
                 })}`}
@@ -256,7 +222,7 @@ export default async function AuditPage(props: AuditPageProps) {
             
             {page < totalPages && (
               <a
-                href={`/admin/audit?${new URLSearchParams({
+                href={`/admin/events?${new URLSearchParams({
                   ...props.searchParams,
                   page: (page + 1).toString()
                 })}`}

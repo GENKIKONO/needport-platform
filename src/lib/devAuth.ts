@@ -6,6 +6,11 @@ export interface DevSession {
 }
 
 export function getDevSession(): DevSession | null {
+  // 本番環境でのDEV_ASSUME_AUTH=1を強制拒否
+  if (process.env.VERCEL_ENV === 'production' && process.env.DEV_ASSUME_AUTH === '1') {
+    throw new Error('DEV_ASSUME_AUTH must be 0 in production');
+  }
+
   if (process.env.DEV_ASSUME_AUTH !== '1') {
     return null;
   }

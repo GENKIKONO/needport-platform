@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getDevSession } from '@/lib/devAuth';
+import { KaichuSkeleton } from '@/components/ui/Skeleton';
 
 interface NeedCard {
   id: string;
@@ -20,15 +21,21 @@ interface KaichuPageProps {
     category?: string;
     period?: string;
     sort?: string;
+    page?: string;
+    limit?: string;
   };
 }
 
-async function getKaichuNeeds(searchParams: KaichuPageProps['searchParams']): Promise<NeedCard[]> {
+async function getKaichuNeeds(searchParams: KaichuPageProps['searchParams']): Promise<{ needs: NeedCard[], total: number }> {
   const supabase = createAdminClient();
+  
+  const page = parseInt(searchParams.page || '1');
+  const limit = parseInt(searchParams.limit || '20');
+  const offset = (page - 1) * limit;
   
   let query = supabase
     .from('needs')
-    .select('id, title, summary, area, tags, created_at, updated_at, status, prejoin_count')
+    .select('id, title, summary, area, tags, created_at, updated_at, status, prejoin_count', { count: 'exact' })
     .or('status.eq.archived,status.eq.closed,created_at.lte.' + new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString());
 
   // フィルタ適用
@@ -51,14 +58,14 @@ async function getKaichuNeeds(searchParams: KaichuPageProps['searchParams']): Pr
     query = query.order('created_at', { ascending: false });
   }
 
-  const { data, error } = await query.limit(50);
+  const { data, error, count } = await query.range(offset, offset + limit - 1);
 
   if (error) {
     console.error('Error fetching kaichu needs:', error);
-    return [];
+    return { needs: [], total: 0 };
   }
 
-  return data || [];
+  return { needs: data || [], total: count || 0 };
 }
 
 function NeedCard({ need }: { need: NeedCard }) {
@@ -182,7 +189,10 @@ function KaichuFilters({ searchParams }: { searchParams: KaichuPageProps['search
 }
 
 async function KaichuContent({ searchParams }: KaichuPageProps) {
-  const needs = await getKaichuNeeds(searchParams);
+  const { needs, total } = await getKaichuNeeds(searchParams);
+  const page = parseInt(searchParams.page || '1');
+  const limit = parseInt(searchParams.limit || '20');
+  const totalPages = Math.ceil(total / limit);
 
   return (
     <div>
@@ -193,20 +203,62 @@ async function KaichuContent({ searchParams }: KaichuPageProps) {
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">海中のニーズ</h2>
         <p className="text-gray-600">
-          長期化・保管中のニーズを表示しています（{needs.length}件）
+          長期化・保管中のニーズを表示しています（{total}件中 {((page - 1) * limit) + 1}-{Math.min(page * limit, total)}件）
         </p>
       </div>
 
       {needs.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500">該当するニーズが見つかりませんでした</p>
+          <p className="text-gray-500 mb-4">該当するニーズが見つかりませんでした</p>
+          <a 
+            href="/kaichu" 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            フィルタをリセット
+          </a>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {needs.map((need) => (
-            <NeedCard key={need.id} need={need} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {needs.map((need) => (
+              <NeedCard key={need.id} need={need} />
+            ))}
+          </div>
+          
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <div className="flex space-x-2">
+                {page > 1 && (
+                  <a
+                    href={`/kaichu?${new URLSearchParams({
+                      ...searchParams,
+                      page: (page - 1).toString()
+                    })}`}
+                    className="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50"
+                  >
+                    前へ
+                  </a>
+                )}
+                
+                <span className="px-3 py-2 text-gray-600">
+                  {page} / {totalPages}
+                </span>
+                
+                {page < totalPages && (
+                  <a
+                    href={`/kaichu?${new URLSearchParams({
+                      ...searchParams,
+                      page: (page + 1).toString()
+                    })}`}
+                    className="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50"
+                  >
+                    次へ
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -222,7 +274,7 @@ export default function KaichuPage(props: KaichuPageProps) {
         </p>
       </div>
 
-      <Suspense fallback={<div>読み込み中...</div>}>
+      <Suspense fallback={<KaichuSkeleton />}>
         <KaichuContent {...props} />
       </Suspense>
     </div>

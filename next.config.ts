@@ -7,6 +7,25 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  
+  // 本番環境でのDEV_ASSUME_AUTH=1をビルド時にチェック
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && process.env.VERCEL_ENV === 'production' && process.env.DEV_ASSUME_AUTH === '1') {
+      throw new Error('DEV_ASSUME_AUTH must be 0 in production');
+    }
+    
+    if (dev) {
+      config.devtool = "source-map";
+    }
+    
+    // 本番ビルド時に開発用APIを除外
+    if (!dev) {
+      config.resolve.alias = config.resolve.alias || {};
+      config.resolve.alias['src/app/api/dev'] = false;
+    }
+    
+    return config;
+  },
   // 性能・セキュリティ強化
   reactStrictMode: true,
   poweredByHeader: false,
@@ -35,19 +54,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@radix-ui/react-icons"],
   },
   // 開発時は eval を使わない sourcemap に変更（unsafe-eval を使いたくない場合）
-  webpack(config, { dev, isServer }) {
-    if (dev) {
-      config.devtool = "source-map";
-    }
-    
-    // 本番ビルド時に開発用APIを除外
-    if (!dev) {
-      config.resolve.alias = config.resolve.alias || {};
-      config.resolve.alias['src/app/api/dev'] = false;
-    }
-    
-    return config;
-  },
   // Bundle analyzer
   ...(process.env.ANALYZE === "true" && {
     webpack: (config, { isServer }) => {
