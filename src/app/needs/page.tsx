@@ -5,6 +5,8 @@ import { NeedScope } from '@/lib/needs/scope';
 import NeedsTabs from '@/components/needs/NeedsTabs';
 import NeedsCard from '@/components/needs/NeedsCard';
 import { KaichuSkeleton } from '@/components/ui/Skeleton';
+import { u } from '@/components/ui/u';
+import Empty from '@/components/ui/Empty';
 
 interface NeedCard {
   id: string;
@@ -86,7 +88,7 @@ async function NeedsContent({ searchParams }: NeedsPageProps) {
         <div className="flex items-center space-x-4">
           <select
             defaultValue={sort}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`px-3 py-2 border border-[var(--c-border)] rounded-md ${u.focus}`}
             onChange={(e) => {
               const params = new URLSearchParams(searchParams as any);
               params.set('sort', e.target.value);
@@ -100,21 +102,24 @@ async function NeedsContent({ searchParams }: NeedsPageProps) {
           </select>
         </div>
         
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-[var(--c-text-muted)]">
           {total}件中 {((page - 1) * limit) + 1}-{Math.min(page * limit, total)}件
         </div>
       </div>
 
       {needs.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">該当するニーズが見つかりませんでした</p>
-          <a 
-            href="/needs" 
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            フィルタをリセット
-          </a>
-        </div>
+        <Empty 
+          title="該当するニーズが見つかりません"
+          desc="条件を調整してください"
+          action={
+            <a 
+              href="/needs" 
+              className={`${u.btn} ${u.btnPrimary} ${u.focus}`}
+            >
+              フィルタをリセット
+            </a>
+          }
+        />
       ) : (
         <>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -137,13 +142,13 @@ async function NeedsContent({ searchParams }: NeedsPageProps) {
                       ...searchParams,
                       page: (page - 1).toString()
                     })}`}
-                    className="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50"
+                    className={`${u.btn} ${u.btnGhost} ${u.focus}`}
                   >
                     前へ
                   </a>
                 )}
                 
-                <span className="px-3 py-2 text-gray-600">
+                <span className="px-3 py-2 text-[var(--c-text-muted)]">
                   {page} / {totalPages}
                 </span>
                 
@@ -153,7 +158,7 @@ async function NeedsContent({ searchParams }: NeedsPageProps) {
                       ...searchParams,
                       page: (page + 1).toString()
                     })}`}
-                    className="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50"
+                    className={`${u.btn} ${u.btnGhost} ${u.focus}`}
                   >
                     次へ
                   </a>
@@ -175,8 +180,8 @@ export default function NeedsPage(props: NeedsPageProps) {
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">ニーズ一覧</h1>
-        <p className="text-gray-600">
+        <h1 className="text-3xl font-bold text-[var(--c-text)] mb-2">ニーズ一覧</h1>
+        <p className="text-[var(--c-text-muted)]">
           {showFullContent ? '公開中のニーズを表示しています' : 'ニーズの概要を表示しています'}
         </p>
       </div>

@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/Toast";
 import { getDevSession } from "@/lib/devAuth";
 import LifecycleActions from "@/components/needs/LifecycleActions";
 import { NeedStatus } from "@/lib/needs/lifecycle";
+import { u } from "@/components/ui/u";
 
 type NeedDetail = {
   id: string;
@@ -127,7 +128,7 @@ export default function NeedDetailPage() {
         </Link>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm border p-6">
+      <div className={`${u.card} ${u.cardPad}`}>
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
@@ -157,7 +158,7 @@ export default function NeedDetailPage() {
             )}
             <button
               onClick={handleShare}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              className={`${u.btn} ${u.btnGhost} ${u.focus}`}
               aria-label="このページを共有"
             >
               共有

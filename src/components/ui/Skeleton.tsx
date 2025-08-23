@@ -1,7 +1,9 @@
+import { u } from './u';
+
 export function Skeleton({ className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`animate-pulse rounded-md bg-gray-200 ${className}`}
+      className={`${u.skeleton} ${className}`}
       {...props}
     />
   );
@@ -9,7 +11,7 @@ export function Skeleton({ className = "", ...props }: React.HTMLAttributes<HTML
 
 export function NeedCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+    <div className={`${u.card} ${u.cardPad}`}>
       <div className="flex justify-between items-start mb-4">
         <Skeleton className="h-6 w-3/4" />
         <Skeleton className="h-6 w-16" />

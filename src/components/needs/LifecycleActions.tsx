@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { NeedStatus } from '@/lib/needs/lifecycle';
+import { u } from '@/components/ui/u';
 
 interface LifecycleActionsProps {
   needId: string;
@@ -79,14 +80,14 @@ export default function LifecycleActions({
 
   const getStatusBadge = (status: NeedStatus) => {
     const statusConfig = {
-      active: { label: 'アクティブ', className: 'bg-green-100 text-green-800' },
-      closed: { label: '完了', className: 'bg-gray-100 text-gray-800' },
-      archived: { label: '保管', className: 'bg-blue-100 text-blue-800' }
+      active: { label: 'アクティブ', className: u.badgeActive },
+      closed: { label: '完了', className: u.badgeClosed },
+      archived: { label: '保管', className: u.badgeArchived }
     };
 
     const config = statusConfig[status];
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.className}`}>
+      <span className={`${u.badge} ${config.className}`} aria-label={`状態: ${config.label}`}>
         {config.label}
       </span>
     );
@@ -105,14 +106,14 @@ export default function LifecycleActions({
           <button
             onClick={() => setShowContinueModal(true)}
             disabled={isLoading}
-            className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50"
+            className={`${u.btn} ${u.btnPrimary} ${u.focus}`}
           >
             継続する
           </button>
           <button
             onClick={() => setShowCloseModal(true)}
             disabled={isLoading}
-            className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50"
+            className={`${u.btn} ${u.btnDanger} ${u.focus}`}
           >
             完了する
           </button>
@@ -131,14 +132,14 @@ export default function LifecycleActions({
               <button
                 onClick={() => setShowContinueModal(false)}
                 disabled={isLoading}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                className={`${u.btn} ${u.btnGhost} ${u.focus}`}
               >
                 キャンセル
               </button>
               <button
                 onClick={handleContinue}
                 disabled={isLoading}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                className={`${u.btn} ${u.btnPrimary} ${u.focus}`}
               >
                 {isLoading ? '処理中...' : '継続する'}
               </button>
@@ -172,14 +173,14 @@ export default function LifecycleActions({
               <button
                 onClick={() => setShowCloseModal(false)}
                 disabled={isLoading}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                className={`${u.btn} ${u.btnGhost} ${u.focus}`}
               >
                 キャンセル
               </button>
               <button
                 onClick={handleClose}
                 disabled={isLoading}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                className={`${u.btn} ${u.btnDanger} ${u.focus}`}
               >
                 {isLoading ? '処理中...' : '完了する'}
               </button>
