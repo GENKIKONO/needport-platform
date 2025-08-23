@@ -16,8 +16,8 @@ export default function Home() {
       {/* 2. ニーズ検索パネル（一枚板アーキテクチャ） */}
       <NeedsUnifiedPanel />
 
-      {/* 3. オーディエンスピッカー（ユーザ別おすすめ） */}
-      <AudiencePicker />
+      {/* 3. オーディエンスピッカー（ユーザ別おすすめ） - 一時非表示 */}
+      {/* <AudiencePicker /> */}
 
       {/* 間隔をしっかり確保 */}
       <div className="h-6 md:h-10" />
