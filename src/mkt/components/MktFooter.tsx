@@ -19,6 +19,7 @@ export default function MktFooter() {
               <li><Link href="/mkt/how-it-works" className="hover:underline">使い方</Link></li>
               <li><Link href="/mkt/security" className="hover:underline">セキュリティ</Link></li>
               <li><Link href="/mkt/pricing" className="hover:underline">料金</Link></li>
+              <li><Link href="/kaichu" className="hover:underline">海中（長期・保管ニーズ）</Link></li>
             </ul>
           </div>
           <div>
