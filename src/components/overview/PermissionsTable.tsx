@@ -1,5 +1,6 @@
 'use client';
 import { events } from '@/lib/events';
+import { AnchorIcon } from '@heroicons/react/24/outline';
 import { getDevSession } from '@/lib/devAuth';
 
 export default function PermissionsTable() {
@@ -8,7 +9,15 @@ export default function PermissionsTable() {
   
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-bold text-[var(--c-blue-strong)]">ユーザーごとの権限</h2>
+      <div>
+        <h2 className="text-xl font-bold text-[var(--c-blue-strong)] flex items-center gap-2 sm:gap-2 lg:gap-3">
+          <AnchorIcon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-[var(--c-blue)]" />
+          ユーザーごとの権限
+        </h2>
+        <p className="mt-2 text-sm text-[var(--c-text-muted)]">
+          登録状況に応じて段階的に機能が解放される仕組み
+        </p>
+      </div>
       <div className="overflow-x-auto rounded-md border border-[var(--c-border)]">
         <table className="min-w-[640px] w-full text-sm">
           <thead className="bg-[var(--c-blue-bg)] text-[var(--c-blue-strong)]">

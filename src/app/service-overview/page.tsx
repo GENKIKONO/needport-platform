@@ -3,6 +3,7 @@ import InterestLevels from '@/components/overview/InterestLevels';
 import PermissionsTable from '@/components/overview/PermissionsTable';
 import KaichuLifecycle from '@/components/overview/KaichuLifecycle';
 import FutureBenefits from '@/components/overview/FutureBenefits';
+import CTASection from '@/components/overview/CTASection';
 import Wave from '@/components/decoration/Wave';
 
 export const metadata = {
@@ -14,6 +15,7 @@ export default function ServiceOverviewPage() {
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-10">
       {/* Hero Section */}
       <section className="relative overflow-hidden rounded-xl bg-[var(--blue-700,#196AA6)] text-white">
+        <Wave position="top" />
         <img 
           src="/images/port-hero.jpg" 
           alt="" 
@@ -34,6 +36,9 @@ export default function ServiceOverviewPage() {
       <PermissionsTable />
       <KaichuLifecycle />
       <FutureBenefits />
+      
+      {/* CTA Section */}
+      <CTASection />
     </div>
   );
 }

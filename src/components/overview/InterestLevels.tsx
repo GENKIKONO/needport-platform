@@ -1,5 +1,6 @@
 'use client';
 import { events } from '@/lib/events';
+import { AnchorIcon } from '@heroicons/react/24/outline';
 import { getDevSession } from '@/lib/devAuth';
 
 const Card = ({ title, badge, desc, req }: any) => (
@@ -19,7 +20,15 @@ export default function InterestLevels() {
   
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-bold text-[var(--c-blue-strong)]">関心の3段階</h2>
+      <div>
+        <h2 className="text-xl font-bold text-[var(--c-blue-strong)] flex items-center gap-2 sm:gap-2 lg:gap-3">
+          <AnchorIcon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-[var(--c-blue)]" />
+          関心の3段階
+        </h2>
+        <p className="mt-2 text-sm text-[var(--c-text-muted)]">
+          本気度に応じて段階的に意思表示、適切なマッチングを実現
+        </p>
+      </div>
       <div className="grid gap-4 md:grid-cols-3">
         <Card 
           title="購入したい" 

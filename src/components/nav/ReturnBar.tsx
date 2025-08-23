@@ -30,7 +30,7 @@ export function TrackListContext() {
   return null;
 }
 
-export default function ReturnBar({ fallback = "/needs" }: { fallback?: string }) {
+export default function ReturnBar({ fallback = "/needs?scope=active" }: { fallback?: string }) {
   const [href, setHref] = useState<string | null>(null);
   
   useEffect(() => {

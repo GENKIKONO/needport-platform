@@ -1,5 +1,6 @@
 'use client';
 import { events } from '@/lib/events';
+import { AnchorIcon } from '@heroicons/react/24/outline';
 import { getDevSession } from '@/lib/devAuth';
 
 export default function KaichuLifecycle() {
@@ -7,8 +8,16 @@ export default function KaichuLifecycle() {
   events.serviceOverview.view(devSession?.userId || 'anonymous', 'kaichu');
   
   return (
-    <section className="space-y-3">
-      <h2 className="text-xl font-bold text-[var(--c-blue-strong)]">海中（ニーズのライフサイクル）</h2>
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-xl font-bold text-[var(--c-blue-strong)] flex items-center gap-2 sm:gap-2 lg:gap-3">
+          <AnchorIcon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-[var(--c-blue)]" />
+          海中（ニーズのライフサイクル）
+        </h2>
+        <p className="mt-2 text-sm text-[var(--c-text-muted)]">
+          2ヶ月で沈む仕組みと、共感による再浮上の可能性
+        </p>
+      </div>
       <div className="rounded-md border border-[var(--c-border)] bg-gradient-to-b from-[var(--c-blue-bg)] to-[var(--c-card)] p-4">
         <ul className="list-disc pl-5 text-sm text-[var(--c-text)] space-y-1">
           <li>投稿から <b>2ヶ月</b> 以内に成立しないニーズは「海中」に静かに沈みます。</li>

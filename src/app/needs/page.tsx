@@ -35,7 +35,7 @@ async function getNeeds(searchParams: NeedsPageProps['searchParams']): Promise<{
   try {
     const supabase = createAdminClient();
     
-    // 安全なパラメータパース（フォールバック固定）
+    // 強制フォールバック
     const scope = ['active', 'kaichu', 'all'].includes(searchParams.scope || '') 
       ? (searchParams.scope as NeedScope) 
       : 'active';
@@ -86,7 +86,7 @@ async function getNeeds(searchParams: NeedsPageProps['searchParams']): Promise<{
 async function NeedsContent({ searchParams }: NeedsPageProps) {
   const { needs, total } = await getNeeds(searchParams);
   
-  // 安全なパラメータパース
+  // 強制フォールバック
   const scope = ['active', 'kaichu', 'all'].includes(searchParams.scope || '') 
     ? (searchParams.scope as NeedScope) 
     : 'active';

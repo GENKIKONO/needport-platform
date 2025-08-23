@@ -7,9 +7,9 @@ import { getDevSession } from '@/lib/devAuth';
 const Step = ({ n, title, desc }: { n: number; title: string; desc: string }) => (
   <div className="flex items-start gap-3 rounded-md bg-[var(--c-blue-bg)] p-4 shadow-sm">
     <div className="mt-1 h-6 w-6 shrink-0 rounded-full bg-[var(--c-blue)] text-white grid place-items-center text-xs">{n}</div>
-    <div>
-      <div className="font-semibold text-[var(--c-blue-strong)]">{title}</div>
-      <div className="text-sm text-[var(--c-text-muted)]">{desc}</div>
+    <div className="min-w-0 flex-1">
+      <div className="font-semibold text-[var(--c-blue-strong)] truncate">{title}</div>
+      <div className="text-sm text-[var(--c-text-muted)] line-clamp-2">{desc}</div>
     </div>
   </div>
 );
@@ -29,11 +29,16 @@ export default function FlowDiagram() {
   
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-bold text-[var(--c-blue-strong)] flex items-center gap-2">
-        <AnchorIcon className="h-5 w-5 text-[var(--c-blue)]" />
-        ニーズ投稿から成立までの流れ
-      </h2>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <h2 className="text-xl font-bold text-[var(--c-blue-strong)] flex items-center gap-2 sm:gap-2 lg:gap-3">
+          <AnchorIcon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-[var(--c-blue)]" />
+          ニーズ投稿から成立までの流れ
+        </h2>
+        <p className="mt-2 text-sm text-[var(--c-text-muted)]">
+          投稿から成立まで、6つのステップで安全にマッチング
+        </p>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
         {items.map(([title, desc], i) => (
           <Step key={i} n={i+1} title={title} desc={desc as string} />
         ))}
