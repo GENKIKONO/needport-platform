@@ -11,10 +11,10 @@ export async function GET(
     const { id } = await params;
     const supabase = createAdminClient();
     
-    // Fetch need data
+    // Fetch need data (only public information for OG)
     const { data: need } = await supabase
       .from('needs')
-      .select('id, title, summary, price, min_people, deadline, status, adopted_offer_id')
+      .select('id, title, summary, tags, area, adopted_offer_id, created_at')
       .eq('id', id)
       .single();
 
@@ -45,18 +45,9 @@ export async function GET(
       );
     }
 
-    // Format price
-    const formatPrice = (price: number) => {
-      return new Intl.NumberFormat('ja-JP', {
-        style: 'currency',
-        currency: 'JPY',
-        minimumFractionDigits: 0,
-      }).format(price);
-    };
-
-    // Format deadline
-    const formatDeadline = (deadline: string) => {
-      return new Date(deadline).toLocaleDateString('ja-JP', {
+    // Format date
+    const formatDate = (dateString: string) => {
+      return new Date(dateString).toLocaleDateString('ja-JP', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -125,24 +116,20 @@ export async function GET(
               </p>
             )}
 
-            {/* Stats */}
+            {/* Info */}
             <div style={{ display: 'flex', gap: '40px', marginBottom: '30px' }}>
+              {need.area && (
+                <div>
+                  <p style={{ fontSize: '18px', color: '#9ca3af', margin: 0 }}>エリア</p>
+                  <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
+                    {need.area}
+                  </p>
+                </div>
+              )}
               <div>
-                <p style={{ fontSize: '18px', color: '#9ca3af', margin: 0 }}>予算</p>
-                <p style={{ fontSize: '32px', fontWeight: 'bold', margin: 0 }}>
-                  {formatPrice(need.price)}
-                </p>
-              </div>
-              <div>
-                <p style={{ fontSize: '18px', color: '#9ca3af', margin: 0 }}>最低人数</p>
-                <p style={{ fontSize: '32px', fontWeight: 'bold', margin: 0 }}>
-                  {need.min_people}名
-                </p>
-              </div>
-              <div>
-                <p style={{ fontSize: '18px', color: '#9ca3af', margin: 0 }}>締切</p>
+                <p style={{ fontSize: '18px', color: '#9ca3af', margin: 0 }}>投稿日</p>
                 <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
-                  {formatDeadline(need.deadline)}
+                  {formatDate(need.created_at)}
                 </p>
               </div>
             </div>

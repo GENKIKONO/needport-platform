@@ -21,9 +21,9 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
-  // Phase 1: 決済機能を完全無効化
+  // Check if payments are enabled
   if (process.env.PAYMENTS_ENABLED !== '1') {
-    return Response.json({ ok: false, todo: 'payments disabled' }, { status: 501 });
+    return Response.json({ ok: false, error: 'payments disabled' }, { status: 501 });
   }
 
   const config = getStripeWebhookConfig();
@@ -49,9 +49,13 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        const result = await handleCheckoutSessionCompleted(session);
+        const result = await handleCheckoutSessionCompleted(session, event.id);
         if (result.error) {
           console.error('Error handling checkout.session.completed:', result.error);
+          // Return 200 for retryable errors to prevent infinite retries
+          if (result.retryable) {
+            return createSuccessResponse({ received: true, error: result.error });
+          }
           return createInternalErrorResponse();
         }
         break;

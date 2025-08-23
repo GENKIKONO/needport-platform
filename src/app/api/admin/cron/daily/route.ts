@@ -12,6 +12,7 @@ export async function GET(req: Request) {
 
   const paths = [
     "/api/admin/cron/close-expired",
+    "/api/admin/cron/lifecycle-reminders",
     "/api/admin/jobs/threshold/run",
     "/api/admin/jobs/moderations/notify"
   ];

@@ -40,39 +40,117 @@ export async function verifyStripeWebhook(
   }
 }
 
-export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, eventId?: string) {
   const config = getSupabaseAdminConfig();
   
   if (!config.isConfigured || !config.client) {
-    return { error: 'Database not configured' };
+    return { error: 'Database not configured', retryable: true };
   }
 
   try {
-    const profileId = session.metadata?.profile_id;
-    const tier = session.metadata?.tier;
+    const matchId = session.metadata?.match_id;
+    const businessId = session.metadata?.business_id;
+    const needId = session.metadata?.need_id;
 
-    if (!profileId || !tier) {
-      return { error: 'Missing metadata' };
+    if (!matchId || !businessId || !needId) {
+      return { error: 'Missing required metadata in session', retryable: false };
     }
 
-    // Update membership
-    const { error: membershipError } = await config.client
-      .from('memberships')
+    // Idempotency check using session ID
+    const { data: existingPayment, error: paymentCheckError } = await config.client
+      .from('payments')
+      .select('id, status')
+      .eq('stripe_session_id', session.id)
+      .single();
+
+    if (paymentCheckError && paymentCheckError.code !== 'PGRST116') {
+      console.error('Error checking existing payment:', paymentCheckError);
+      return { error: 'Database error during idempotency check', retryable: true };
+    }
+
+    if (existingPayment) {
+      console.log(`Payment already processed for session ${session.id}`);
+      return { success: true, duplicate: true };
+    }
+
+    // Start transaction-like operations
+    const now = new Date().toISOString();
+
+    // Create payment record
+    const { data: paymentData, error: paymentError } = await config.client
+      .from('payments')
+      .insert({
+        match_id: matchId,
+        business_id: businessId,
+        need_id: needId,
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: session.payment_intent,
+        amount: session.amount_total,
+        currency: session.currency,
+        status: 'completed',
+        created_at: now,
+        updated_at: now,
+      })
+      .select('id')
+      .single();
+
+    if (paymentError) {
+      console.error('Error creating payment record:', paymentError);
+      return { error: 'Failed to create payment record', retryable: true };
+    }
+
+    // Update match status to 'paid'
+    const { error: matchError } = await config.client
+      .from('matches')
+      .update({
+        status: 'paid',
+        payment_id: paymentData.id,
+        updated_at: now,
+      })
+      .eq('id', matchId)
+      .eq('business_id', businessId);
+
+    if (matchError) {
+      console.error('Error updating match status:', matchError);
+      return { error: 'Failed to update match status', retryable: true };
+    }
+
+    // Create or activate room for this need
+    const { data: room, error: roomError } = await config.client
+      .from('rooms')
       .upsert({
-        user_id: profileId,
-        tier: tier as 'user' | 'pro',
-        active: true,
-        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-        updated_at: new Date().toISOString(),
+        need_id: needId,
+        status: 'active',
+        updated_at: now,
+      }, {
+        onConflict: 'need_id',
+      })
+      .select('id')
+      .single();
+
+    if (roomError) {
+      console.error('Error creating/updating room:', roomError);
+      return { error: 'Failed to create room', retryable: true };
+    }
+
+    // Add business as participant in room
+    const { error: participantError } = await config.client
+      .from('room_participants')
+      .upsert({
+        room_id: room.id,
+        user_id: businessId,
+        role: 'provider',
+      }, {
+        onConflict: 'room_id,user_id',
       });
 
-    if (membershipError) {
-      console.error('Error updating membership:', membershipError);
-      return { error: 'Failed to update membership' };
+    if (participantError) {
+      console.error('Error adding room participant:', participantError);
+      return { error: 'Failed to add room participant', retryable: true };
     }
 
     // Log audit event
-    await auditHelpers.membershipCreated(profileId, profileId, tier);
+    await auditHelpers.paymentCompleted(businessId, matchId, session.id, session.amount_total || 0);
 
     return { success: true };
   } catch (error) {

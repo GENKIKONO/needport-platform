@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getOrCreateHandle, getHandle } from '@/lib/user-handle';
+import { rateLimit } from '@/lib/rateLimit';
+import { getAuth } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -57,6 +59,23 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       return NextResponse.json({ error: 'DB_NOT_CONFIGURED' }, { status: 501 });
     }
 
+    // Rate limiting - per user per room
+    const { userId } = getAuth(req);
+    if (userId) {
+      const rateLimitResult = await rateLimit(req as any, {
+        limit: 10, // 10 messages per minute per room
+        windowMs: 60 * 1000,
+        keyGenerator: (req) => `room_messages:${userId}:${roomId}:${Math.floor(Date.now() / 60000)}`,
+      });
+
+      if (!rateLimitResult.success) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded. Please slow down.', retryAfter: rateLimitResult.retryAfter },
+          { status: 429 }
+        );
+      }
+    }
+
     const body = await req.json();
     const { body: messageBody } = body || {};
     
@@ -64,28 +83,68 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       return NextResponse.json({ error: 'body required' }, { status: 400 });
     }
 
+    // Validate message length
+    if (typeof messageBody !== 'string' || messageBody.trim().length === 0) {
+      return NextResponse.json({ error: 'Invalid message body' }, { status: 400 });
+    }
+
+    if (messageBody.length > 1000) {
+      return NextResponse.json({ error: 'Message too long (max 1000 characters)' }, { status: 400 });
+    }
+
     const userRef = await getOrCreateHandle();
     const supa = sb("service");
 
-    // 承認済みメンバーかチェック
-    const { data: member, error: memberErr } = await supa
-      .from("room_members")
-      .select("approved")
+    // Check if user is a room participant with proper authorization
+    const { data: participant, error: participantErr } = await supa
+      .from("room_participants")
+      .select("role")
       .eq("room_id", roomId)
-      .eq("user_ref", userRef)
+      .eq("user_id", userId || userRef)
       .single();
 
-    if (memberErr || !member || !member.approved) {
-      console.info({ action: 'messages-create', result: 'NOT_APPROVED_MEMBER' });
-      return NextResponse.json({ error: 'NOT_APPROVED_MEMBER' }, { status: 403 });
+    if (participantErr || !participant) {
+      console.info({ action: 'messages-create', result: 'NOT_ROOM_PARTICIPANT' });
+      return NextResponse.json({ error: 'You are not authorized to post in this room' }, { status: 403 });
+    }
+
+    // Check if room is in active state and user has paid access
+    const { data: room, error: roomErr } = await supa
+      .from("rooms")
+      .select(`
+        status,
+        need_id,
+        needs!inner(id)
+      `)
+      .eq("id", roomId)
+      .single();
+
+    if (roomErr || !room || room.status !== 'active') {
+      console.info({ action: 'messages-create', result: 'ROOM_NOT_ACTIVE' });
+      return NextResponse.json({ error: 'Room is not active' }, { status: 403 });
+    }
+
+    // Verify user has paid access to this need/room
+    const { data: paidMatch, error: paidErr } = await supa
+      .from("matches")
+      .select("id")
+      .eq("need_id", room.need_id)
+      .eq("business_id", userId || userRef)
+      .eq("status", "paid")
+      .limit(1);
+
+    if (paidErr || !paidMatch || paidMatch.length === 0) {
+      console.info({ action: 'messages-create', result: 'NO_PAID_ACCESS' });
+      return NextResponse.json({ error: 'Payment required to access this room' }, { status: 402 });
     }
 
     const { error } = await supa
       .from("messages")
       .insert({
         room_id: roomId,
-        user_ref: userRef,
-        body: String(messageBody).slice(0, 1000)
+        sender_id: userId || userRef,
+        body: String(messageBody).trim().slice(0, 1000),
+        created_at: new Date().toISOString()
       });
 
     if (error) {
