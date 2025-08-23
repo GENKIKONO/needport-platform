@@ -14,6 +14,7 @@ import {
   InformationCircleIcon,
   DocumentTextIcon
 } from "@/components/icons";
+import { events } from "@/lib/events";
 
 export default function LeftDock() {
   return (
@@ -32,7 +33,15 @@ export default function LeftDock() {
             <ul className="space-y-1">
                               {g.items.map(i => (
                   <li key={i.href}>
-                    <Link className="flex items-center gap-2.5 rounded-md px-3 py-2.5 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" href={i.href}>
+                    <Link 
+                      className="flex items-center gap-2.5 rounded-md px-3 py-2.5 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" 
+                      href={i.href}
+                      onClick={() => {
+                        if (i.href === '/kaichu') {
+                          events.kaichuFilter('dev-user-123', { from: 'sidenav' });
+                        }
+                      }}
+                    >
                       {i.icon && <i.icon className="menu-icon text-[var(--blue-600)]" />}
                       <span className="font-medium text-[15px]">{i.label}</span>
                     </Link>
