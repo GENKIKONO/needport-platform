@@ -3,6 +3,7 @@ import { createNeed, listPublicNeeds } from "@/lib/admin/store";
 import { getOrCreateUserByEmail } from "@/lib/trust/store";
 import { getFlags } from "@/lib/admin/flags";
 import { randomUUID } from "crypto";
+import { NeedSchema } from "@/lib/validation/needExtended";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -106,10 +107,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
-  const { title, body, estimateYen, ownerEmail } = await req.json().catch(() => ({}));
-  if (!title || typeof title !== "string") {
-    return NextResponse.json({ error: "title required" }, { status: 400 });
+  const json = await req.json().catch(() => ({}));
+  
+  // Zodバリデーション
+  const parsed = NeedSchema.safeParse(json);
+  if (!parsed.success) {
+    return NextResponse.json({ 
+      error: "validation", 
+      issues: parsed.error.flatten() 
+    }, { status: 400 });
   }
+
+  const { title, body, summary, area, category, quantity, unitPrice, desiredTiming, privacy } = parsed.data;
   
   // uidの取得または生成
   let uid = req.cookies.get("uid")?.value;
@@ -117,20 +126,13 @@ export async function POST(req: NextRequest) {
     uid = randomUUID();
   }
   
-  // ユーザ作成（メールがある場合）
-  if (ownerEmail && typeof ownerEmail === "string") {
-    try {
-      const user = await getOrCreateUserByEmail(ownerEmail);
-      uid = user.id; // 既存ユーザの場合はそのIDを使用
-    } catch (error) {
-      console.error('Failed to create user:', error);
-    }
-  }
+  // 概算金額の計算
+  const estimateYen = quantity && unitPrice ? quantity * unitPrice : undefined;
   
   const need = await createNeed({
     title,
     body,
-    estimateYen: typeof estimateYen === "number" ? estimateYen : undefined,
+    estimateYen,
     ownerMasked: "ユーザ", // 将来はログインユーザ名に置換
     isPublished: false,     // 投稿直後は非公開（管理で公開にする）
     isSample: false,

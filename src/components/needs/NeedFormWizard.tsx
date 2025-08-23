@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { needExpandedSchema, type NeedExpandedInput } from '@/lib/validation/needExpanded';
+import { NeedSchema, type NeedInput } from '@/lib/validation/needExtended';
 import { uploadFile, validateFile, type FileKind } from '@/lib/storage';
 import { getDevSession } from '@/lib/devAuth';
 import { u } from '@/components/ui/u';
