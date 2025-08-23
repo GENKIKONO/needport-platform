@@ -1,9 +1,12 @@
 import { Suspense } from 'react';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { getDevSession } from '@/lib/devAuth';
 import { NeedScope } from '@/lib/needs/scope';
-import NeedsTabs from '@/components/needs/NeedsTabs';
+import { queryNeeds, type NeedFilters } from '@/lib/needs/query';
+// import NeedsTabs from '@/components/needs/NeedsTabs'; // PDF仕様と競合のためコメントアウト
 import NeedsCard from '@/components/needs/NeedsCard';
+import SearchForm from '@/components/needs/SearchForm';
+import Sidebar from '@/components/needs/Sidebar';
+import Pagination from '@/components/needs/Pagination';
 import { KaichuSkeleton } from '@/components/ui/Skeleton';
 import { u } from '@/components/ui/u';
 import Empty from '@/components/ui/Empty';
@@ -28,55 +31,33 @@ interface NeedsPageProps {
     sort?: string;
     page?: string;
     preview?: string;
+    keyword?: string;
+    area?: string;
+    categories?: string;
   };
 }
 
 async function getNeeds(searchParams: NeedsPageProps['searchParams']): Promise<{ needs: NeedCard[], total: number }> {
   try {
-    const supabase = createAdminClient();
-    
-    // 強制フォールバック
-    const scope = ['active', 'kaichu', 'all'].includes(searchParams.scope || '') 
-      ? (searchParams.scope as NeedScope) 
-      : 'active';
-    const sort = ['recent', 'most_supported', 'newest'].includes(searchParams.sort || '') 
-      ? searchParams.sort 
-      : 'recent';
-    const page = Number.isFinite(Number(searchParams.page)) 
-      ? Math.max(1, Number(searchParams.page)) 
-      : 1;
-    const limit = 20;
-    const offset = (page - 1) * limit;
-  
-  let query = supabase
-    .from('needs')
-    .select('id, title, summary, body, area, tags, status, created_at, updated_at, prejoin_count', { count: 'exact' });
+    // パラメータの正規化
+    const filters: NeedFilters = {
+      keyword: searchParams.keyword || '',
+      area: searchParams.area || '',
+      categories: searchParams.categories ? searchParams.categories.split(',') : [],
+      sort: ['recent', 'popular', 'deadline'].includes(searchParams.sort || '') 
+        ? (searchParams.sort as 'recent' | 'popular' | 'deadline')
+        : 'recent',
+      scope: ['active', 'kaichu', 'all'].includes(searchParams.scope || '') 
+        ? (searchParams.scope as NeedScope)
+        : 'active',
+      page: Number.isFinite(Number(searchParams.page)) 
+        ? Math.max(1, Number(searchParams.page)) 
+        : 1,
+      limit: 20
+    };
 
-  // スコープフィルタ適用
-  if (scope === 'active') {
-    query = query.eq('status', 'active');
-  } else if (scope === 'kaichu') {
-    const cutoffDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
-    query = query.or(`status.eq.archived,status.eq.closed,created_at.lte.${cutoffDate}`);
-  }
-
-  // ソート適用
-  if (sort === 'most_supported') {
-    query = query.order('prejoin_count', { ascending: false });
-  } else if (sort === 'newest') {
-    query = query.order('created_at', { ascending: false });
-  } else {
-    query = query.order('updated_at', { ascending: false });
-  }
-
-    const { data, error, count } = await query.range(offset, offset + limit - 1);
-
-    if (error) {
-      console.error('Error fetching needs:', error);
-      return { needs: [], total: 0 };
-    }
-
-    return { needs: data || [], total: count || 0 };
+    const result = await queryNeeds(filters);
+    return { needs: result.needs, total: result.total };
   } catch (error) {
     console.error('Error in getNeeds:', error);
     return { needs: [], total: 0 };
@@ -98,95 +79,72 @@ async function NeedsContent({ searchParams }: NeedsPageProps) {
   const totalPages = Math.ceil(total / limit);
   const isPreview = searchParams.preview === 'share';
 
+  // 検索フォームの状態
+  const searchFormValue = {
+    keyword: searchParams.keyword || '',
+    area: searchParams.area || '',
+    categories: searchParams.categories ? searchParams.categories.split(',') : [],
+    sort: sort
+  };
+
   return (
-    <div>
-      <NeedsTabs currentScope={scope} />
-      
-      {/* フィルタ・ソート */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <select
-            defaultValue={sort}
-            className={`px-3 py-2 border border-[var(--c-border)] rounded-md ${u.focus}`}
-            onChange={(e) => {
-              const params = new URLSearchParams(searchParams as any);
-              params.set('sort', e.target.value);
-              params.set('page', '1');
-              window.location.href = `/needs?${params.toString()}`;
-            }}
-          >
-            <option value="recent">最近のアクション</option>
-            <option value="most_supported">共感が多い</option>
-            <option value="newest">新着</option>
-          </select>
-        </div>
+    <div className="lg:grid lg:grid-cols-4 lg:gap-8">
+      {/* メインコンテンツ */}
+      <div className="lg:col-span-3">
+        {/* 検索フォーム */}
+        <SearchForm 
+          value={searchFormValue}
+          onChange={() => {
+            // 検索フォームの変更はSearchForm内で処理
+          }}
+        />
         
-        <div className="text-sm text-[var(--c-text-muted)]">
+        {/* 結果件数表示 */}
+        <div className="mb-6 text-sm text-[var(--c-text-muted)]">
           {total}件中 {((page - 1) * limit) + 1}-{Math.min(page * limit, total)}件
         </div>
+
+        {needs.length === 0 ? (
+          <Empty 
+            title="該当するニーズが見つかりません"
+            desc="条件を調整してください"
+            action={
+              <a 
+                href="/needs" 
+                className={`${u.btn} ${u.btnPrimary} ${u.focus}`}
+              >
+                フィルタをリセット
+              </a>
+            }
+          />
+        ) : (
+          <>
+            {/* ニーズ一覧 */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {needs.map((need) => (
+                <NeedsCard 
+                  key={need.id} 
+                  need={need} 
+                  scope={scope}
+                  isPreview={isPreview}
+                />
+              ))}
+            </div>
+            
+            {/* ページネーション */}
+            <Pagination 
+              currentPage={page}
+              totalPages={totalPages}
+              searchParams={searchParams as Record<string, string>}
+            />
+          </>
+        )}
       </div>
 
-      {needs.length === 0 ? (
-        <Empty 
-          title="該当するニーズが見つかりません"
-          desc="条件を調整してください"
-          action={
-            <a 
-              href="/needs" 
-              className={`${u.btn} ${u.btnPrimary} ${u.focus}`}
-            >
-              フィルタをリセット
-            </a>
-          }
-        />
-      ) : (
-        <>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {needs.map((need) => (
-              <NeedsCard 
-                key={need.id} 
-                need={need} 
-                scope={scope}
-                isPreview={isPreview}
-              />
-            ))}
-          </div>
-          
-          {totalPages > 1 && (
-            <div className="mt-8 flex justify-center">
-              <div className="flex space-x-2">
-                {page > 1 && (
-                  <a
-                    href={`/needs?${new URLSearchParams({
-                      ...searchParams,
-                      page: (page - 1).toString()
-                    })}`}
-                    className={`${u.btn} ${u.btnGhost} ${u.focus}`}
-                  >
-                    前へ
-                  </a>
-                )}
-                
-                <span className="px-3 py-2 text-[var(--c-text-muted)]">
-                  {page} / {totalPages}
-                </span>
-                
-                {page < totalPages && (
-                  <a
-                    href={`/needs?${new URLSearchParams({
-                      ...searchParams,
-                      page: (page + 1).toString()
-                    })}`}
-                    className={`${u.btn} ${u.btnGhost} ${u.focus}`}
-                  >
-                    次へ
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+      {/* サイドバー */}
+      <div className="lg:col-span-1 mt-8 lg:mt-0">
+        <Sidebar needs={needs} />
+      </div>
     </div>
   );
 }
@@ -200,10 +158,10 @@ export default function NeedsPage(props: NeedsPageProps) {
     <>
       <TrackListContext />
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-[var(--c-text)] mb-2">ニーズ一覧</h1>
+        <div className="mb-6 text-center lg:text-left">
+          <h1 className="text-3xl lg:text-4xl font-bold text-[var(--c-text)] mb-2">みんなのニーズ</h1>
           <p className="text-[var(--c-text-muted)]">
-            {showFullContent ? '公開中のニーズを表示しています' : 'ニーズの概要を表示しています'}
+            地域から集まるリアルなニーズを探す・応援するための一覧です
           </p>
         </div>
 

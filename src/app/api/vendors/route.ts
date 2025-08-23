@@ -1,106 +1,115 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { VendorSchema } from '@/lib/validation/vendor';
-import { createVendor } from '@/lib/server/vendors';
-import { getDevSession } from '@/lib/devAuth';
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+// Simple in-memory storage for demo (replace with database in production)
+const vendorStore = new Map<string, any>();
+const reviewQueue = new Map<string, any>();
+let vendorCounter = 1;
 
-// 簡易レート制限
-async function rateLimit(req: NextRequest, key: string, limitPerMin: number = 5): Promise<boolean> {
-  const ip = req.headers.get('x-forwarded-for') || req.ip || 'unknown';
-  const minute = Math.floor(Date.now() / 60000);
-  const rateKey = `rate:${key}:${ip}:${minute}`;
-  
+// Rate limiting: 5 minutes per user
+const rateLimitStore = new Map<string, number>();
+
+export async function POST(request: NextRequest) {
   try {
-    const { kv } = await import("@vercel/kv");
-    const count = await kv.incr(rateKey);
-    await kv.expire(rateKey, 60); // 1分で期限切れ
-    return count <= limitPerMin;
-  } catch (error) {
-    // KVが利用できない場合は制限なし
-    return true;
-  }
-}
-
-// POST /api/vendors → 事業者登録
-export async function POST(req: NextRequest) {
-  try {
-    // レート制限チェック（5分に1件）
-    const allowed = await rateLimit(req, 'vendors_post', 1);
-    if (!allowed) {
-      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
-    }
-
-    const json = await req.json();
-    const parsed = VendorSchema.safeParse(json);
+    const body = await request.json();
     
-    if (!parsed.success) {
-      return NextResponse.json({ 
-        error: "validation", 
-        issues: parsed.error.flatten() 
-      }, { status: 400 });
-    }
-
-    const data = parsed.data;
-    
-    // 開発認証からユーザID取得
-    const devSession = getDevSession();
-    const ownerId = devSession?.userId || 'anonymous';
-    
-    // スパムチェック
-    const spamCheck = checkSpam(data.description);
-    if (spamCheck.isSpam) {
-      return NextResponse.json({ 
-        error: "spam_detected", 
-        reason: spamCheck.reason 
+    // Validate input
+    const validationResult = VendorSchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json({
+        ok: false,
+        message: '入力内容に問題があります',
+        fieldErrors: validationResult.error.flatten().fieldErrors
       }, { status: 422 });
     }
     
-    // 事業者作成
-    const result = await createVendor(data, ownerId);
+    const data = validationResult.data;
     
-    return NextResponse.json({ 
-      vendorId: result.vendor.id,
-      reviewId: result.reviewId,
-      status: result.status
+    // Rate limiting
+    const userIp = request.ip || 'unknown';
+    const now = Date.now();
+    const lastSubmission = rateLimitStore.get(userIp);
+    
+    if (lastSubmission && (now - lastSubmission) < 5 * 60 * 1000) {
+      return NextResponse.json({
+        ok: false,
+        message: '送信が頻繁すぎます。5分後に再試行してください。'
+      }, { status: 429 });
+    }
+    
+    // Create vendor record
+    const vendorId = `vendor-${vendorCounter++}`;
+    const vendor = {
+      id: vendorId,
+      ...data,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Store vendor (in production, save to database)
+    vendorStore.set(vendorId, vendor);
+    
+    // Add to review queue
+    const reviewId = `review-${vendorId}`;
+    const review = {
+      id: reviewId,
+      vendorId: vendorId,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      vendor: {
+        companyName: vendor.companyName,
+        orgType: vendor.orgType,
+        email: vendor.email
+      }
+    };
+    reviewQueue.set(reviewId, review);
+    
+    // Update rate limit
+    rateLimitStore.set(userIp, now);
+    
+    // Clean up old rate limit entries (older than 10 minutes)
+    for (const [ip, timestamp] of rateLimitStore.entries()) {
+      if (now - timestamp > 10 * 60 * 1000) {
+        rateLimitStore.delete(ip);
+      }
+    }
+    
+    return NextResponse.json({
+      ok: true,
+      id: vendorId,
+      reviewId: reviewId,
+      status: 'pending',
+      message: '事業者登録を受け付けました。審査後にご連絡いたします。'
     }, { status: 201 });
     
   } catch (error) {
     console.error('Vendor registration error:', error);
-    return NextResponse.json({ 
-      error: "internal_error" 
+    return NextResponse.json({
+      ok: false,
+      message: 'サーバーエラーが発生しました。しばらく時間をおいて再試行してください。'
     }, { status: 500 });
   }
 }
 
-// スパムチェック関数
-function checkSpam(text: string): { isSpam: boolean; reason?: string } {
-  const lowerText = text.toLowerCase();
-  
-  // URL連打チェック
-  const urlCount = (lowerText.match(/https?:\/\/[^\s]+/g) || []).length;
-  if (urlCount >= 5) {
-    return { isSpam: true, reason: "Too many URLs" };
+// GET endpoint for admin to view vendors (optional)
+export async function GET() {
+  try {
+    const vendors = Array.from(vendorStore.values());
+    return NextResponse.json({
+      ok: true,
+      vendors: vendors.map(v => ({
+        id: v.id,
+        companyName: v.companyName,
+        orgType: v.orgType,
+        status: v.status,
+        createdAt: v.createdAt
+      }))
+    });
+  } catch (error) {
+    return NextResponse.json({
+      ok: false,
+      message: 'サーバーエラーが発生しました。'
+    }, { status: 500 });
   }
-  
-  // 連続同文チェック（簡易版）
-  const words = lowerText.split(/\s+/);
-  const wordGroups = [];
-  for (let i = 0; i <= words.length - 5; i++) {
-    wordGroups.push(words.slice(i, i + 5).join(' '));
-  }
-  
-  const wordCounts = new Map<string, number>();
-  wordGroups.forEach(group => {
-    wordCounts.set(group, (wordCounts.get(group) || 0) + 1);
-  });
-  
-  for (const [group, count] of wordCounts) {
-    if (count >= 2) {
-      return { isSpam: true, reason: "Repeated text detected" };
-    }
-  }
-  
-  return { isSpam: false };
 }

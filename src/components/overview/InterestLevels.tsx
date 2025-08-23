@@ -1,5 +1,6 @@
 'use client';
-// アイコンは一時的に無効化
+
+import { AnchorIcon } from '@/components/icons';
 
 const Card = ({ title, badge, desc, req }: any) => (
   <div className="rounded-md border border-[var(--c-border)] bg-[var(--c-card)] p-4 shadow-sm">
@@ -19,7 +20,7 @@ export default function InterestLevels() {
     <section className="space-y-4">
       <div>
         <h2 className="text-xl font-bold text-[var(--c-blue-strong)] flex items-center gap-2 sm:gap-2 lg:gap-3">
-          <span className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-[var(--c-blue)]">⚓</span>
+          <AnchorIcon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-[var(--c-blue)]" />
           関心の3段階
         </h2>
         <p className="mt-2 text-sm text-[var(--c-text-muted)]">

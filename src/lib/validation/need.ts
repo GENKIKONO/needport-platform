@@ -1,30 +1,53 @@
 import { z } from 'zod';
-import type { NeedScale } from '@/lib/domain/need';
 
-export const needCreateSchema = z.object({
-  title: z.string().min(4).max(80),
-  summary: z.string().min(10).max(600),
-  min_people: z.number().int().positive().max(999).optional().nullable(),
-  price_amount: z.number().int().nonnegative().max(100000000).optional().nullable(),
-  deadline: z.string().datetime().optional().nullable(), // ISO
-  location: z.string().max(80).optional().nullable(),
-  tags: z.array(z.string().min(1).max(20)).max(8).optional().nullable(),
-  scale: z.enum(['personal', 'community']),
-  macro_fee_hint: z.string().max(120).optional(),
-  macro_use_freq: z.string().max(120).optional(),
-  macro_area_hint: z.string().max(120).optional(),
-  agree: z.literal(true), // 規約同意チェック
-}).transform((v) => {
-  if (v.scale === 'personal') {
-    return { ...v, macro_fee_hint: null, macro_use_freq: null, macro_area_hint: null };
-  }
-  return v;
+export const NeedSchema = z.object({
+  title: z.string().min(8, 'タイトルは8文字以上で入力してください').max(80, 'タイトルは80文字以内で入力してください'),
+  summary: z.string().min(20, '概要は20文字以上で入力してください').max(200, '概要は200文字以内で入力してください'),
+  body: z.string().min(80, '詳細は80文字以上で入力してください').max(2000, '詳細は2000文字以内で入力してください'),
+  area: z.string().min(1, 'エリアを選択してください'),
+  category: z.string().min(1, 'カテゴリを選択してください'),
+  tags: z.array(z.string()).optional(),
+  quantity: z.number().positive('数量は1以上で入力してください'),
+  unitPrice: z.number().positive('単価は1以上で入力してください'),
+  deadline: z.string().min(1, '期限を選択してください'),
+  contactEmail: z.string().email('有効なメールアドレスを入力してください'),
+  contactPhone: z.string().min(10, '電話番号は10桁以上で入力してください').max(15, '電話番号は15桁以内で入力してください'),
+  attachments: z.array(z.object({
+    name: z.string(),
+    url: z.string().url()
+  })).optional(),
+  agreeTerms: z.literal(true, {
+    errorMap: () => ({ message: '利用規約への同意は必須です' })
+  })
 });
 
-export type NeedCreateInput = z.infer<typeof needCreateSchema>;
+export type NeedFormData = z.infer<typeof NeedSchema>;
+
+// Partial schemas for step validation
+export const NeedStep1Schema = NeedSchema.pick({
+  title: true,
+  description: true,
+  category: true
+});
+
+export const NeedStep2Schema = NeedSchema.pick({
+  budget: true,
+  deadline: true,
+  location: true
+});
+
+export const NeedStep3Schema = NeedSchema.pick({
+  contactEmail: true,
+  contactPhone: true
+});
+
+export const NeedStep4Schema = NeedSchema.pick({
+  termsAgreed: true,
+  privacyAgreed: true
+});
 
 // Legacy compatibility
-export const NeedInput = needCreateSchema;
+export const NeedInput = NeedSchema;
 
 // メール/電話番号などのPIIをサーバ側で簡易除去
 export function stripPII(s: string) {

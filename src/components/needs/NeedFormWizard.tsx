@@ -2,11 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { needExpandedSchema, type NeedExpandedInput } from '@/lib/validation/needExpanded';
-import { NeedSchema, type NeedInput } from '@/lib/validation/needExtended';
-import { uploadFile, validateFile, type FileKind } from '@/lib/storage';
-import { getDevSession } from '@/lib/devAuth';
-import { u } from '@/components/ui/u';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const NeedFormSchema = z.object({
+  title: z.string().min(8, 'タイトルは8文字以上で入力してください').max(80, 'タイトルは80文字以内で入力してください'),
+  summary: z.string().min(20, '概要は20文字以上で入力してください').max(200, '概要は200文字以内で入力してください'),
+  body: z.string().min(80, '詳細は80文字以上で入力してください').max(2000, '詳細は2000文字以内で入力してください'),
+  area: z.string().min(1, 'エリアを選択してください'),
+  category: z.string().min(1, 'カテゴリを選択してください'),
+  quantity: z.number().positive('数量は1以上で入力してください'),
+  unitPrice: z.number().positive('単価は1以上で入力してください'),
+  contactEmail: z.string().email('有効なメールアドレスを入力してください'),
+  contactPhone: z.string().min(10, '電話番号は10桁以上で入力してください').max(15, '電話番号は15桁以内で入力してください'),
+  agreeTerms: z.boolean().refine((val) => val === true, {
+    message: '利用規約への同意は必須です'
+  })
+});
+
+type NeedFormData = z.infer<typeof NeedFormSchema>;
 
 interface FormStep {
   title: string;
@@ -15,35 +30,99 @@ interface FormStep {
 
 const STEPS: FormStep[] = [
   { title: '基本情報', description: 'タイトル、概要、本文を入力' },
-  { title: '分類', description: 'エリア、カテゴリ、タグを設定' },
-  { title: 'ボリューム＆価格', description: '数量、単価、概算を入力' },
-  { title: '期間・公開範囲', description: '期間、公開範囲、連絡方法' },
-  { title: '添付ファイル', description: '画像やドキュメントを添付' },
+  { title: '分類', description: 'エリア、カテゴリを設定' },
+  { title: 'ボリューム＆価格', description: '数量、単価を入力' },
+  { title: '連絡先', description: '連絡先情報を入力' },
   { title: '確認＆同意', description: '内容確認と規約同意' }
 ];
 
-interface Attachment {
-  kind: FileKind;
-  key: string;
-  name: string;
-  size: number;
-  url?: string;
-}
+const PREFECTURES = [
+  { value: 'hokkaido', label: '北海道' },
+  { value: 'aomori', label: '青森県' },
+  { value: 'iwate', label: '岩手県' },
+  { value: 'miyagi', label: '宮城県' },
+  { value: 'akita', label: '秋田県' },
+  { value: 'yamagata', label: '山形県' },
+  { value: 'fukushima', label: '福島県' },
+  { value: 'ibaraki', label: '茨城県' },
+  { value: 'tochigi', label: '栃木県' },
+  { value: 'gunma', label: '群馬県' },
+  { value: 'saitama', label: '埼玉県' },
+  { value: 'chiba', label: '千葉県' },
+  { value: 'tokyo', label: '東京都' },
+  { value: 'kanagawa', label: '神奈川県' },
+  { value: 'niigata', label: '新潟県' },
+  { value: 'toyama', label: '富山県' },
+  { value: 'ishikawa', label: '石川県' },
+  { value: 'fukui', label: '福井県' },
+  { value: 'yamanashi', label: '山梨県' },
+  { value: 'nagano', label: '長野県' },
+  { value: 'gifu', label: '岐阜県' },
+  { value: 'shizuoka', label: '静岡県' },
+  { value: 'aichi', label: '愛知県' },
+  { value: 'mie', label: '三重県' },
+  { value: 'shiga', label: '滋賀県' },
+  { value: 'kyoto', label: '京都府' },
+  { value: 'osaka', label: '大阪府' },
+  { value: 'hyogo', label: '兵庫県' },
+  { value: 'nara', label: '奈良県' },
+  { value: 'wakayama', label: '和歌山県' },
+  { value: 'tottori', label: '鳥取県' },
+  { value: 'shimane', label: '島根県' },
+  { value: 'okayama', label: '岡山県' },
+  { value: 'hiroshima', label: '広島県' },
+  { value: 'yamaguchi', label: '山口県' },
+  { value: 'tokushima', label: '徳島県' },
+  { value: 'kagawa', label: '香川県' },
+  { value: 'ehime', label: '愛媛県' },
+  { value: 'kochi', label: '高知県' },
+  { value: 'fukuoka', label: '福岡県' },
+  { value: 'saga', label: '佐賀県' },
+  { value: 'nagasaki', label: '長崎県' },
+  { value: 'kumamoto', label: '熊本県' },
+  { value: 'oita', label: '大分県' },
+  { value: 'miyazaki', label: '宮崎県' },
+  { value: 'kagoshima', label: '鹿児島県' },
+  { value: 'okinawa', label: '沖縄県' }
+];
+
+const CATEGORIES = [
+  { value: 'web', label: 'Web制作' },
+  { value: 'design', label: 'デザイン' },
+  { value: 'development', label: 'システム開発' },
+  { value: 'marketing', label: 'マーケティング' },
+  { value: 'consulting', label: 'コンサルティング' },
+  { value: 'other', label: 'その他' }
+];
 
 export default function NeedFormWizard() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<Partial<NeedExpandedInput>>({
-    visibility: 'public',
-    contactPref: 'inapp',
-    tags: [],
-    attachments: []
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
 
-  const devSession = getDevSession();
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    trigger,
+    formState: { errors, isValid }
+  } = useForm<NeedFormData>({
+    resolver: zodResolver(NeedFormSchema),
+    mode: 'onChange',
+    defaultValues: {
+      title: '',
+      summary: '',
+      body: '',
+      area: '',
+      category: '',
+      quantity: 1,
+      unitPrice: 0,
+      contactEmail: '',
+      contactPhone: '',
+      agreeTerms: false
+    }
+  });
 
   // オートセーブ（草稿）
   useEffect(() => {
@@ -51,73 +130,37 @@ export default function NeedFormWizard() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setFormData(prev => ({ ...prev, ...parsed }));
+        Object.entries(parsed).forEach(([key, value]) => {
+          setValue(key as keyof NeedFormData, value as any);
+        });
       } catch (e) {
         console.error('Failed to parse saved draft:', e);
       }
     }
-  }, []);
+  }, [setValue]);
 
   useEffect(() => {
-    localStorage.setItem('need-draft-v1', JSON.stringify(formData));
-  }, [formData]);
+    const subscription = watch((value) => {
+      localStorage.setItem('need-draft-v1', JSON.stringify(value));
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
-  const updateFormData = (updates: Partial<NeedExpandedInput>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
-    setErrors({});
+  const validateStep = async (step: number): Promise<boolean> => {
+    const stepFields = {
+      0: ['title', 'summary', 'body'],
+      1: ['area', 'category'],
+      2: ['quantity', 'unitPrice'],
+      3: ['contactEmail', 'contactPhone'],
+      4: ['agreeTerms']
+    };
+
+    const fields = stepFields[step as keyof typeof stepFields] || [];
+    return await trigger(fields as any);
   };
 
-  const validateStep = (step: number): boolean => {
-    const stepValidations = [
-      // Step 0: 基本情報
-      () => {
-        if (!formData.title || formData.title.length < 8) {
-          setErrors({ title: 'タイトルは8文字以上で入力してください' });
-          return false;
-        }
-        if (!formData.summary || formData.summary.length < 20) {
-          setErrors({ summary: '概要は20文字以上で入力してください' });
-          return false;
-        }
-        if (!formData.body || formData.body.length < 80) {
-          setErrors({ body: '本文は80文字以上で入力してください' });
-          return false;
-        }
-        return true;
-      },
-      // Step 1: 分類
-      () => {
-        if (!formData.area) {
-          setErrors({ area: 'エリアを選択してください' });
-          return false;
-        }
-        if (!formData.category) {
-          setErrors({ category: 'カテゴリを選択してください' });
-          return false;
-        }
-        return true;
-      },
-      // Step 2: ボリューム＆価格（任意）
-      () => true,
-      // Step 3: 期間・公開範囲（任意）
-      () => true,
-      // Step 4: 添付ファイル（任意）
-      () => true,
-      // Step 5: 確認＆同意
-      () => {
-        if (!formData.agreeTerms) {
-          setErrors({ agreeTerms: '利用規約に同意してください' });
-          return false;
-        }
-        return true;
-      }
-    ];
-
-    return stepValidations[step]?.() ?? true;
-  };
-
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
+  const handleNext = async () => {
+    if (await validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, STEPS.length - 1));
     }
   };
@@ -126,51 +169,18 @@ export default function NeedFormWizard() {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
-  const handleFileUpload = async (file: File, kind: FileKind) => {
-    const validation = validateFile(file, kind);
-    if (!validation.valid) {
-      setErrors({ attachments: validation.error });
-      return;
-    }
-
-    try {
-      const result = await uploadFile(file, kind, devSession?.userId || 'dev-user');
-      const attachment: Attachment = {
-        kind,
-        key: result.key,
-        name: file.name,
-        size: file.size,
-        url: result.url
-      };
-      
-      setAttachments(prev => [...prev, attachment]);
-      updateFormData({
-        attachments: [...(formData.attachments || []), {
-          kind,
-          key: result.key,
-          name: file.name,
-          size: file.size
-        }]
-      });
-    } catch (error) {
-      setErrors({ attachments: error instanceof Error ? error.message : 'アップロードに失敗しました' });
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!validateStep(currentStep)) return;
-
+  const onSubmit = async (data: NeedFormData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/needs/expanded', {
+      const response = await fetch('/api/needs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(data)
       });
 
       if (!response.ok) {
         const error = await response.json();
-        setErrors(error.fields || { submit: error.message });
+        console.error('Submit error:', error);
         return;
       }
 
@@ -178,7 +188,7 @@ export default function NeedFormWizard() {
       localStorage.removeItem('need-draft-v1');
       router.push(`/needs/${result.id}`);
     } catch (error) {
-      setErrors({ submit: '投稿に失敗しました' });
+      console.error('Submit error:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -190,60 +200,81 @@ export default function NeedFormWizard() {
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 タイトル <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={formData.title || ''}
-                onChange={(e) => updateFormData({ title: e.target.value })}
-                className={`w-full px-3 py-2 border rounded-md ${u.focus} ${
-                  errors.title ? 'border-red-500' : 'border-[var(--c-border)]'
-                }`}
-                placeholder="例：Webサイト制作のデザインを依頼したい"
+              <Controller
+                name="title"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <input
+                      {...field}
+                      type="text"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        errors.title ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="例：Webサイト制作のデザインを依頼したい"
+                    />
+                    <div className="flex justify-between text-xs text-gray-600 mt-1">
+                      <span>{errors.title?.message}</span>
+                      <span>{(field.value?.length || 0)}/80</span>
+                    </div>
+                  </>
+                )}
               />
-              <div className="flex justify-between text-xs text-[var(--c-text-muted)] mt-1">
-                <span>{errors.title}</span>
-                <span>{(formData.title?.length || 0)}/80</span>
-              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 概要 <span className="text-red-500">*</span>
               </label>
-              <textarea
-                value={formData.summary || ''}
-                onChange={(e) => updateFormData({ summary: e.target.value })}
-                rows={3}
-                className={`w-full px-3 py-2 border rounded-md ${u.focus} ${
-                  errors.summary ? 'border-red-500' : 'border-[var(--c-border)]'
-                }`}
-                placeholder="簡潔に要件を説明してください"
+              <Controller
+                name="summary"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <textarea
+                      {...field}
+                      rows={3}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        errors.summary ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="簡潔に要件を説明してください"
+                    />
+                    <div className="flex justify-between text-xs text-gray-600 mt-1">
+                      <span>{errors.summary?.message}</span>
+                      <span>{(field.value?.length || 0)}/200</span>
+                    </div>
+                  </>
+                )}
               />
-              <div className="flex justify-between text-xs text-[var(--c-text-muted)] mt-1">
-                <span>{errors.summary}</span>
-                <span>{(formData.summary?.length || 0)}/240</span>
-              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 本文 <span className="text-red-500">*</span>
               </label>
-              <textarea
-                value={formData.body || ''}
-                onChange={(e) => updateFormData({ body: e.target.value })}
-                rows={8}
-                className={`w-full px-3 py-2 border rounded-md ${u.focus} ${
-                  errors.body ? 'border-red-500' : 'border-[var(--c-border)]'
-                }`}
-                placeholder="詳細な要件、背景、希望する成果物などを記述してください"
+              <Controller
+                name="body"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <textarea
+                      {...field}
+                      rows={8}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        errors.body ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="詳細な要件、背景、希望する成果物などを記述してください"
+                    />
+                    <div className="flex justify-between text-xs text-gray-600 mt-1">
+                      <span>{errors.body?.message}</span>
+                      <span>{(field.value?.length || 0)}/2000</span>
+                    </div>
+                  </>
+                )}
               />
-              <div className="flex justify-between text-xs text-[var(--c-text-muted)] mt-1">
-                <span>{errors.body}</span>
-                <span>{(formData.body?.length || 0)}/5000</span>
-              </div>
             </div>
           </div>
         );
@@ -252,86 +283,62 @@ export default function NeedFormWizard() {
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 エリア <span className="text-red-500">*</span>
               </label>
-              <select
-                value={formData.area || ''}
-                onChange={(e) => updateFormData({ area: e.target.value })}
-                className={`w-full px-3 py-2 border rounded-md ${u.focus} ${
-                  errors.area ? 'border-red-500' : 'border-[var(--c-border)]'
-                }`}
-              >
-                <option value="">エリアを選択</option>
-                <option value="東京">東京</option>
-                <option value="大阪">大阪</option>
-                <option value="名古屋">名古屋</option>
-                <option value="福岡">福岡</option>
-                <option value="その他">その他</option>
-              </select>
-              {errors.area && <p className="text-red-500 text-sm mt-1">{errors.area}</p>}
+              <Controller
+                name="area"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <select
+                      {...field}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        errors.area ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">エリアを選択</option>
+                      {PREFECTURES.map(pref => (
+                        <option key={pref.value} value={pref.value}>
+                          {pref.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.area && (
+                      <div className="text-xs text-red-500 mt-1">{errors.area.message}</div>
+                    )}
+                  </>
+                )}
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 カテゴリ <span className="text-red-500">*</span>
               </label>
-              <select
-                value={formData.category || ''}
-                onChange={(e) => updateFormData({ category: e.target.value })}
-                className={`w-full px-3 py-2 border rounded-md ${u.focus} ${
-                  errors.category ? 'border-red-500' : 'border-[var(--c-border)]'
-                }`}
-              >
-                <option value="">カテゴリを選択</option>
-                <option value="IT・システム">IT・システム</option>
-                <option value="デザイン・クリエイティブ">デザイン・クリエイティブ</option>
-                <option value="マーケティング">マーケティング</option>
-                <option value="営業・販売">営業・販売</option>
-                <option value="その他">その他</option>
-              </select>
-              {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
-                タグ（最大10個）
-              </label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {(formData.tags || []).map((tag, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-2 py-1 bg-[var(--c-blue-bg)] text-[var(--c-blue-strong)] rounded-md text-sm"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => updateFormData({
-                        tags: formData.tags?.filter((_, i) => i !== index)
-                      })}
-                      className="ml-1 text-[var(--c-blue-strong)] hover:text-[var(--c-blue)]"
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <select
+                      {...field}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        errors.category ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <input
-                type="text"
-                placeholder="タグを入力してEnter"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const value = e.currentTarget.value.trim();
-                    if (value && (formData.tags?.length || 0) < 10) {
-                      updateFormData({
-                        tags: [...(formData.tags || []), value]
-                      });
-                      e.currentTarget.value = '';
-                    }
-                  }
-                }}
-                className="w-full px-3 py-2 border border-[var(--c-border)] rounded-md"
+                      <option value="">カテゴリを選択</option>
+                      {CATEGORIES.map(cat => (
+                        <option key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.category && (
+                      <div className="text-xs text-red-500 mt-1">{errors.category.message}</div>
+                    )}
+                  </>
+                )}
               />
             </div>
           </div>
@@ -340,126 +347,113 @@ export default function NeedFormWizard() {
       case 2:
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
-                  数量
-                </label>
-                <input
-                  type="number"
-                  value={formData.quantity || ''}
-                  onChange={(e) => updateFormData({ quantity: parseInt(e.target.value) || undefined })}
-                  className={`w-full px-3 py-2 border rounded-md ${u.focus} border-[var(--c-border)]`}
-                  placeholder="例：1"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
-                  単価（円）
-                </label>
-                <input
-                  type="number"
-                  value={formData.unitPrice || ''}
-                  onChange={(e) => updateFormData({ unitPrice: parseInt(e.target.value) || undefined })}
-                  className={`w-full px-3 py-2 border rounded-md ${u.focus} border-[var(--c-border)]`}
-                  placeholder="例：50000"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                数量 <span className="text-red-500">*</span>
+              </label>
+              <Controller
+                name="quantity"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <input
+                      {...field}
+                      type="number"
+                      min="1"
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        errors.quantity ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="1"
+                    />
+                    {errors.quantity && (
+                      <div className="text-xs text-red-500 mt-1">{errors.quantity.message}</div>
+                    )}
+                  </>
+                )}
+              />
             </div>
 
-            {(formData.quantity && formData.unitPrice) && (
-              <div className="p-4 bg-[var(--c-blue-bg)] rounded-md">
-                <p className="text-sm text-[var(--c-blue-strong)]">
-                  概算金額: <span className="font-semibold">
-                    ¥{(formData.quantity * formData.unitPrice).toLocaleString()}
-                  </span>
-                </p>
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                単価（円） <span className="text-red-500">*</span>
+              </label>
+              <Controller
+                name="unitPrice"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <input
+                      {...field}
+                      type="number"
+                      min="0"
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        errors.unitPrice ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="10000"
+                    />
+                    {errors.unitPrice && (
+                      <div className="text-xs text-red-500 mt-1">{errors.unitPrice.message}</div>
+                    )}
+                  </>
+                )}
+              />
+            </div>
           </div>
         );
 
       case 3:
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
-                  希望開始日
-                </label>
-                <input
-                  type="date"
-                  value={formData.desiredStartDate || ''}
-                  onChange={(e) => updateFormData({ desiredStartDate: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-md ${u.focus} border-[var(--c-border)]`}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
-                  希望終了日
-                </label>
-                <input
-                  type="date"
-                  value={formData.desiredEndDate || ''}
-                  onChange={(e) => updateFormData({ desiredEndDate: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-md ${u.focus} border-[var(--c-border)]`}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                メールアドレス <span className="text-red-500">*</span>
+              </label>
+              <Controller
+                name="contactEmail"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <input
+                      {...field}
+                      type="email"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        errors.contactEmail ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="example@example.com"
+                    />
+                    {errors.contactEmail && (
+                      <div className="text-xs text-red-500 mt-1">{errors.contactEmail.message}</div>
+                    )}
+                  </>
+                )}
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
-                公開範囲
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                電話番号 <span className="text-red-500">*</span>
               </label>
-              <div className="space-y-2">
-                {[
-                  { value: 'public', label: '公開', desc: '誰でも閲覧可能' },
-                  { value: 'members', label: 'メンバーのみ', desc: 'ログインユーザーのみ' },
-                  { value: 'private', label: '非公開', desc: '自分と管理者のみ' }
-                ].map((option) => (
-                  <label key={option.value} className="flex items-center">
+              <Controller
+                name="contactPhone"
+                control={control}
+                render={({ field }) => (
+                  <>
                     <input
-                      type="radio"
-                      name="visibility"
-                      value={option.value}
-                      checked={formData.visibility === option.value}
-                      onChange={(e) => updateFormData({ visibility: e.target.value as any })}
-                      className="mr-2"
+                      {...field}
+                      type="tel"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        errors.contactPhone ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="090-1234-5678"
                     />
-                    <div>
-                      <span className="font-medium">{option.label}</span>
-                      <p className="text-sm text-[var(--c-text-muted)]">{option.desc}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
-                連絡方法
-              </label>
-              <div className="space-y-2">
-                {[
-                  { value: 'inapp', label: 'プラットフォーム内', desc: 'チャット機能を使用' },
-                  { value: 'email', label: 'メール', desc: 'メールアドレスを公開' }
-                ].map((option) => (
-                  <label key={option.value} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="contactPref"
-                      value={option.value}
-                      checked={formData.contactPref === option.value}
-                      onChange={(e) => updateFormData({ contactPref: e.target.value as any })}
-                      className="mr-2"
-                    />
-                    <div>
-                      <span className="font-medium">{option.label}</span>
-                      <p className="text-sm text-[var(--c-text-muted)]">{option.desc}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
+                    {errors.contactPhone && (
+                      <div className="text-xs text-red-500 mt-1">{errors.contactPhone.message}</div>
+                    )}
+                  </>
+                )}
+              />
             </div>
           </div>
         );
@@ -467,118 +461,63 @@ export default function NeedFormWizard() {
       case 4:
         return (
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-[var(--c-text)] mb-2">
-                添付ファイル（最大10ファイル、1ファイル25MB以下）
-              </label>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm text-[var(--c-text-muted)] mb-2">画像ファイル</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleFileUpload(file, 'image');
-                    }}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-[var(--c-text-muted)] mb-2">PDFファイル</label>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleFileUpload(file, 'doc');
-                    }}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              {errors.attachments && (
-                <p className="text-red-500 text-sm">{errors.attachments}</p>
-              )}
-
-              {attachments.length > 0 && (
-                <div className="space-y-2">
-                  {attachments.map((attachment, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm">{attachment.name}</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAttachments(prev => prev.filter((_, i) => i !== index));
-                          updateFormData({
-                            attachments: formData.attachments?.filter((_, i) => i !== index)
-                          });
-                        }}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        削除
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      case 5:
-        return (
-          <div className="space-y-6">
-            <div className="p-4 bg-[var(--c-blue-bg)] rounded-md">
-              <h3 className="font-medium text-[var(--c-blue-strong)] mb-2">投稿内容の確認</h3>
-              <div className="space-y-2 text-sm">
-                <p><strong>タイトル:</strong> {formData.title}</p>
-                <p><strong>概要:</strong> {formData.summary}</p>
-                <p><strong>エリア:</strong> {formData.area}</p>
-                <p><strong>カテゴリ:</strong> {formData.category}</p>
-                {formData.quantity && formData.unitPrice && (
-                  <p><strong>概算金額:</strong> ¥{(formData.quantity * formData.unitPrice).toLocaleString()}</p>
-                )}
-                <p><strong>公開範囲:</strong> {
-                  formData.visibility === 'public' ? '公開' :
-                  formData.visibility === 'members' ? 'メンバーのみ' : '非公開'
-                }</p>
-              </div>
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-blue-900 mb-2">投稿内容の確認</h3>
+              <p className="text-sm text-gray-600">
+                以下の内容で投稿します。内容を確認してください。
+              </p>
             </div>
 
-            <div>
-              <label className="flex items-start">
-                <input
-                  type="checkbox"
-                  checked={formData.agreeTerms || false}
-                  onChange={(e) => updateFormData({ agreeTerms: e.target.checked })}
-                  className="mr-2 mt-1"
-                />
-                <div className="text-sm">
-                  <span className="text-[var(--c-text)]">
-                    <a href="/legal/terms" target="_blank" className="text-[var(--c-blue)] hover:underline">
-                      利用規約
-                    </a>、
-                    <a href="/legal/privacy" target="_blank" className="text-[var(--c-blue)] hover:underline">
-                      プライバシーポリシー
-                    </a>、
-                    <a href="/legal/tokusho" target="_blank" className="text-[var(--c-blue)] hover:underline">
-                      特定商取引法
-                    </a>
-                    に同意します <span className="text-red-500">*</span>
+            <div className="border border-gray-300 rounded-lg p-4 bg-white">
+              <div className="space-y-3">
+                <div>
+                  <div className="font-medium text-gray-900">タイトル</div>
+                  <p className="text-sm text-gray-600">{watch('title') || '未入力'}</p>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">概要</div>
+                  <p className="text-sm text-gray-600 mb-3">{watch('summary') || '概要未入力'}</p>
+                </div>
+                <div className="flex gap-2">
+                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                    {PREFECTURES.find(p => p.value === watch('area'))?.label || 'エリア未選択'}
+                  </span>
+                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                    {CATEGORIES.find(c => c.value === watch('category'))?.label || 'カテゴリ未選択'}
                   </span>
                 </div>
-              </label>
-              {errors.agreeTerms && (
-                <p className="text-red-500 text-sm mt-1">{errors.agreeTerms}</p>
-              )}
+                <div className="text-xs text-gray-600">
+                  数量: {watch('quantity') || 0} × 単価: {watch('unitPrice') || 0}円 = 
+                  概算: {((watch('quantity') || 0) * (watch('unitPrice') || 0)).toLocaleString()}円
+                </div>
+              </div>
             </div>
 
-            {errors.submit && (
-              <p className="text-red-500 text-sm">{errors.submit}</p>
-            )}
+            <div>
+                                <Controller
+                    name="agreeTerms"
+                    control={control}
+                    render={({ field }) => (
+                      <label className="flex items-start space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="mt-1"
+                        />
+                        <div className="text-sm">
+                          <a href="/terms" target="_blank" className="text-blue-600 hover:underline">
+                            利用規約
+                          </a>
+                          に同意します <span className="text-red-500">*</span>
+                        </div>
+                      </label>
+                    )}
+                  />
+              {errors.agreeTerms && (
+                <div className="text-xs text-red-500 mt-1">{errors.agreeTerms.message}</div>
+              )}
+            </div>
           </div>
         );
 
@@ -588,48 +527,52 @@ export default function NeedFormWizard() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* ステッパー */}
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* プログレスバー */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex justify-between mb-2">
           {STEPS.map((step, index) => (
             <div key={index} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                index <= currentStep 
-                  ? 'bg-[var(--c-blue)] text-white' 
-                  : 'bg-[var(--c-blue-bg)] text-[var(--c-blue-strong)]'
-              }`}>
-                {index + 1}
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  index <= currentStep
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-600'
+                }`}
+              >
+                {index < currentStep ? '✓' : index + 1}
               </div>
               {index < STEPS.length - 1 && (
-                <div className={`w-16 h-0.5 mx-2 ${
-                  index < currentStep ? 'bg-[var(--c-blue)]' : 'bg-[var(--c-blue-bg)]'
-                }`} />
+                <div
+                  className={`w-12 h-1 mx-2 ${
+                    index < currentStep ? 'bg-blue-600' : 'bg-gray-200'
+                  }`}
+                />
               )}
             </div>
           ))}
         </div>
         <div className="mt-4 text-center">
-          <h2 className="text-lg font-semibold text-[var(--c-text)]">
+          <h2 className="text-lg font-semibold text-gray-900">
             {STEPS[currentStep].title}
           </h2>
-          <p className="text-sm text-[var(--c-text-muted)]">
+          <p className="text-sm text-gray-600">
             {STEPS[currentStep].description}
           </p>
         </div>
       </div>
 
       {/* フォーム */}
-      <div className={`${u.card} ${u.cardPad}`}>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {renderStep()}
 
         {/* ナビゲーション */}
-        <div className="flex justify-between mt-8 pt-6 border-t border-[var(--c-border)]">
+        <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
           <button
             type="button"
             onClick={handlePrev}
             disabled={currentStep === 0}
-            className={`${u.btn} ${u.btnGhost} ${u.focus}`}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             戻る
           </button>
@@ -639,20 +582,68 @@ export default function NeedFormWizard() {
               <button
                 type="button"
                 onClick={handleNext}
-                className={`${u.btn} ${u.btnPrimary} ${u.focus}`}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 次へ
               </button>
             ) : (
               <button
                 type="button"
-                onClick={handleSubmit}
+                onClick={handleSubmit(onSubmit)}
                 disabled={isSubmitting}
-                className={`${u.btn} ${u.btnPrimary} ${u.focus}`}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 {isSubmitting ? '投稿中...' : '投稿する'}
               </button>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* 固定CTA */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:p-6 z-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <div className="text-sm text-gray-600">
+              <span className="font-medium">{STEPS[currentStep].title}</span>
+              <span className="hidden sm:inline"> - {STEPS[currentStep].description}</span>
+            </div>
+            
+            <div className="flex gap-2 w-full sm:w-auto">
+              {currentStep > 0 && (
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  戻る
+                </button>
+              )}
+              
+              {currentStep < STEPS.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!isValid}
+                  className={`flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                    !isValid ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  次へ
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={isSubmitting || !isValid}
+                  className={`flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                    (isSubmitting || !isValid) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {isSubmitting ? '投稿中...' : 'ニーズを投稿する'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

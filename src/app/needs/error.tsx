@@ -14,12 +14,16 @@ export default function NeedsError({
     // エラーをログに記録
     console.error('Needs page error:', error);
     
-    // イベント追跡
-    events.track('needs.error', {
-      message: error.message,
-      stack: error.stack?.slice(0, 200),
-      digest: error.digest
-    });
+    // イベント追跡（無害化）
+    try {
+      events.track('needs.error', {
+        message: error.message,
+        stack: error.stack?.slice(0, 200),
+        digest: error.digest
+      });
+    } catch (trackError) {
+      console.warn('Failed to track error:', trackError);
+    }
   }, [error]);
 
   return (
