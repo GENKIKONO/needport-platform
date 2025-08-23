@@ -13,17 +13,17 @@ export default function FutureBenefits() {
         <div className="rounded-md border border-[var(--c-border)] bg-[var(--c-card)] p-4">
           <h3 className="font-semibold text-[var(--c-blue-strong)]">一般ユーザー</h3>
           <ul className="mt-2 list-disc pl-5 text-sm text-[var(--c-text)] space-y-1">
-            <li>一人では実現しづらいアイデアが、共感で形になる。</li>
+            <li>「欲しいけど自分ひとりじゃ動かない」が、同じ想いの人と"合流"して現実になります。</li>
+            <li>投稿するだけで、仲間と企業に届く。</li>
             <li>登録すれば「購入したい／欲しいかも」で意思表示、具体化が進む。</li>
-            <li>2ヶ月で沈んでも終わりじゃない。海中で再び浮上の芽が出る。</li>
           </ul>
         </div>
         <div className="rounded-md border border-[var(--c-border)] bg-[var(--c-card)] p-4">
           <h3 className="font-semibold text-[var(--c-blue-strong)]">企業ユーザー</h3>
           <ul className="mt-2 list-disc pl-5 text-sm text-[var(--c-text)] space-y-1">
-            <li>市場リサーチを短縮。実需（人数×単価）を見ながら提案できる。</li>
+            <li>小ロットで採算が合わない案件も、共感の人数×単価が見えるから企画しやすい。</li>
+            <li>無駄な見積りが減り、刺さる需要に集中できます。</li>
             <li>承認制チャットでひやかしを回避。成立時のみマッチングフィー。</li>
-            <li>海中から長期ニーズを掘り起こし、タイミング良く再提案。</li>
           </ul>
         </div>
       </div>

@@ -32,13 +32,21 @@ interface NeedsPageProps {
 }
 
 async function getNeeds(searchParams: NeedsPageProps['searchParams']): Promise<{ needs: NeedCard[], total: number }> {
-  const supabase = createAdminClient();
-  
-  const scope = (searchParams.scope as NeedScope) || 'active';
-  const sort = searchParams.sort || 'recent';
-  const page = parseInt(searchParams.page || '1');
-  const limit = 20;
-  const offset = (page - 1) * limit;
+  try {
+    const supabase = createAdminClient();
+    
+    // 安全なパラメータパース
+    const scope = ['active', 'kaichu', 'all'].includes(searchParams.scope || '') 
+      ? (searchParams.scope as NeedScope) 
+      : 'active';
+    const sort = ['recent', 'most_supported', 'newest'].includes(searchParams.sort || '') 
+      ? searchParams.sort 
+      : 'recent';
+    const page = Number.isFinite(Number(searchParams.page)) 
+      ? Math.max(1, Number(searchParams.page)) 
+      : 1;
+    const limit = 20;
+    const offset = (page - 1) * limit;
   
   let query = supabase
     .from('needs')
@@ -61,21 +69,31 @@ async function getNeeds(searchParams: NeedsPageProps['searchParams']): Promise<{
     query = query.order('updated_at', { ascending: false });
   }
 
-  const { data, error, count } = await query.range(offset, offset + limit - 1);
+    const { data, error, count } = await query.range(offset, offset + limit - 1);
 
-  if (error) {
-    console.error('Error fetching needs:', error);
+    if (error) {
+      console.error('Error fetching needs:', error);
+      return { needs: [], total: 0 };
+    }
+
+    return { needs: data || [], total: count || 0 };
+  } catch (error) {
+    console.error('Error in getNeeds:', error);
     return { needs: [], total: 0 };
   }
-
-  return { needs: data || [], total: count || 0 };
 }
 
 async function NeedsContent({ searchParams }: NeedsPageProps) {
   const { needs, total } = await getNeeds(searchParams);
-  const scope = (searchParams.scope as NeedScope) || 'active';
+  
+  // 安全なパラメータパース
+  const scope = ['active', 'kaichu', 'all'].includes(searchParams.scope || '') 
+    ? (searchParams.scope as NeedScope) 
+    : 'active';
   const sort = searchParams.sort || 'recent';
-  const page = parseInt(searchParams.page || '1');
+  const page = Number.isFinite(Number(searchParams.page)) 
+    ? Math.max(1, Number(searchParams.page)) 
+    : 1;
   const limit = 20;
   const totalPages = Math.ceil(total / limit);
   const isPreview = searchParams.preview === 'share';

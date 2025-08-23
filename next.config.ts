@@ -71,10 +71,11 @@ const nextConfig: NextConfig = {
     },
   }),
   
-  // 無限リダイレクト対策: リダイレクトを明示的に無効化
+  // リダイレクト設定
   async redirects() {
-    console.log('redirects() called - returning empty array (disabled)');
-    return [];
+    return [
+      { source: '/how-it-works', destination: '/service-overview', permanent: true },
+    ];
   },
   
   // 無限リダイレクト対策: リライトを明示的に無効化
