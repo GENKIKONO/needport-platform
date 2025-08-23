@@ -1,6 +1,7 @@
 'use client';
 import { events } from '@/lib/events';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { AnchorIcon } from '@heroicons/react/24/outline';
 import { getDevSession } from '@/lib/devAuth';
 
 const Step = ({ n, title, desc }: { n: number; title: string; desc: string }) => (
@@ -19,7 +20,7 @@ export default function FlowDiagram() {
   
   const items = [
     ['ニーズ投稿', '欲しいもの／困りごとを投稿。概要は誰でも見られる。'],
-    ['関心の表明（3段階）', '購入したい／欲しいかも／興味あり で本気度を可視化。'],
+    ['関心の表明', '購入したい／欲しいかも／興味あり で本気度を可視化。'],
     ['事業化の目安', '人数×単価で成立ラインを見える化。'],
     ['企業の提案', '条件・スケジュール・金額などを提示。'],
     ['マッチング成立', '承認制チャットで安全に詳細詰め。'],
@@ -28,7 +29,10 @@ export default function FlowDiagram() {
   
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-bold text-[var(--c-blue-strong)]">ニーズ投稿から成立までの流れ</h2>
+      <h2 className="text-xl font-bold text-[var(--c-blue-strong)] flex items-center gap-2">
+        <AnchorIcon className="h-5 w-5 text-[var(--c-blue)]" />
+        ニーズ投稿から成立までの流れ
+      </h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {items.map(([title, desc], i) => (
           <Step key={i} n={i+1} title={title} desc={desc as string} />

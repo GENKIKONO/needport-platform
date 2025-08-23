@@ -42,7 +42,7 @@ export function NeedCardSkeleton() {
 export function KaichuSkeleton() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 8 }).map((_, i) => (
+      {Array.from({ length: 12 }).map((_, i) => (
         <NeedCardSkeleton key={i} />
       ))}
     </div>
