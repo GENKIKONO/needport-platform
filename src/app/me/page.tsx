@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
+import { getUserNeeds, Need } from "@/lib/needs/lifecycle";
+import { getDevSession } from "@/lib/devAuth";
+import LifecycleActions from "@/components/needs/LifecycleActions";
 
 type Flags = { userEditEnabled: boolean; userDeleteEnabled: boolean; };
-type Need = { id: string; title: string; description?: string; estimateYen?: number; updatedAt?: string; };
 
 export default function MePage() {
   const [flags, setFlags] = useState<Flags>({ userEditEnabled: true, userDeleteEnabled: true });
@@ -12,8 +14,12 @@ export default function MePage() {
   async function load() {
     const f = await fetch("/api/flags").then(r => r.json());
     setFlags({ userEditEnabled: f.userEditEnabled, userDeleteEnabled: f.userDeleteEnabled });
-    const d = await fetch("/api/me/needs").then(r => r.json());
-    setItems(d.items ?? []);
+    
+    const devSession = getDevSession();
+    if (devSession) {
+      const needs = await getUserNeeds(devSession.userId);
+      setItems(needs);
+    }
   }
   useEffect(() => { load(); }, []);
 
@@ -49,8 +55,13 @@ export default function MePage() {
             <div key={n.id} className="rounded-xl border p-4">
               {!e ? (
                 <>
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium">{n.title}</h3>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-medium">{n.title}</h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        作成日: {new Date(n.created_at).toLocaleDateString('ja-JP')}
+                      </p>
+                    </div>
                     <div className="flex gap-2">
                       <button disabled={!flags.userEditEnabled} onClick={() => startEdit(n.id)} className="px-3 py-1 rounded border">
                         編集
@@ -60,7 +71,15 @@ export default function MePage() {
                       </button>
                     </div>
                   </div>
-                  {n.description && <p className="mt-2 text-sm text-gray-700">{n.description}</p>}
+                  
+                  {/* ライフサイクル操作 */}
+                  <div className="mt-4 pt-4 border-t">
+                    <LifecycleActions
+                      needId={n.id}
+                      status={n.status}
+                      onSuccess={load}
+                    />
+                  </div>
                 </>
               ) : (
                 <>

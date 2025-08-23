@@ -10,12 +10,18 @@ export interface NeedScopeFilters {
 export function isKaichuNeed(need: {
   status: string;
   created_at: string;
+  last_activity_at?: string;
 }): boolean {
-  // 長期・保管状態の判定
-  const isArchived = need.status === 'archived' || need.status === 'closed';
-  const isOld = new Date(need.created_at) <= new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+  // 完了済みは確実に海中
+  if (need.status === 'closed' || need.status === 'archived') {
+    return true;
+  }
+
+  // 最終更新から60日以上経過
+  const lastActivity = need.last_activity_at ? new Date(need.last_activity_at) : new Date(need.created_at);
+  const cutoffDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
   
-  return isArchived || isOld;
+  return lastActivity <= cutoffDate;
 }
 
 export function getScopeQuery(scope: NeedScope) {
