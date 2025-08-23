@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getDevSession } from '@/lib/devAuth';
 import { KaichuSkeleton } from '@/components/ui/Skeleton';
+import { TrackListContext } from '@/components/nav/ReturnBar';
 
 interface NeedCard {
   id: string;
@@ -266,17 +267,20 @@ async function KaichuContent({ searchParams }: KaichuPageProps) {
 
 export default function KaichuPage(props: KaichuPageProps) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">海中</h1>
-        <p className="text-gray-600">
-          長期・保管ニーズの専用ページです。アクティブでないニーズを検索・管理できます。
-        </p>
-      </div>
+    <>
+      <TrackListContext />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">海中</h1>
+          <p className="text-gray-600">
+            長期・保管ニーズの専用ページです。アクティブでないニーズを検索・管理できます。
+          </p>
+        </div>
 
-      <Suspense fallback={<KaichuSkeleton />}>
-        <KaichuContent {...props} />
-      </Suspense>
-    </div>
+        <Suspense fallback={<KaichuSkeleton />}>
+          <KaichuContent {...props} />
+        </Suspense>
+      </div>
+    </>
   );
 }

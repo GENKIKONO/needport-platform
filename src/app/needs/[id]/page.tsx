@@ -7,6 +7,7 @@ import { getDevSession } from "@/lib/devAuth";
 import LifecycleActions from "@/components/needs/LifecycleActions";
 import { NeedStatus } from "@/lib/needs/lifecycle";
 import { u } from "@/components/ui/u";
+import ReturnBar from "@/components/nav/ReturnBar";
 
 type NeedDetail = {
   id: string;
@@ -121,12 +122,9 @@ export default function NeedDetailPage() {
   }
 
   return (
-    <main className="container max-w-4xl py-10">
-      <div className="mb-4">
-        <Link href="/needs" className="text-sm text-blue-600 hover:underline">
-          ← 一覧へ戻る
-        </Link>
-      </div>
+    <>
+      <ReturnBar />
+      <main className="container max-w-4xl py-10">
       
       <div className={`${u.card} ${u.cardPad}`}>
         <div className="flex items-start justify-between mb-4">
@@ -252,5 +250,6 @@ export default function NeedDetailPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

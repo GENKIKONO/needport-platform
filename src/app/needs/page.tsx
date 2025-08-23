@@ -7,6 +7,7 @@ import NeedsCard from '@/components/needs/NeedsCard';
 import { KaichuSkeleton } from '@/components/ui/Skeleton';
 import { u } from '@/components/ui/u';
 import Empty from '@/components/ui/Empty';
+import { TrackListContext } from '@/components/nav/ReturnBar';
 
 interface NeedCard {
   id: string;
@@ -178,17 +179,20 @@ export default function NeedsPage(props: NeedsPageProps) {
   const showFullContent = !!devSession && !isPreview;
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-[var(--c-text)] mb-2">ニーズ一覧</h1>
-        <p className="text-[var(--c-text-muted)]">
-          {showFullContent ? '公開中のニーズを表示しています' : 'ニーズの概要を表示しています'}
-        </p>
-      </div>
+    <>
+      <TrackListContext />
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-[var(--c-text)] mb-2">ニーズ一覧</h1>
+          <p className="text-[var(--c-text-muted)]">
+            {showFullContent ? '公開中のニーズを表示しています' : 'ニーズの概要を表示しています'}
+          </p>
+        </div>
 
-      <Suspense fallback={<KaichuSkeleton />}>
-        <NeedsContent {...props} />
-      </Suspense>
-    </main>
+        <Suspense fallback={<KaichuSkeleton />}>
+          <NeedsContent {...props} />
+        </Suspense>
+      </main>
+    </>
   );
 }
