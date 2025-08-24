@@ -9,7 +9,7 @@ export default function KaichuLifecycle() {
     <section className="space-y-4">
       <div>
         <h2 className="text-xl font-bold text-[var(--c-blue-strong)] flex items-center gap-2 sm:gap-2 lg:gap-3">
-          <AnchorIcon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-[var(--c-blue)]" />
+          <AnchorIcon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-blue-600" />
           海中（ニーズのライフサイクル）
         </h2>
         <p className="mt-2 text-sm text-[var(--c-text-muted)]">

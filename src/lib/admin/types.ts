@@ -21,6 +21,7 @@ export type TrustFlag = {
 export type NeedRow = {
   id: string;
   title: string;
+  body?: string;                 // ニーズの詳細内容
   ownerMasked: string;           // 例: "u***53"
   ownerUserId?: string;          // 投稿ユーザID
   stage: Stage;

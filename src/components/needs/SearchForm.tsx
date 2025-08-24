@@ -1,18 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { u } from '@/components/ui/u';
-
-interface SearchFormProps {
-  value: {
-    keyword: string;
-    area: string;
-    categories: string[];
-    sort: string;
-  };
-  onChange: (value: any) => void;
-}
 
 const AREAS = [
   { value: '', label: 'すべてのエリア' },
@@ -40,35 +30,54 @@ const SORT_OPTIONS = [
   { value: 'deadline', label: '締切順' }
 ];
 
-export default function SearchForm({ value, onChange }: SearchFormProps) {
+export default function SearchForm() {
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  
+  // URLパラメータから初期値を取得
+  const [localValue, setLocalValue] = useState({
+    keyword: searchParams.get('keyword') ?? '',
+    area: searchParams.get('area') ?? '',
+    categories: searchParams.get('categories') ? searchParams.get('categories')!.split(',') : [],
+    sort: searchParams.get('sort') ?? 'recent'
+  });
+
+  // URL→フォームの一方向同期（戻る操作など）
+  useEffect(() => {
+    setLocalValue({
+      keyword: searchParams.get('keyword') ?? '',
+      area: searchParams.get('area') ?? '',
+      categories: searchParams.get('categories') ? searchParams.get('categories')!.split(',') : [],
+      sort: searchParams.get('sort') ?? 'recent'
+    });
+  }, [searchParams]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams();
     
     // 検索条件をURLに反映
-    if (value.keyword) params.set('keyword', value.keyword);
+    if (localValue.keyword) params.set('keyword', localValue.keyword);
     else params.delete('keyword');
     
-    if (value.area) params.set('area', value.area);
+    if (localValue.area) params.set('area', localValue.area);
     else params.delete('area');
     
-    if (value.categories.length > 0) params.set('categories', value.categories.join(','));
+    if (localValue.categories.length > 0) params.set('categories', localValue.categories.join(','));
     else params.delete('categories');
     
-    if (value.sort) params.set('sort', value.sort);
+    if (localValue.sort) params.set('sort', localValue.sort);
     else params.delete('sort');
     
     params.set('page', '1'); // 検索時は1ページ目に戻る
     
-    router.push(`/needs?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleReset = () => {
-    onChange({
+    setLocalValue({
       keyword: '',
       area: '',
       categories: [],
@@ -89,8 +98,8 @@ export default function SearchForm({ value, onChange }: SearchFormProps) {
             <input
               id="keyword"
               type="text"
-              value={value.keyword}
-              onChange={(e) => onChange({ ...value, keyword: e.target.value })}
+              value={localValue.keyword}
+              onChange={(e) => setLocalValue({ ...localValue, keyword: e.target.value })}
               placeholder="ニーズを検索..."
               className={`w-full px-3 py-2 border border-[var(--c-border)] rounded-md ${u.focus}`}
             />
@@ -102,8 +111,8 @@ export default function SearchForm({ value, onChange }: SearchFormProps) {
             </label>
             <select
               id="area"
-              value={value.area}
-              onChange={(e) => onChange({ ...value, area: e.target.value })}
+              value={localValue.area}
+              onChange={(e) => setLocalValue({ ...localValue, area: e.target.value })}
               className={`w-full px-3 py-2 border border-[var(--c-border)] rounded-md ${u.focus}`}
             >
               {AREAS.map(area => (
@@ -123,12 +132,12 @@ export default function SearchForm({ value, onChange }: SearchFormProps) {
                 <label key={category.value} className="flex items-center text-sm py-1 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={value.categories.includes(category.value)}
+                    checked={localValue.categories.includes(category.value)}
                     onChange={(e) => {
                       const newCategories = e.target.checked
-                        ? [...value.categories, category.value]
-                        : value.categories.filter(c => c !== category.value);
-                      onChange({ ...value, categories: newCategories });
+                        ? [...localValue.categories, category.value]
+                        : localValue.categories.filter(c => c !== category.value);
+                      setLocalValue({ ...localValue, categories: newCategories });
                     }}
                     className="mr-2"
                   />
@@ -144,8 +153,8 @@ export default function SearchForm({ value, onChange }: SearchFormProps) {
             </label>
             <select
               id="sort"
-              value={value.sort}
-              onChange={(e) => onChange({ ...value, sort: e.target.value })}
+              value={localValue.sort}
+              onChange={(e) => setLocalValue({ ...localValue, sort: e.target.value })}
               className={`w-full px-3 py-2 border border-[var(--c-border)] rounded-md ${u.focus}`}
             >
               {SORT_OPTIONS.map(sort => (
@@ -200,8 +209,8 @@ export default function SearchForm({ value, onChange }: SearchFormProps) {
                 <input
                   id="keyword-mobile"
                   type="text"
-                  value={value.keyword}
-                  onChange={(e) => onChange({ ...value, keyword: e.target.value })}
+                  value={localValue.keyword}
+                  onChange={(e) => setLocalValue({ ...localValue, keyword: e.target.value })}
                   placeholder="ニーズを検索..."
                   className={`w-full px-3 py-2 border border-[var(--c-border)] rounded-md ${u.focus}`}
                 />
@@ -213,8 +222,8 @@ export default function SearchForm({ value, onChange }: SearchFormProps) {
                 </label>
                 <select
                   id="area-mobile"
-                  value={value.area}
-                  onChange={(e) => onChange({ ...value, area: e.target.value })}
+                  value={localValue.area}
+                  onChange={(e) => setLocalValue({ ...localValue, area: e.target.value })}
                   className={`w-full px-3 py-2 border border-[var(--c-border)] rounded-md ${u.focus}`}
                 >
                   {AREAS.map(area => (
@@ -234,12 +243,12 @@ export default function SearchForm({ value, onChange }: SearchFormProps) {
                     <label key={category.value} className="flex items-center text-sm py-1 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={value.categories.includes(category.value)}
+                        checked={localValue.categories.includes(category.value)}
                         onChange={(e) => {
                           const newCategories = e.target.checked
-                            ? [...value.categories, category.value]
-                            : value.categories.filter(c => c !== category.value);
-                          onChange({ ...value, categories: newCategories });
+                            ? [...localValue.categories, category.value]
+                            : localValue.categories.filter(c => c !== category.value);
+                          setLocalValue({ ...localValue, categories: newCategories });
                         }}
                         className="mr-2"
                       />
@@ -255,8 +264,8 @@ export default function SearchForm({ value, onChange }: SearchFormProps) {
                 </label>
                 <select
                   id="sort-mobile"
-                  value={value.sort}
-                  onChange={(e) => onChange({ ...value, sort: e.target.value })}
+                  value={localValue.sort}
+                  onChange={(e) => setLocalValue({ ...localValue, sort: e.target.value })}
                   className={`w-full px-3 py-2 border border-[var(--c-border)] rounded-md ${u.focus}`}
                 >
                   {SORT_OPTIONS.map(sort => (

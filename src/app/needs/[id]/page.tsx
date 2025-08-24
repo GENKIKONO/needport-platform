@@ -1,258 +1,115 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { useToast } from "@/components/ui/Toast";
-import { getDevSession } from "@/lib/devAuth";
-import LifecycleActions from "@/components/needs/LifecycleActions";
-import { NeedStatus } from "@/lib/needs/lifecycle";
-import { u } from "@/components/ui/u";
-import ReturnBar from "@/components/nav/ReturnBar";
+import { notFound } from 'next/navigation';
+import { getNeedById } from '@/lib/server/needsService';
+import ProposalButton from '@/components/needs/ProposalButton';
 
-type NeedDetail = {
-  id: string;
-  title: string;
-  summary?: string;
-  body?: string;
-  tags?: string[];
-  area?: string;
-  mode?: string;
-  adopted_offer_id?: string;
-  prejoin_count?: number;
-  created_at: string;
-  updated_at: string;
-  status?: string;
-  last_activity_at?: string;
-  user_id?: string;
-  profiles?: {
-    id: string;
-    clerk_user_id: string;
-  };
-  disclosure?: {
-    isFullyVisible: boolean;
-    requiresPayment: boolean;
-    message?: string;
-  };
-};
+interface NeedDetailPageProps {
+  params: { id: string };
+}
 
-export default function NeedDetailPage() {
-  const params = useParams();
-  const [need, setNeed] = useState<NeedDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const toast = useToast();
-  const devSession = getDevSession();
-
-  useEffect(() => {
-    // 個別APIからデータを取得（段階開示対応）
-    async function fetchNeed() {
-      try {
-        const res = await fetch(`/api/needs/${params.id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setNeed(data);
-        } else if (res.status === 404) {
-          setNeed(null);
-        }
-      } catch (error) {
-        console.error('Failed to fetch need:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (params.id) {
-      fetchNeed();
-    }
-  }, [params.id]);
-
-  useEffect(() => {
-    // 閲覧数計測を発火
-    if (params.id) {
-      fetch(`/api/metrics/needs/${params.id}/view`, { method: 'POST' }).catch(() => {});
-    }
-  }, [params.id]);
-
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast("URLをコピーしました", "success");
-    } catch (error) {
-      toast("コピーに失敗しました", "error");
-    }
-  };
-
-  const handleLifecycleUpdate = () => {
-    // 楽観更新のため、ページを再読み込み
-    window.location.reload();
-  };
-
-  // 投稿者かどうかを判定
-  const isOwner = devSession && need?.user_id === devSession.userId;
-  const isAdmin = devSession?.role === 'admin';
-  const canManage = isOwner || isAdmin;
-
-  if (loading) {
-    return (
-      <>
-        <ReturnBar />
-        <main className="container max-w-4xl py-10">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-              <div className="h-4 bg-gray-200 rounded w-4/6"></div>
-            </div>
-          </div>
-        </main>
-      </>
-    );
-  }
+export default async function NeedDetailPage({ params }: NeedDetailPageProps) {
+  // データを取得
+  const need = await getNeedById(params.id);
 
   if (!need) {
-    return (
-      <main className="container max-w-4xl py-10">
-        <div className="mb-4">
-          <Link href="/needs" className="text-sm text-blue-600 hover:underline">
-            ← 一覧へ戻る
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold text-red-600">ニーズが見つかりません</h1>
-        <p className="mt-2 text-gray-600">このニーズは存在しないか、非公開になっています。</p>
-      </main>
-    );
+    notFound();
   }
 
   return (
-    <>
-      <ReturnBar />
-      <main className="container max-w-4xl py-10">
-      
-      <div className={`${u.card} ${u.cardPad}`}>
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{need.title}</h1>
-              {need.status && (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  need.status === 'active' ? 'bg-green-100 text-green-800' :
-                  need.status === 'closed' ? 'bg-gray-100 text-gray-800' :
-                  'bg-blue-100 text-blue-800'
-                }`}>
-                  {need.status === 'active' ? 'アクティブ' :
-                   need.status === 'closed' ? '完了' : '保管'}
-                </span>
-              )}
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        {/* ヘッダー */}
+        <div className="mb-8">
+          <nav className="text-sm text-gray-500 mb-4">
+            <a href="/needs" className="hover:text-gray-700">ニーズ一覧</a>
+            <span className="mx-2">/</span>
+            <span>詳細</span>
+          </nav>
+          
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">{need.title}</h1>
+          
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              {need.category}
+            </span>
+            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+              {need.area}
+            </span>
+            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+              予算: 未設定
+            </span>
+            <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
+              ステータス: {need.status === 'active' ? '募集中' : '終了'}
+            </span>
+          </div>
+        </div>
+
+        {/* メインコンテンツ */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 詳細情報 */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-xl font-semibold mb-4">詳細</h2>
+              <div className="prose max-w-none">
+                <p className="text-gray-700 leading-relaxed">{need.summary}</p>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-medium mb-3">要件・条件</h3>
+                <ul className="space-y-2 text-gray-700">
+                  <li>• 経験年数3年以上</li>
+                  <li>• リモートワーク可能</li>
+                  <li>• 月1回の進捗報告</li>
+                </ul>
+              </div>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            {canManage && (
-              <div className="hidden sm:block">
-                <LifecycleActions
-                  needId={need.id}
-                  status={(need.status as NeedStatus) || 'active'}
-                  onSuccess={handleLifecycleUpdate}
-                />
-              </div>
-            )}
-            <button
-              onClick={handleShare}
-              className={`${u.btn} ${u.btnGhost} ${u.focus}`}
-              aria-label="このページを共有"
-            >
-              共有
-            </button>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
-          <span>投稿者: {need.profiles ? '***' : '匿名'}</span>
-          {need.area && (
-            <>
-              <span>•</span>
-              <span>エリア: {need.area}</span>
-            </>
-          )}
-          {need.mode && (
-            <>
-              <span>•</span>
-              <span>モード: {need.mode}</span>
-            </>
-          )}
-          {need.adopted_offer_id && (
-            <>
-              <span>•</span>
-              <span className="text-green-600">採用済み</span>
-            </>
-          )}
-        </div>
 
-        {/* モバイル用ライフサイクル操作 */}
-        {canManage && (
-          <div className="sm:hidden mb-4">
-            <LifecycleActions
-              needId={need.id}
-              status={(need.status as NeedStatus) || 'active'}
-              onSuccess={handleLifecycleUpdate}
-            />
-          </div>
-        )}
+          {/* サイドバー */}
+          <div className="space-y-6">
+            {/* アクションボタン */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-medium mb-4">アクション</h3>
+              
+              {need.status === 'active' ? (
+                <div className="space-y-3">
+                  <ProposalButton needId={need.id} needTitle={need.title} />
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">
+                  このニーズは終了しています
+                </p>
+              )}
+            </div>
 
-        {need.summary && (
-          <div className="prose max-w-none mb-4">
-            <p className="text-gray-700 font-medium">{need.summary}</p>
-          </div>
-        )}
-
-        {need.body && (
-          <div className="prose max-w-none mb-6">
-            <p className="text-gray-700 whitespace-pre-wrap">{need.body}</p>
-          </div>
-        )}
-
-        {need.disclosure?.requiresPayment && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800">
-                  詳細の閲覧にはマッチング決済が必要です
-                </h3>
-                <div className="mt-2 text-sm text-yellow-700">
-                  <p>{need.disclosure.message}</p>
+            {/* 投稿者情報 */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-medium mb-4">投稿者</h3>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span className="text-gray-600 font-medium">A</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">匿名ユーザー</p>
+                  <p className="text-sm text-gray-500">投稿日: {need.created_at}</p>
                 </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {need.tags && need.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {need.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-              >
-                {tag}
-              </span>
-            ))}
+            {/* 関連情報 */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-medium mb-4">関連情報</h3>
+              <div className="space-y-3">
+                <a href="/needs" className="block text-blue-600 hover:text-blue-800">
+                  他のニーズを見る
+                </a>
+                <a href="/service-overview" className="block text-blue-600 hover:text-blue-800">
+                  サービス概要
+                </a>
+              </div>
+            </div>
           </div>
-        )}
-
-        <div className="text-xs text-gray-500">
-          作成日: {new Date(need.created_at).toLocaleDateString('ja-JP')}
-          {need.updated_at !== need.created_at && (
-            <> • 更新日: {new Date(need.updated_at).toLocaleDateString('ja-JP')}</>
-          )}
         </div>
       </div>
-    </main>
-    </>
+    </div>
   );
 }

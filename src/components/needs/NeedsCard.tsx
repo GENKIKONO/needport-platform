@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { isKaichuNeed } from '@/lib/needs/scope';
-import { getDevSession } from '@/lib/devAuth';
 import { u } from '@/components/ui/u';
 
 interface NeedCard {
@@ -17,9 +16,11 @@ interface NeedCard {
 }
 
 interface NeedsCardProps {
-  need: NeedCard;
+  need: NeedCard & { masked?: boolean };
   scope: string;
   isPreview?: boolean;
+  canPropose?: boolean;
+  isAuthenticated?: boolean;
 }
 
 function getStatusBadge(status: string) {
@@ -51,9 +52,7 @@ function formatDate(dateString: string): string {
   return `${Math.floor(diffInDays / 30)}ヶ月前`;
 }
 
-export default function NeedsCard({ need, scope, isPreview = false }: NeedsCardProps) {
-  const devSession = getDevSession();
-  const isAuthenticated = !!devSession;
+export default function NeedsCard({ need, scope, isPreview = false, canPropose = false, isAuthenticated = false }: NeedsCardProps) {
   const isKaichu = isKaichuNeed(need);
   const showFullContent = isAuthenticated && !isPreview;
   
@@ -75,14 +74,19 @@ export default function NeedsCard({ need, scope, isPreview = false }: NeedsCardP
       
       <div className="mb-4">
         <p className="text-[var(--c-text-muted)] text-sm line-clamp-3">
-          {need.summary}
+          {need.summary ?? ''}
         </p>
-        {showFullContent && need.body && (
+        {showFullContent && need.body && !need.masked && (
           <p className="text-[var(--c-text-muted)] text-sm mt-2 line-clamp-2">
             {need.body}
           </p>
         )}
-        {!showFullContent && (
+        {need.masked && (
+          <p className="text-[var(--c-text-muted)] text-sm mt-2 line-clamp-2">
+            {need.body ?? ''}
+          </p>
+        )}
+        {!showFullContent && !need.masked && (
           <div className="mt-3 p-3 bg-[var(--c-blue-bg)] rounded-md">
             <p className="text-[var(--c-blue-strong)] text-sm font-medium">
               続きはログイン/登録で
@@ -141,18 +145,40 @@ export default function NeedsCard({ need, scope, isPreview = false }: NeedsCardP
         </div>
       )}
       
-      {/* 詳細ボタン */}
+      {/* アクションボタン */}
       <div className="mt-4 pt-4 border-t border-[var(--c-border)]">
-        <Link
-          href={`/needs/${need.id}`}
-          className={`inline-flex items-center justify-center w-full ${u.btn} ${u.btnPrimary} ${u.focus}`}
-          aria-label={`${need.title}の詳細を見る`}
-        >
-          詳細を見る
-          <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href={`/needs/${need.id}`}
+            className={`flex-1 inline-flex items-center justify-center ${u.btn} ${u.btnPrimary} ${u.focus}`}
+            aria-label={`${need.title}の詳細を見る`}
+          >
+            詳細を見る
+            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+          
+          {canPropose && need.status === 'active' && (
+            <Link
+              href={`/needs/${need.id}?action=propose`}
+              className={`inline-flex items-center justify-center px-4 ${u.btn} ${u.btnSecondary} ${u.focus}`}
+              aria-label={`${need.title}に提案する`}
+            >
+              提案する
+            </Link>
+          )}
+          
+          {!canPropose && need.status === 'active' && (
+            <Link
+              href="/vendor/register"
+              className={`inline-flex items-center justify-center px-4 ${u.btn} ${u.btnSecondary} ${u.focus}`}
+              aria-label="事業者登録へ"
+            >
+              事業者登録
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );

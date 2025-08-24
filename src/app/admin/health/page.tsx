@@ -1,4 +1,5 @@
 import AdminBar from "@/components/admin/AdminBar";
+// import { CheckIcon } from '@/components/icons';
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,7 @@ function getStatusColor(status: string) {
 function getStatusIcon(status: string) {
   switch (status) {
     case "ok":
-      return "✓";
+      return <CheckIcon className="w-4 h-4 text-green-600" />;
     case "warning":
       return "⚠";
     case "error":

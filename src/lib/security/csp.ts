@@ -23,6 +23,7 @@ export function makeNonce(size = 16): string {
 
 export function buildCSP(nonce: string) {
   const isDev = process.env.NODE_ENV !== "production";
+  const isPreview = process.env.VERCEL_ENV === "preview";
 
   const scriptSrc = [
     "'self'",
@@ -30,6 +31,7 @@ export function buildCSP(nonce: string) {
     isDev ? "'unsafe-eval'" : null, // dev のみ webpack の eval を許可
     isDev ? "ws:" : null,
     isDev ? "wss:" : null,
+    isPreview ? "https://vercel.live" : null, // Preview環境でVercel Liveを許可
   ]
     .filter(Boolean)
     .join(" ");
@@ -43,12 +45,21 @@ export function buildCSP(nonce: string) {
     .filter(Boolean)
     .join(" ");
 
+  const imgSrc = [
+    "'self'",
+    "data:",
+    "blob:",
+    "https:",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return [
     "default-src 'self'",
     "base-uri 'self'",
     `script-src ${scriptSrc}`,
     `style-src 'self' 'unsafe-inline'`,
-    "img-src 'self' data: blob: https:",
+    `img-src ${imgSrc}`,
     "font-src 'self' data:",
     `connect-src ${connectSrc}`,
     "frame-ancestors 'none'",
@@ -63,13 +74,20 @@ interface CSPConfig {
 
 export function cspHeader(config: CSPConfig): string {
   const { nonce, reportOnly = false, reportUri } = config;
+  const isPreview = process.env.VERCEL_ENV === "preview";
+  
+  const scriptSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    isPreview ? "https://vercel.live" : null, // Preview環境でVercel Liveを許可
+  ].filter(Boolean).join(" ");
   
   const directives = [
     // Default source
     "default-src 'self'",
     
     // Scripts
-    `script-src 'self' 'nonce-${nonce}'`,
+    `script-src ${scriptSrc}`,
     
     // Styles
     "style-src 'self' 'unsafe-inline'",

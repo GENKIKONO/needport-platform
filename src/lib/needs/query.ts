@@ -74,11 +74,11 @@ export async function queryNeeds(filters: NeedFilters): Promise<NeedQueryResult>
 
     let query = supabase
       .from('needs')
-      .select('id, title, summary, body, area, tags, status, created_at, updated_at, prejoin_count', { count: 'exact' });
+      .select('id, title, summary, area, tags, status, created_at, updated_at, prejoin_count', { count: 'exact' });
 
     // キーワード検索
     if (keyword.trim()) {
-      query = query.or(`title.ilike.%${keyword}%,summary.ilike.%${keyword}%,body.ilike.%${keyword}%`);
+      query = query.or(`title.ilike.%${keyword}%,summary.ilike.%${keyword}%`);
     }
 
     // エリアフィルタ
@@ -145,8 +145,7 @@ export async function queryNeeds(filters: NeedFilters): Promise<NeedQueryResult>
       const keyword = filters.keyword.toLowerCase();
       filteredNeeds = filteredNeeds.filter(need =>
         need.title.toLowerCase().includes(keyword) ||
-        need.summary.toLowerCase().includes(keyword) ||
-        need.body.toLowerCase().includes(keyword)
+        need.summary.toLowerCase().includes(keyword)
       );
     }
 

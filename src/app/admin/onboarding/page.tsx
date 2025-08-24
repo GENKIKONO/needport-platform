@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import AdminBar from "@/components/admin/AdminBar";
+// import { CheckIcon } from '@/components/icons';
 
 interface HealthCheck {
   name: string;
@@ -128,7 +129,7 @@ export default function OnboardingPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "ok": return "✓";
+      case "ok": return <CheckIcon className="w-4 h-4 text-green-600" />;
       case "warning": return "⚠";
       case "error": return "✗";
       default: return "?";

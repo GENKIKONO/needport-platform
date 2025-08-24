@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Icon from '../Icon';
+import { DocumentIcon } from '@/components/icons';
 
 interface Attachment {
   id: string;
@@ -136,8 +137,8 @@ export default function AttachmentUploader({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const getFileIcon = (mimeType: string): string => {
-    if (mimeType === 'application/pdf') return '📄';
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType === 'application/pdf') return <DocumentIcon className="w-4 h-4" />;
     if (mimeType.startsWith('image/')) return '🖼️';
     return 'attachment';
   };
