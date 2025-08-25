@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from '@/components/icons';
 
 const schema = z.object({
   title: z.string().min(5, 'タイトルは5文字以上で入力してください').max(100, 'タイトルは100文字以内で入力してください'),
@@ -60,7 +60,7 @@ export default function NeedsNewPage() {
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <PlusCircleIcon className="w-16 h-16 text-green-600 mx-auto mb-4" />
+          <PlusIcon className="w-16 h-16 text-green-600 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-[var(--c-text)] mb-2">ニーズを投稿</h1>
           <p className="text-[var(--c-text-muted)]">
             地域のニーズを投稿して、適切な事業者とつながりましょう

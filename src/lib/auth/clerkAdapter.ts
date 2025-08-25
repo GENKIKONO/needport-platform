@@ -1,4 +1,4 @@
-// Clerk authentication adapter (replaces simpleSession.ts)
+// Clerk authentication adapter (for future use)
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -43,6 +43,6 @@ export async function requireAuth(): Promise<UserSession> {
 }
 
 // For backward compatibility with simple session interface
-export function getHost() {
+export function getHost(): string {
   return process.env.NEXT_PUBLIC_APP_URL || "localhost:3000";
 }

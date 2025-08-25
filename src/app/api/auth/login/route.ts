@@ -1,28 +1,52 @@
-import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
-import { SESSION_COOKIE } from "@/lib/simpleSession";
+import { writeSession } from "@/lib/simpleSession";
+import { randomUUID } from "crypto";
 
 export const dynamic = "force-dynamic";
 
 const LoginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(8, "パスワードは8文字以上で入力してください"),
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const json = await req.json();
-    const body = LoginSchema.parse(json);
+    const json = await req.json().catch(() => ({}));
+    
+    const parsed = LoginSchema.safeParse(json);
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ 
+        ok: false, 
+        error: "バリデーションエラー",
+        issues: parsed.error.flatten() 
+      }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
-    // 本番では DB 照合。ここでは常に通す（PW長さのみチェック済み）
-    const res = NextResponse.json({ ok: true });
-    res.cookies.set(SESSION_COOKIE, `v1:${body.email}`, {
-      httpOnly: true,
-      path: "/",
-      sameSite: "lax",
+    const { email, password } = parsed.data;
+    
+    // 簡易セッションを作成（実際の認証は省略）
+    const session = {
+      email,
+      name: email.split('@')[0], // 簡易的にメールアドレスから名前を生成
+      userId: randomUUID(),
+    };
+
+    // セッションを書き込み
+    const response = writeSession(session);
+    
+    return response;
+  } catch (error) {
+    console.error("Login error:", error);
+    return new Response(JSON.stringify({ 
+      ok: false, 
+      error: "ログインに失敗しました" 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
     });
-    return res;
-  } catch {
-    return NextResponse.json({ ok: false, error: "認証に失敗しました" }, { status: 400 });
   }
 }

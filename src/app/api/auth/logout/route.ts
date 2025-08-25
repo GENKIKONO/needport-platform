@@ -1,21 +1,20 @@
-import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { clearSession } from "@/lib/simpleSession";
 
 export const dynamic = "force-dynamic";
 
 export async function POST() {
   try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    // Clerk handles the sign out automatically
-    // The response will include the necessary headers to clear the session
-    return NextResponse.json({ ok: true });
+    // セッションをクリア
+    const response = clearSession();
+    return response;
   } catch (error) {
     console.error("Logout error:", error);
-    return NextResponse.json({ error: "Logout failed" }, { status: 500 });
+    return new Response(JSON.stringify({ 
+      ok: false, 
+      error: "ログアウトに失敗しました" 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

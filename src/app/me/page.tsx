@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { readSession } from "@/lib/auth/clerkAdapter";
+import { readSession } from "@/lib/simpleSession";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +25,7 @@ const mockChats = [
 ];
 
 export default async function MePage({ searchParams }: MePageProps) {
-  const session = await readSession(); // SSR Clerk auth
+  const session = await readSession(); // SSR simple session read
   const currentTab = searchParams.t || 'deals';
 
   if (!session) {
@@ -160,7 +160,7 @@ export default async function MePage({ searchParams }: MePageProps) {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">氏名</label>
-                  <p className="mt-1 text-sm text-gray-900">テストユーザー</p>
+                  <p className="mt-1 text-sm text-gray-900">{session.name || '未設定'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">メールアドレス</label>
@@ -228,13 +228,10 @@ export default async function MePage({ searchParams }: MePageProps) {
         </div>
       </section>
 
-                        {/* ログアウト */}
-                  <form action="/api/auth/logout" method="post">
-                    <button className="px-4 py-2 rounded bg-gray-100 border">ログアウト</button>
-                  </form>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Clerk認証を使用中（本番環境）
-                  </p>
+      {/* ログアウト */}
+      <form action="/api/auth/logout" method="post">
+        <button className="px-4 py-2 rounded bg-gray-100 border">ログアウト</button>
+      </form>
     </main>
   );
 }
