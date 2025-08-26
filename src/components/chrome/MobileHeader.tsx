@@ -1,11 +1,16 @@
 "use client";
 import Logo from "@/components/brand/Logo";
-import { MENU } from "../nav/menuData";
+import { getMenuData } from "../nav/menuData";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function MobileHeader() {
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState<any[]>([]);
+
+  useEffect(() => {
+    getMenuData().then(setMenu);
+  }, []);
   return (
     <div className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur border-b">
       <div className="h-14 flex items-center justify-between px-4">
@@ -28,7 +33,7 @@ export default function MobileHeader() {
       {/* ドロワー */}
       {open && (
         <div className="border-t bg-white">
-          {MENU.map(g => (
+          {menu.map(g => (
             <div key={g.title} className="px-4 py-3">
               <div className="text-xs font-semibold text-slate-500">{g.title}</div>
               <ul className="mt-2">

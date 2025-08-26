@@ -207,8 +207,7 @@ html { text-size-adjust: 100%; }
 html,body { height: 100%; }
 body { @apply bg-white text-neutral-900 antialiased; }
 
-/* BottomNav に隠れないように常時下余白を確保 */
-main { padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
+/* BottomNav に隠れないように常時下余白を確保（重複を削除） */
  
  @layer components {
    /* PCの横幅を広げる（視認性UP） */
