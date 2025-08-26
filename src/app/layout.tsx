@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import LeftDock from '@/components/nav/LeftDock';
-import SkipLink from '@/components/nav/SkipLink';
 import Footer from '@/components/layout/Footer';
 // import { ClerkProvider } from '@clerk/nextjs';
 import { ToastProvider } from '@/components/ui/Toast';
@@ -32,7 +31,7 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="min-h-screen bg-gray-50 text-gray-900">
-        <SkipLink />
+        {/* スキップリンクは現状の要件では非表示（描画もしない） */}
         {/* <ClerkProvider> */}
           <ErrorBoundary>
             <ToastProvider>

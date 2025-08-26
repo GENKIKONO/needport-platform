@@ -3,6 +3,8 @@
 import useSWR from "swr";
 import { useState } from "react";
 
+export const dynamic = "force-dynamic";
+
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function CmsPage() {
