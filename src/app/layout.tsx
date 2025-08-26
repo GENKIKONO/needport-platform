@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import LeftDock from '@/components/nav/LeftDock';
+import SkipLink from '@/components/nav/SkipLink';
+import Footer from '@/components/layout/Footer';
 // import { ClerkProvider } from '@clerk/nextjs';
 import { ToastProvider } from '@/components/ui/Toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -26,11 +28,11 @@ export default async function RootLayout({
   return (
     <html lang="ja" className={inter.className}>
       <head>
-        <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="min-h-screen bg-gray-50 text-gray-900">
+        <SkipLink />
         {/* <ClerkProvider> */}
           <ErrorBoundary>
             <ToastProvider>
@@ -42,14 +44,10 @@ export default async function RootLayout({
 
                 {/* メイン＋フッター（ナビとは独立） */}
                 <div className="flex min-h-screen flex-col">
-                  <main className="flex-1">
+                  <main id="main-content" className="flex-1">
                     {children}
                   </main>
-                  <footer className="mt-auto border-t bg-white">
-                    <div className="mx-auto max-w-6xl px-6 py-6 text-xs text-gray-500">
-                      © NeedPort ・ <a href="/legal/terms">利用規約</a> ・ <a href="/legal/privacy">プライバシー</a> ・ <a href="/legal/tokusho">特商法</a>
-                    </div>
-                  </footer>
+                  <Footer />
                 </div>
               </div>
             </ToastProvider>

@@ -19,7 +19,7 @@ interface HealthResponse {
 
 async function getHealthStatus(): Promise<HealthResponse> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/health`, {
+    const response = await fetch(`/api/health`, {
       cache: "no-store"
     });
     
