@@ -1,33 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 
-export const dynamic = "force-dynamic";
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    
-    // ダミー処理（実際には何もしない）
-    console.log('Proposal received:', body);
-    
-    // 常に200を返す
-    return NextResponse.json({ 
-      success: true, 
-      message: '提案を送信しました',
-      proposalId: 'proposal_demo_123'
-    }, { 
-      status: 200,
-      headers: { 'cache-control': 'no-store' }
-    });
-  } catch (error) {
-    console.error('Error in proposals API:', error);
-    // エラーでも200を返す
-    return NextResponse.json({ 
-      success: true, 
-      message: '提案を送信しました',
-      proposalId: 'proposal_demo_123'
-    }, { 
-      status: 200,
-      headers: { 'cache-control': 'no-store' }
-    });
+export async function POST(req: Request) {
+  try{
+    const { needId, body } = await req.json();
+    if(!body || String(body).trim().length < 50){
+      return NextResponse.json({ ok:false, error:'validation' }, { status: 400 });
+    }
+    // 本番DB未接続のため、いまは受理ログだけ返す
+    console.log('[proposal draft]', { needId, bodyLen: String(body).length });
+    return NextResponse.json({ ok:true, status:'draft' });
+  }catch(e){
+    return NextResponse.json({ ok:false }, { status:200 });
   }
 }

@@ -1,16 +1,33 @@
-"use client";
-
-import useSWR from "swr";
-import { useState } from "react";
+'use client';
+import useSWR from 'swr';
+import { useEffect, useState } from 'react';
 
 export const dynamic = "force-dynamic";
 
-const fetcher = (url: string) => fetch(url).then(r => r.json());
+const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then(r=>r.json());
 
 export default function CmsPage() {
-  const { data, isLoading, mutate } = useSWR("/api/cms", fetcher);
+  const [auth, setAuth] = useState<'unknown'|'ok'|'ng'>('unknown');
+  const [pwd, setPwd] = useState('');
+
+  useEffect(() => { // 既にクッキーがあればOK扱い（API保存時にエラーで判断）
+    setAuth('ng'); // 初回は非認証表示
+  }, []);
+
+  const tryLogin = async () => {
+    const res = await fetch('/api/cms/auth', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pwd })});
+    const j = await res.json();
+    setAuth(j.ok ? 'ok' : 'ng');
+  };
+
+  const logout = async () => {
+    await fetch('/api/cms/auth', { method:'DELETE' });
+    setAuth('ng');
+  };
+
+  const { data, mutate } = useSWR('/api/cms', fetcher);
   const [saving, setSaving] = useState(false);
-  if (isLoading || !data) return <div className="p-6">Loading…</div>;
+  if (!data) return <div className="p-6">読み込み中…</div>;
 
   const cms = data.data as any;
 
@@ -36,9 +53,25 @@ export default function CmsPage() {
     else alert("保存しました");
   }
 
+  const canWrite = auth === 'ok' && process.env.NEXT_PUBLIC_CMS_WRITE !== '0' && process.env.NEXT_PUBLIC_CMS_WRITE !== 'false';
+
   return (
-    <div className="p-6 space-y-8">
-      <h1 className="text-2xl font-bold">CMS（簡易）</h1>
+    <div className="p-6 space-y-4">
+      <h1 className="text-xl font-bold">CMS（簡易）</h1>
+      {auth !== 'ok' ? (
+        <div className="max-w-sm rounded border p-4 space-y-2">
+          <p className="text-sm text-gray-600">編集はパスワードが必要です。閲覧はどなたでも可能です。</p>
+          <input type="password" className="w-full border rounded px-2 py-1" placeholder="パスワード" value={pwd} onChange={(e)=>setPwd(e.target.value)} />
+          <button onClick={tryLogin} className="px-3 py-1 rounded bg-black text-white">認証</button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <span className="text-green-600 text-sm">編集モード</span>
+          <button onClick={logout} className="px-2 py-1 text-sm rounded border">ログアウト</button>
+        </div>
+      )}
+
+      <div className="space-y-8">
 
       {/* サービス航海図 */}
       <section className="space-y-4">
@@ -167,17 +200,20 @@ export default function CmsPage() {
         </div>
       </section>
 
-      <div className="pt-4">
-        <button
-          className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
-          onClick={save}
-          disabled={saving}
-        >
-          {saving ? "保存中…" : "保存する"}
-        </button>
-        <span className="ml-3 text-sm text-muted">
-          保存できない場合はプレビュー/本番の環境変数に <code>CMS_WRITE=1</code> を設定
-        </span>
+      {canWrite && (
+        <div className="pt-4">
+          <button
+            className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+            onClick={save}
+            disabled={saving}
+          >
+            {saving ? "保存中…" : "保存する"}
+          </button>
+          <span className="ml-3 text-sm text-muted">
+            保存できない場合はプレビュー/本番の環境変数に <code>CMS_WRITE=1</code> を設定
+          </span>
+        </div>
+      )}
       </div>
     </div>
   );

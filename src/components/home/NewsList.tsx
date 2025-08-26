@@ -5,7 +5,7 @@ const NEWS = [
   { id: 2, title: "事業者向け提案ツールが登場", date: "2024-11-28" },
   { id: 3, title: "地域のニーズ投稿が100件を突破", date: "2024-11-25" },
   { id: 4, title: "使い方ガイドを更新しました", date: "2024-11-20" },
-  { id: 5, title: "無料相談の受付を開始", date: "2024-11-15" },
+      { id: 5, title: "サポート機能を開始", date: "2024-11-15" },
 ];
 
 export default function NewsList() {
