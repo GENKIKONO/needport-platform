@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+// Sentry 設定
+const { withSentryConfig } = require("@sentry/nextjs");
+
 const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -137,4 +140,11 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
+// Sentry 設定を適用
+const sentryWebpackPluginOptions = {
+  silent: true,
+  org: "needport",
+  project: "needport-platform",
+};
+
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);

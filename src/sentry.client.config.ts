@@ -1,12 +1,17 @@
 import * as Sentry from "@sentry/nextjs";
-import { FF_SENTRY } from "@/lib/flags";
 
-if (FF_SENTRY && process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    tracesSampleRate: 1.0,
-    debug: false,
-    replaysOnErrorSampleRate: 1.0,
-    replaysSessionSampleRate: 0.1,
-  });
-}
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  debug: false,
+  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  environment: process.env.NODE_ENV,
+  beforeSend(event) {
+    // 開発環境ではエラーを送信しない
+    if (process.env.NODE_ENV === 'development') {
+      return null;
+    }
+    return event;
+  },
+});
