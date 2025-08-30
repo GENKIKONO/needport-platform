@@ -1,0 +1,3 @@
+- Bot Fight Mode: High
+- WAF: Allowlist for POST /api/webhook/stripe (Stripe IPs), Rate Limit for /api/*
+- Cache: HTMLはBypass、/publicと/_next/staticをCache

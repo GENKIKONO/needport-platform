@@ -22,9 +22,10 @@ export function makeNonce(size = 16): string {
 }
 
 export function buildCSP(nonce: string) {
+  const isProd = process.env.NODE_ENV === 'production';
   const isDev = process.env.NODE_ENV !== "production";
   const isPreview = process.env.VERCEL_ENV === "preview";
-  const relax = process.env.CSP_RELAX === '1';
+  const relax = !isProd && process.env.CSP_RELAX === '1';
 
   const scriptSrc = relax
     ? ["'self'", "'unsafe-inline'", "https://vercel.live"]
