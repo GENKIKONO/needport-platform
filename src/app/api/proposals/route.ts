@@ -24,16 +24,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
   }
 
-  // TODO: Supabase テーブル型定義後に実装
-  // const inserted = await db.proposals.insert({ ...parsed.data, status: 'review' });
+  const s = supabaseAdmin();
+  const { data, error } = await s.from('proposals').insert({
+    need_id: parsed.data.needId,
+    message: parsed.data.message,
+    estimate: parsed.data.estimate,
+    status: 'review'
+  } as any).select('id').single();
   
-  const mockId = 'proposal-' + Date.now();
+  if (error) {
+    console.error('[proposals:insert_error]', error);
+    return NextResponse.json({ error: 'db_error' }, { status: 500 });
+  }
+  
   await insertAudit({ 
     actorType: 'user', 
     action: 'proposal.create', 
     targetType: 'proposal', 
-    targetId: mockId 
+    targetId: data.id 
   });
   
-  return NextResponse.json({ ok: true, id: mockId, status: 'review' });
+  return NextResponse.json({ ok: true, id: data.id, status: 'review' });
 }

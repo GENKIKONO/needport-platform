@@ -9,10 +9,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
   const id = params.id;
   
-  // TODO: Supabase テーブル型定義後に実装
-  // const s = supabaseAdmin();
-  // const { error } = await s.from('needs').update({ status: 'published' }).eq('id', id);
-  // if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
+  const s = supabaseAdmin();
+  const { error } = await s.from('needs').update({ status: 'published' }).eq('id', id);
+  
+  if (error) {
+    console.error('[publish:update_error]', error);
+    return NextResponse.json({ error: 'db_error' }, { status: 500 });
+  }
   
   await insertAudit({ actorType: 'admin', action: 'need.publish', targetType: 'need', targetId: id });
   return NextResponse.json({ ok: true });

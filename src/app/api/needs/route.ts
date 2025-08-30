@@ -61,32 +61,26 @@ export async function POST(req: NextRequest) {
   // 常に review 固定（published で来ても無視）
   const payload = { ...parsed.data, status: 'review' as const };
   
-  // TODO: Supabase テーブル型定義後に実装
-  // const s = supabaseAdmin();
-  // const { data, error } = await s.from('needs').insert({
-  //   title: payload.title,
-  //   description: payload.description,
-  //   category: payload.category,
-  //   area: payload.area,
-  //   status: 'review'
-  // }).select('id').single();
-  // 
-  // if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
-  // 
-  // await insertAudit({ 
-  //   actorType: 'user', 
-  //   action: 'need.create', 
-  //   targetType: 'need', 
-  //   targetId: data.id 
-  // });
+  const s = supabaseAdmin();
+  const { data, error } = await s.from('needs').insert({
+    title: payload.title,
+    description: payload.description,
+    category: payload.category,
+    area: payload.area,
+    status: 'review'
+  } as any).select('id').single();
   
-  const mockId = 'need-' + Date.now();
+  if (error) {
+    console.error('[needs:insert_error]', error);
+    return NextResponse.json({ error: 'db_error' }, { status: 500 });
+  }
+  
   await insertAudit({ 
     actorType: 'user', 
     action: 'need.create', 
     targetType: 'need', 
-    targetId: mockId 
+    targetId: data.id 
   });
   
-  return NextResponse.json({ ok: true, id: mockId, status: 'review' });
+  return NextResponse.json({ ok: true, id: data.id, status: 'review' });
 }
