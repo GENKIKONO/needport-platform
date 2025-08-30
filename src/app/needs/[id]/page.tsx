@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getNeedById } from '@/lib/server/needsService';
 import ProposalButton from '@/components/needs/ProposalButton';
+import { UnlockAccessButton } from "@/components/needs/UnlockAccessButton";
 
 interface NeedDetailPageProps {
   params: { id: string };
@@ -73,6 +74,8 @@ export default async function NeedDetailPage({ params }: NeedDetailPageProps) {
               {need.status === 'active' ? (
                 <div className="space-y-3">
                   <ProposalButton needId={need.id} needTitle={need.title} />
+                  {/* 業者向け：閲覧解放（単発決済） */}
+                  <UnlockAccessButton needId={need.id} />
                 </div>
               ) : (
                 <p className="text-gray-500 text-center py-4">

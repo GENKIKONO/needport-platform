@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { readSession } from "@/lib/simpleSession";
+import { PhoneSupportButton } from "@/components/billing/PhoneSupportButton";
 
 export const dynamic = "force-dynamic";
 
@@ -226,6 +227,12 @@ export default async function MePage({ searchParams }: MePageProps) {
           <Link className="px-3 py-2 rounded border" href="/needs">ニーズ一覧を見る</Link>
           <Link className="px-3 py-2 rounded border" href="/needs/new">ニーズを投稿する</Link>
         </div>
+      </section>
+
+      {/* オプション */}
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold mb-2">オプション</h2>
+        <PhoneSupportButton />
       </section>
 
       {/* ログアウト */}

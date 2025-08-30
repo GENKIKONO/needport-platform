@@ -31,7 +31,33 @@ export async function POST(req: NextRequest) {
         targetId: s.id,
         meta: { kind: s.metadata?.kind, needId: s.metadata?.needId, customer: s.customer, subscription: s.subscription }
       });
-      // TODO: kindに応じてDBへ「閲覧解放/サブスクON」の実フラグ更新（後続でRLSに合わせて実装）
+      // DB フラグ更新（スキーマに合わせて調整）
+      // 例：
+      //  - kind === 'payment'      → vendor_accesses に insert（needId + customerId ひも付け）
+      //  - kind === 'subscription' → user_phone_supports に upsert（customerId ひも付け）
+      try {
+        const sadmin = (await import("@/lib/supabase-server")).supabaseAdmin();
+        const customerId = typeof s.customer === "string" ? s.customer : null;
+        const kind = s.metadata?.kind ?? "payment";
+        const needId = s.metadata?.needId || null;
+
+        if (kind === "payment" && needId && customerId) {
+          await sadmin.from("vendor_accesses").insert({
+            need_id: needId,
+            stripe_customer_id: customerId,
+            unlocked_at: new Date().toISOString()
+          });
+        }
+        if (kind === "subscription" && customerId) {
+          await sadmin.from("user_phone_supports").upsert({
+            stripe_customer_id: customerId,
+            active: true,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "stripe_customer_id" });
+        }
+      } catch (e) {
+        console.error("[stripe:webhook:db_update_failed]", e);
+      }
     }
     if (event.type.startsWith("customer.subscription.")) {
       const sub = event.data.object as Stripe.Subscription;
@@ -42,7 +68,21 @@ export async function POST(req: NextRequest) {
         targetId: sub.id,
         meta: { status: sub.status, customer: sub.customer }
       });
-      // TODO: サブスクの状態に応じてフラグON/OFF更新
+      // サブスク状態に応じてON/OFF
+      try {
+        const sadmin = (await import("@/lib/supabase-server")).supabaseAdmin();
+        const customerId = typeof sub.customer === "string" ? sub.customer : null;
+        if (customerId) {
+          const active = sub.status === "active" || sub.status === "trialing";
+          await sadmin.from("user_phone_supports").upsert({
+            stripe_customer_id: customerId,
+            active,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "stripe_customer_id" });
+        }
+      } catch (e) {
+        console.error("[stripe:webhook:sub_update_failed]", e);
+      }
     }
   } catch (err:any) {
     console.error("[stripe:webhook:handler_error]", err?.message || err);
