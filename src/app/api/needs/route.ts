@@ -4,6 +4,7 @@ import { verifyTurnstile } from '@/lib/turnstile';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { insertAudit } from '@/lib/audit';
 import { rateLimitOr400 } from '@/lib/rate-limit';
+import { getAuth } from '@clerk/nextjs/server';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,11 +76,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'db_error' }, { status: 500 });
   }
   
+  const { userId } = getAuth(req as any);
   await insertAudit({ 
-    actorType: 'user', 
+    actorType: userId ? 'user' : 'system',
     action: 'need.create', 
     targetType: 'need', 
-    targetId: data.id 
+    targetId: data.id,
+    actorId: userId ?? null,
   });
   
   return NextResponse.json({ ok: true, id: data.id, status: 'review' });
