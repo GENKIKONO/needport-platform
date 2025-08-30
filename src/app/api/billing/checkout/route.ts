@@ -1,29 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
+import { NextRequest, NextResponse } from "next/server";
+import { getStripe } from "@/lib/stripe";
 
 export async function POST(req: NextRequest) {
   try {
-    const { mode } = await req.json(); // 'payment' | 'subscription'
-    const price = mode === 'subscription'
-      ? process.env.PRICE_PHONE_SUPPORT
-      : process.env.PRICE_FLAT_UNLOCK;
+    const origin = process.env.PLATFORM_ORIGIN;
+    const { mode, needId } = await req.json().catch(() => ({} as any));
 
-    if (!price) return NextResponse.json({ error: 'price_not_configured' }, { status: 400 });
+    if (!origin) return NextResponse.json({ error: "platform_origin_missing" }, { status: 500 });
+
+    const stripe = getStripe();
+    const price =
+      mode === "subscription"
+        ? process.env.PRICE_PHONE_SUPPORT
+        : process.env.PRICE_FLAT_UNLOCK;
+
+    if (!price) {
+      return NextResponse.json({ error: "price_missing_for_mode" }, { status: 400 });
+    }
 
     const session = await stripe.checkout.sessions.create({
-      mode: mode === 'subscription' ? 'subscription' : 'payment',
+      mode: mode === "subscription" ? "subscription" : "payment",
       line_items: [{ price, quantity: 1 }],
-      success_url: `${process.env.PLATFORM_ORIGIN}/billing/success?sid={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.PLATFORM_ORIGIN}/billing/cancelled`,
-      // Connect（将来マーケットプレイス化）を見据えてメタデータを保持
-      metadata: { kind: mode },
+      success_url: `${origin}/billing/success?sid={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/billing/cancelled`,
+      metadata: { kind: mode ?? "payment", needId: needId ?? "" },
+      allow_promotion_codes: true
     });
 
-    return NextResponse.json({ url: session.url });
-  } catch (e) {
-    console.error('[checkout:create_error]', e);
-    return NextResponse.json({ error: 'server_error' }, { status: 500 });
+    return NextResponse.json({ url: session.url }, { status: 200 });
+  } catch (e:any) {
+    console.error("[checkout:error]", e?.message || e);
+    return NextResponse.json({ error: "checkout_failed" }, { status: 500 });
   }
 }
