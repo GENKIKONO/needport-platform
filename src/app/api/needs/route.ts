@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { NeedCreateSchema } from '@/schemas/need';
 import { verifyTurnstile } from '@/lib/turnstile';
-// import { db } from '@/lib/db' // 既存のDB層に合わせて実装してください
+import { supabaseAdmin } from '@/lib/supabase-server';
+import { insertAudit } from '@/lib/audit';
+import { rateLimitOr400 } from '@/lib/rate-limit';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +39,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/needs → ニーズ投稿
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') ?? undefined;
+  const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
   const tokenHeader = req.headers.get('x-turnstile-token');
 
   const v = await verifyTurnstile(tokenHeader, ip);
@@ -51,10 +53,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_input', detail: parsed.error.flatten() }, { status: 400 });
   }
 
+  // レート制限チェック
+  if (!rateLimitOr400(ip)) {
+    return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
+  }
+
   // 常に review 固定（published で来ても無視）
   const payload = { ...parsed.data, status: 'review' as const };
-  // const inserted = await db.needs.insert(payload);
-  // return NextResponse.json({ ok: true, id: inserted.id });
-  // 一時モック（DB接続前提なら上を使う）:
-  return NextResponse.json({ ok: true, id: 'mock-id', status: 'review' });
+  
+  // TODO: Supabase テーブル型定義後に実装
+  // const s = supabaseAdmin();
+  // const { data, error } = await s.from('needs').insert({
+  //   title: payload.title,
+  //   description: payload.description,
+  //   category: payload.category,
+  //   area: payload.area,
+  //   status: 'review'
+  // }).select('id').single();
+  // 
+  // if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
+  // 
+  // await insertAudit({ 
+  //   actorType: 'user', 
+  //   action: 'need.create', 
+  //   targetType: 'need', 
+  //   targetId: data.id 
+  // });
+  
+  const mockId = 'need-' + Date.now();
+  await insertAudit({ 
+    actorType: 'user', 
+    action: 'need.create', 
+    targetType: 'need', 
+    targetId: mockId 
+  });
+  
+  return NextResponse.json({ ok: true, id: mockId, status: 'review' });
 }

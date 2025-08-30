@@ -8,3 +8,7 @@ export function allow(ip: string, limit = 10, windowMs = 10_000) {
   buckets.set(ip, b);
   return b.count <= limit;
 }
+
+export function rateLimitOr400(ip: string, limit = 10, windowMs = 10_000) {
+  return allow(ip, limit, windowMs);
+}

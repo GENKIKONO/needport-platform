@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { ProposalCreateSchema } from '@/schemas/proposal';
 import { verifyTurnstile } from '@/lib/turnstile';
+import { insertAudit } from '@/lib/audit';
+import { rateLimitOr400 } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for') ?? undefined;
+  const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
   const tokenHeader = req.headers.get('x-turnstile-token');
 
   const v = await verifyTurnstile(tokenHeader, ip);
@@ -17,7 +19,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid_input', detail: parsed.error.flatten() }, { status: 400 });
   }
 
+  // レート制限チェック
+  if (!rateLimitOr400(ip)) {
+    return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
+  }
+
+  // TODO: Supabase テーブル型定義後に実装
   // const inserted = await db.proposals.insert({ ...parsed.data, status: 'review' });
-  // return NextResponse.json({ ok: true, id: inserted.id });
-  return NextResponse.json({ ok: true, id: 'mock-prop', status: 'review' });
+  
+  const mockId = 'proposal-' + Date.now();
+  await insertAudit({ 
+    actorType: 'user', 
+    action: 'proposal.create', 
+    targetType: 'proposal', 
+    targetId: mockId 
+  });
+  
+  return NextResponse.json({ ok: true, id: mockId, status: 'review' });
 }

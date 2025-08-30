@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-// import { db } from '@/lib/db';
+import { supabaseAdmin } from '@/lib/supabase-server';
 import { insertAudit } from '@/lib/audit';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
@@ -8,9 +8,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
   const id = params.id;
-  // const need = await db.needs.findById(id);
-  // if (!need || need.status !== 'review') return NextResponse.json({ error: 'invalid_state' }, { status: 400 });
-  // await db.needs.update(id, { status: 'published' });
-  await insertAudit({ actorType: 'system', action: 'need.publish', targetType: 'need', targetId: id });
+  
+  // TODO: Supabase テーブル型定義後に実装
+  // const s = supabaseAdmin();
+  // const { error } = await s.from('needs').update({ status: 'published' }).eq('id', id);
+  // if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
+  
+  await insertAudit({ actorType: 'admin', action: 'need.publish', targetType: 'need', targetId: id });
   return NextResponse.json({ ok: true });
 }

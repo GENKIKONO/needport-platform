@@ -118,7 +118,9 @@ export const auditHelpers = {
   }
 };
 
-export async function insertAudit(input: {
+import { supabaseAdmin } from './supabase-server';
+
+export async function insertAudit(i: {
   actorType: 'user' | 'admin' | 'system';
   action: string;
   targetType: string;
@@ -127,11 +129,15 @@ export async function insertAudit(input: {
   meta?: Record<string, any>;
 }) {
   try {
-    // TODO: Supabase クライアントで実INSERTに置換
-    // await supabase.from('needport_audit_logs').insert({ ...input });
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[audit]', input);
-    }
+    const s = supabaseAdmin();
+    await s.from('audits').insert({
+      actor_type: i.actorType,
+      action: i.action,
+      target_type: i.targetType,
+      target_id: i.targetId,
+      actor_id: i.actorId ?? null,
+      meta: i.meta ?? {}
+    });
   } catch (e) {
     console.error('[audit:failed]', e);
   }
