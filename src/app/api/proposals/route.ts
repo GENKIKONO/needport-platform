@@ -1,16 +1,23 @@
 import { NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
+import { ProposalCreateSchema } from '@/schemas/proposal';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 export async function POST(req: Request) {
-  try{
-    const { needId, body } = await req.json();
-    if(!body || String(body).trim().length < 50){
-      return NextResponse.json({ ok:false, error:'validation' }, { status: 400 });
-    }
-    // 本番DB未接続のため、いまは受理ログだけ返す
-    console.log('[proposal draft]', { needId, bodyLen: String(body).length });
-    return NextResponse.json({ ok:true, status:'draft' });
-  }catch(e){
-    return NextResponse.json({ ok:false }, { status:200 });
+  const ip = req.headers.get('x-forwarded-for') ?? undefined;
+  const tokenHeader = req.headers.get('x-turnstile-token');
+
+  const v = await verifyTurnstile(tokenHeader, ip);
+  if (!v.ok) {
+    return NextResponse.json({ error: 'turnstile_failed', detail: v.reason }, { status: 400 });
   }
+
+  const body = await req.json().catch(() => null);
+  const parsed = ProposalCreateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'invalid_input', detail: parsed.error.flatten() }, { status: 400 });
+  }
+
+  // const inserted = await db.proposals.insert({ ...parsed.data, status: 'review' });
+  // return NextResponse.json({ ok: true, id: inserted.id });
+  return NextResponse.json({ ok: true, id: 'mock-prop', status: 'review' });
 }

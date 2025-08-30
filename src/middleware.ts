@@ -3,6 +3,21 @@ import { NextResponse } from "next/server";
 import { buildCSP, makeNonce } from "@/lib/security/csp";
 
 export function middleware(req: NextRequest) {
+  // CMS ゲート（パスワード保護）
+  if (req.nextUrl.pathname.startsWith('/cms')) {
+    const cookie = req.headers.get('cookie') ?? '';
+    const authed = cookie.includes('cms_auth=1');
+    if (authed) {
+      // 認証済み：通常のCSP処理を続行
+    } else if (req.nextUrl.pathname === '/cms/login') {
+      // ログインページ：通常のCSP処理を続行
+    } else {
+      // 未認証：ログインページにリダイレクト
+      const loginUrl = new URL('/cms/login', req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   const res = NextResponse.next();
   const nonce = makeNonce();
 

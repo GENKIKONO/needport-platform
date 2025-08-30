@@ -1,21 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { readSession } from "@/lib/simpleSession";
-import { z } from "zod";
+import { NeedCreateSchema } from '@/schemas/need';
+import { verifyTurnstile } from '@/lib/turnstile';
+// import { db } from '@/lib/db' // 既存のDB層に合わせて実装してください
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// Need schema matching database structure
-const NeedSchema = z.object({
-  title: z.string().min(1, "タイトルは必須です").max(100, "タイトルは100文字以内で入力してください"),
-  summary: z.string().min(1, "概要は必須です").max(500, "概要は500文字以内で入力してください"),
-  body: z.string().optional(),
-  area: z.string().min(1, "エリアは必須です"),
-  category: z.string().optional(),
-  quantity: z.number().optional(),
-  desiredTiming: z.string().optional(),
-});
 
 // GET /api/needs → 公開ニーズの一覧
 export async function GET(req: NextRequest) {
@@ -25,29 +14,15 @@ export async function GET(req: NextRequest) {
   const q = searchParams.get("q") ?? undefined;
 
   try {
-    const supabase = createAdminClient();
+    // TODO: Supabase クライアントで実装
+    // const supabase = createAdminClient();
+    // let query = supabase.from('needs').select('*').order('created_at', { ascending: false });
+    // if (q) query = query.or(`title.ilike.%${q}%,summary.ilike.%${q}%`);
+    // const { data: items, error } = await query.range((page - 1) * pageSize, page * pageSize - 1);
     
-    let query = supabase
-      .from('needs')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    // キーワード検索（title と summary）
-    if (q) {
-      query = query.or(`title.ilike.%${q}%,summary.ilike.%${q}%`);
-    }
-
-    const { data: items, error } = await query
-      .range((page - 1) * pageSize, page * pageSize - 1);
-
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ items: [], total: 0, page, pageSize }, { status: 200 });
-    }
-
     return NextResponse.json({ 
-      items: items || [], 
-      total: items?.length || 0, 
+      items: [], 
+      total: 0, 
       page, 
       pageSize 
     });
@@ -62,32 +37,24 @@ export async function GET(req: NextRequest) {
 
 // POST /api/needs → ニーズ投稿
 export async function POST(req: NextRequest) {
-  try {
-    const session = readSession();
-    
-    if (!session) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
+  const ip = req.headers.get('x-forwarded-for') ?? undefined;
+  const tokenHeader = req.headers.get('x-turnstile-token');
 
-    const json = await req.json().catch(() => ({}));
-    
-    // Zodバリデーション
-    const parsed = NeedSchema.safeParse(json);
-    if (!parsed.success) {
-      return NextResponse.json({ 
-        error: "バリデーションエラー", 
-        issues: parsed.error.flatten() 
-      }, { status: 400 });
-    }
-
-    // 簡易実装：データベース挿入は後で実装
-    // 今は成功レスポンスのみ返す
-    return NextResponse.json({ 
-      id: 'temp-' + Date.now(),
-      message: "投稿を受け付けました（開発モード）"
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Error in POST /api/needs:', error);
-    return NextResponse.json({ error: "投稿に失敗しました" }, { status: 500 });
+  const v = await verifyTurnstile(tokenHeader, ip);
+  if (!v.ok) {
+    return NextResponse.json({ error: 'turnstile_failed', detail: v.reason }, { status: 400 });
   }
+
+  const body = await req.json().catch(() => null);
+  const parsed = NeedCreateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'invalid_input', detail: parsed.error.flatten() }, { status: 400 });
+  }
+
+  // 常に review 固定（published で来ても無視）
+  const payload = { ...parsed.data, status: 'review' as const };
+  // const inserted = await db.needs.insert(payload);
+  // return NextResponse.json({ ok: true, id: inserted.id });
+  // 一時モック（DB接続前提なら上を使う）:
+  return NextResponse.json({ ok: true, id: 'mock-id', status: 'review' });
 }

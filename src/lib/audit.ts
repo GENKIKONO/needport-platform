@@ -117,3 +117,22 @@ export const auditHelpers = {
     });
   }
 };
+
+export async function insertAudit(input: {
+  actorType: 'user' | 'admin' | 'system';
+  action: string;
+  targetType: string;
+  targetId: string;
+  actorId?: string | null;
+  meta?: Record<string, any>;
+}) {
+  try {
+    // TODO: Supabase クライアントで実INSERTに置換
+    // await supabase.from('needport_audit_logs').insert({ ...input });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[audit]', input);
+    }
+  } catch (e) {
+    console.error('[audit:failed]', e);
+  }
+}

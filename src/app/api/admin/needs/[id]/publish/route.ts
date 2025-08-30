@@ -1,47 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { NextResponse } from 'next/server';
+// import { db } from '@/lib/db';
+import { insertAudit } from '@/lib/audit';
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const { published } = await request.json();
-
-    if (typeof published !== 'boolean') {
-      return NextResponse.json(
-        { ok: false, error: "published must be a boolean" },
-        { status: 400 }
-      );
-    }
-
-    const supabase = createAdminClient();
-
-    // Update the need's published status
-    const { error } = await supabase
-      .from('needs')
-      .update({ 
-        published,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json(
-        { ok: false, error: "Failed to update need" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ ok: true });
-
-  } catch (error) {
-    console.error('Publish API error:', error);
-    return NextResponse.json(
-      { ok: false, error: "Internal server error" },
-      { status: 500 }
-    );
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+  const key = req.headers.get('x-admin-key');
+  if (!key || key !== process.env.ADMIN_KEY) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
+  const id = params.id;
+  // const need = await db.needs.findById(id);
+  // if (!need || need.status !== 'review') return NextResponse.json({ error: 'invalid_state' }, { status: 400 });
+  // await db.needs.update(id, { status: 'published' });
+  await insertAudit({ actorType: 'system', action: 'need.publish', targetType: 'need', targetId: id });
+  return NextResponse.json({ ok: true });
 }
