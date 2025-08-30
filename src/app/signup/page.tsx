@@ -1,8 +1,15 @@
-'use client';
-import { useSearchParams } from 'next/navigation';
-import { useState, useTransition } from 'react';
+// このページはビルド時のプリレンダーを避ける
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export default function SignupPage() {
+import { Suspense } from "react";
+
+// SearchParams を扱うのはクライアント側に限定
+function SignupClient() {
+  "use client";
+  import { useSearchParams } from 'next/navigation';
+  import { useState, useTransition } from 'react';
+
   const sp = useSearchParams();
   const preNeed = sp.get('need') ?? '';
   const [pending, start] = useTransition();
@@ -55,4 +62,8 @@ export default function SignupPage() {
       </div>
     </main>
   );
+}
+
+export default function Page() {
+  return <Suspense fallback={<div className="p-6">Loading…</div>}><SignupClient/></Suspense>;
 }

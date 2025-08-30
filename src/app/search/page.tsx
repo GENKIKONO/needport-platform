@@ -1,21 +1,26 @@
-"use client";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import NeedCard from "@/components/NeedCard";
-import Icon from '@/components/Icon';
+import { Suspense } from "react";
 
-interface SearchResult {
-  id: string;
-  title: string;
-  summary: string;
-  tags_text: string;
-  created_at: string;
-  updated_at: string;
-  status: string;
-}
+function SearchClient() {
+  "use client";
 
-export default function SearchPage() {
+  import { useState, useEffect } from "react";
+  import { useSearchParams, useRouter } from "next/navigation";
+  import NeedCard from "@/components/NeedCard";
+  import Icon from '@/components/Icon';
+
+  interface SearchResult {
+    id: string;
+    title: string;
+    summary: string;
+    tags_text: string;
+    created_at: string;
+    updated_at: string;
+    status: string;
+  }
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const [query, setQuery] = useState(searchParams.get("q") || "");
@@ -200,4 +205,8 @@ export default function SearchPage() {
       </div>
     </div>
   );
+}
+
+export default function Page() {
+  return <Suspense fallback={<div className="p-6">Loading…</div>}><SearchClient/></Suspense>;
 }
