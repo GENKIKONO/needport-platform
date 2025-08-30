@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
-echo "# Readiness"; curl -s https://needport.jp/api/ready | jq
-echo "# Sign-in";  curl -s -o /dev/null -w "SIGNIN:%{http_code}\n" https://needport.jp/sign-in
-echo "# Checkout(payment)"; curl -s -X POST https://needport.jp/api/billing/checkout -H 'content-type: application/json' -d '{"mode":"payment"}'
-echo "# Checkout(subscription)"; curl -s -X POST https://needport.jp/api/billing/checkout -H 'content-type: application/json' -d '{"mode":"subscription"}'
+URL="${1:-https://needport.jp}"
+echo "==== Smoke @ $URL ===="
+echo "# ready"; curl -s "$URL/api/ready" | jq .ok 2>/dev/null || curl -s "$URL/api/ready"
+echo "# sign-in"; curl -s -o /dev/null -w "SIGNIN:%{http_code}\n" "$URL/sign-in"
+echo "# checkout payment"; curl -s -X POST "$URL/api/billing/checkout" -H 'content-type: application/json' -d '{"mode":"payment"}'
+echo "# checkout subscription"; curl -s -X POST "$URL/api/billing/checkout" -H 'content-type: application/json' -d '{"mode":"subscription"}'
+echo "==== done ===="
