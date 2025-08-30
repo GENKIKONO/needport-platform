@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import LeftDock from '@/components/nav/LeftDock';
 import Footer from '@/components/layout/Footer';
-// import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProvider } from '@clerk/nextjs';
 import { ToastProvider } from '@/components/ui/Toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -32,7 +32,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-gray-50 text-gray-900">
         {/* スキップリンクは現状の要件では非表示（描画もしない） */}
-        {/* <ClerkProvider> */}
+        <ClerkProvider>
           <ErrorBoundary>
             <ToastProvider>
               <div className="grid min-h-screen grid-cols-1 md:grid-cols-[240px_1fr]">
@@ -51,7 +51,7 @@ export default async function RootLayout({
               </div>
             </ToastProvider>
           </ErrorBoundary>
-        {/* </ClerkProvider> */}
+        </ClerkProvider>
       </body>
     </html>
   );
