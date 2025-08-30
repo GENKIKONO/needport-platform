@@ -15,6 +15,11 @@ export async function POST(req: NextRequest) {
     const price =
       mode === "subscription" ? process.env.PRICE_PHONE_SUPPORT : process.env.PRICE_FLAT_UNLOCK;
 
+    // ENV不足なら 503を返し、/api/ready を参照させる
+    if (!process.env.STRIPE_SECRET_KEY || !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+      return NextResponse.json({ error: "env_missing", hint: "/api/ready" }, { status: 503 });
+    }
+
     if (!origin || !price || !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
       return NextResponse.json(
         { error: "env_missing", detail: { origin: !!origin, price: !!price } },

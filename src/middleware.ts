@@ -2,9 +2,11 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { buildCSP, makeNonce } from "@/lib/security/csp";
 
+const hasClerkEnv = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !!process.env.CLERK_SECRET_KEY;
+
 export function middleware(req: NextRequest) {
-  const hasClerkEnv =
-    !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !!process.env.CLERK_SECRET_KEY;
+  // 環境変数が無い時はClerk認証をスキップ（CSPやヘッダは維持）
+  if (!hasClerkEnv) return NextResponse.next();
 
   // CMS ゲート（パスワード保護）
   if (req.nextUrl.pathname.startsWith('/cms')) {
