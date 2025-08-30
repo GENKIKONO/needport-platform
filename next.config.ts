@@ -1,11 +1,33 @@
 import type { NextConfig } from "next";
 
+// Sentry 設定
+const { withSentryConfig } = require("@sentry/nextjs");
+
 const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  
+  // 本番環境でのDEV_ASSUME_AUTH=1をビルド時にチェック
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && process.env.VERCEL_ENV === 'production' && process.env.DEV_ASSUME_AUTH === '1') {
+      throw new Error('DEV_ASSUME_AUTH must be 0 in production');
+    }
+    
+    if (dev) {
+      config.devtool = "source-map";
+    }
+    
+    // 本番ビルド時に開発用APIを除外
+    if (!dev) {
+      config.resolve.alias = config.resolve.alias || {};
+      config.resolve.alias['src/app/api/dev'] = false;
+    }
+    
+    return config;
   },
   // 性能・セキュリティ強化
   reactStrictMode: true,
@@ -35,19 +57,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@radix-ui/react-icons"],
   },
   // 開発時は eval を使わない sourcemap に変更（unsafe-eval を使いたくない場合）
-  webpack(config, { dev, isServer }) {
-    if (dev) {
-      config.devtool = "source-map";
-    }
-    
-    // 本番ビルド時に開発用APIを除外
-    if (!dev) {
-      config.resolve.alias = config.resolve.alias || {};
-      config.resolve.alias['src/app/api/dev'] = false;
-    }
-    
-    return config;
-  },
   // Bundle analyzer
   ...(process.env.ANALYZE === "true" && {
     webpack: (config, { isServer }) => {
@@ -65,10 +74,11 @@ const nextConfig: NextConfig = {
     },
   }),
   
-  // 無限リダイレクト対策: リダイレクトを明示的に無効化
+  // リダイレクト設定
   async redirects() {
-    console.log('redirects() called - returning empty array (disabled)');
-    return [];
+    return [
+      { source: '/how-it-works', destination: '/service-overview', permanent: true },
+    ];
   },
   
   // 無限リダイレクト対策: リライトを明示的に無効化
@@ -130,4 +140,11 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
+// Sentry 設定を適用
+const sentryWebpackPluginOptions = {
+  silent: true,
+  org: "needport",
+  project: "needport-platform",
+};
+
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);

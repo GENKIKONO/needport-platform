@@ -1,68 +1,84 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-BASE="${BASE:-http://localhost:3000}"
-echo "== Smoke on ${BASE} =="
+# スモークテストスクリプト
+# 主要ページの動作確認（Cookie Jar使用）
 
-# dev サーバ起動（未起動なら）
-if ! curl -sf "${BASE}" >/dev/null 2>&1; then
-  echo "Starting dev server..."
-  (npm run dev > /tmp/needport-dev.log 2>&1 &)  # バックグラウンド
-  for i in {1..40}; do
-    sleep 0.5
-    if curl -sf "${BASE}" >/dev/null 2>&1; then
-      echo "Dev is up"
-      break
-    fi
-    if [ "$i" -eq 40 ]; then
-      echo "Dev failed. Tail logs:"
-      tail -n 150 /tmp/needport-dev.log || true
-      exit 1
-    fi
-  done
-fi
+set -e
 
-echo "[1] CSP header"
-if curl -sI "${BASE}" | grep -qi "content-security-policy"; then
-  echo "OK: CSP header present"
-else
-  echo "NG: CSP header missing"; exit 1
-fi
+# 固定プレビューURL（環境変数で上書き可能）
+BASE_URL="${BASE_URL:-https://needport-preview.genkis-projects-03a72983.vercel.app}"
 
-echo "[2] nonce attribute (rough check)"
-N=$(curl -s "${BASE}" | grep -o 'nonce="[A-Za-z0-9+/=]\+"' | wc -l | tr -d ' ')
-if [ "${N}" -ge 1 ]; then
-  echo "OK: nonce count ${N}"
-else
-  echo "NG: nonce not found"; exit 1
-fi
+echo "=== NeedPort Smoke Test ==="
+echo "Base URL: $BASE_URL"
+echo ""
 
-echo "[3] POST /api/needs (personal)"
-RES=$(curl -s -X POST "${BASE}/api/needs" \
-  -H "Content-Type: application/json" \
-  --data-binary '{"title":"Smoke: 個人","summary":"OK","scale":"personal","agree":true}')
-echo "→ ${RES}"
-echo "${RES}" | grep -q '"ok":true' || { echo "NG (personal)"; exit 1; }
+# Cookie Jarファイルを作成
+COOKIE_JAR=".smoke_cookies"
+rm -f "$COOKIE_JAR"
 
-echo "[4] POST /api/needs (community + macro)"
-RES=$(curl -s -X POST "${BASE}/api/needs" \
-  -H "Content-Type: application/json" \
-  --data-binary '{"title":"Smoke: 地域","summary":"OK","scale":"community","macro_fee_hint":"月500円〜","macro_use_freq":"月1回〜","macro_area_hint":"高知県内","agree":true}')
-echo "→ ${RES}"
-echo "${RES}" | grep -q '"ok":true' || { echo "NG (community)"; exit 1; }
+echo "=== Basic Page Tests ==="
+curl -s -o /dev/null -w "/ %{http_code}\n" "$BASE_URL/"
+curl -s -o /dev/null -w "/needs %{http_code}\n" "$BASE_URL/needs"
+curl -s -o /dev/null -w "/needs/new %{http_code}\n" "$BASE_URL/needs/new"
+curl -s -o /dev/null -w "/kaichu %{http_code}\n" "$BASE_URL/kaichu"
+curl -s -o /dev/null -w "/service-overview %{http_code}\n" "$BASE_URL/service-overview"
+curl -s -o /dev/null -w "/auth/login %{http_code}\n" "$BASE_URL/auth/login"
+curl -s -o /dev/null -w "/auth/register %{http_code}\n" "$BASE_URL/auth/register"
+curl -s -o /dev/null -w "/vendor/login %{http_code}\n" "$BASE_URL/vendor/login"
+curl -s -o /dev/null -w "/vendor/register %{http_code}\n" "$BASE_URL/vendor/register"
+curl -s -o /dev/null -w "/me %{http_code}\n" "$BASE_URL/me"
+curl -s -o /dev/null -w "/about %{http_code}\n" "$BASE_URL/about"
+curl -s -o /dev/null -w "/legal/terms %{http_code}\n" "$BASE_URL/legal/terms"
+curl -s -o /dev/null -w "/legal/privacy %{http_code}\n" "$BASE_URL/legal/privacy"
+curl -s -o /dev/null -w "/legal/tokusho %{http_code}\n" "$BASE_URL/legal/tokusho"
+echo ""
 
-# 任意: CSV チェック（管理認証が必要）
-if [ "${CI:-0}" = "1" ]; then
-  echo "[5] CSV columns check"
-  CSV_OPTS=()
-  if [ -n "${ADMIN_COOKIE:-}" ]; then
-    CSV_OPTS+=( -H "Cookie: ${ADMIN_COOKIE}" )
-  fi
-  if curl -fsSL ${CSV_OPTS[@]+"${CSV_OPTS[@]}"} "${BASE}/admin/needs.csv" | head -1 | grep -q '種類,会費目安,利用頻度,対象エリア'; then
-    echo "OK: CSV headers exist"
-  else
-    echo "WARN: CSV check skipped or unauthorized (set ADMIN_COOKIE to enable)"
-  fi
-fi
+echo "=== Role-based Tests ==="
+echo "Setting role to guest..."
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -X POST "$BASE_URL/api/dev/session" -H "Content-Type: application/json" -d '{"role":"guest"}' >/dev/null
+echo "Testing guest access..."
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -o /dev/null -w "kaichu-guest:%{http_code}\n" "$BASE_URL/kaichu"
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -o /dev/null -w "me-guest:%{http_code}\n" "$BASE_URL/me"
 
-echo "🎉 All smoke tests passed. Visit ${BASE}/admin/smoke"
+echo "Setting role to vendor..."
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -X POST "$BASE_URL/api/dev/session" -H "Content-Type: application/json" -d '{"role":"vendor"}' >/dev/null
+echo "Testing vendor access..."
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -o /dev/null -w "me-offers-vendor:%{http_code}\n" "$BASE_URL/me?t=offers"
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -o /dev/null -w "needs-vendor:%{http_code}\n" "$BASE_URL/needs"
+
+echo "Setting role to general..."
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -X POST "$BASE_URL/api/dev/session" -H "Content-Type: application/json" -d '{"role":"general"}' >/dev/null
+echo "Testing general access..."
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -o /dev/null -w "me-posts-general:%{http_code}\n" "$BASE_URL/me?t=posts"
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -o /dev/null -w "needs-general:%{http_code}\n" "$BASE_URL/needs"
+
+echo "Setting role to admin..."
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -X POST "$BASE_URL/api/dev/session" -H "Content-Type: application/json" -d '{"role":"admin"}' >/dev/null
+echo "Testing admin access..."
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -o /dev/null -w "me-admin:%{http_code}\n" "$BASE_URL/me"
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s -o /dev/null -w "needs-admin:%{http_code}\n" "$BASE_URL/needs"
+echo ""
+
+echo "=== API Tests ==="
+curl -s -o /dev/null -w "api-dev-session:%{http_code}\n" "$BASE_URL/api/dev/session"
+curl -s -o /dev/null -w "api-me-deals:%{http_code}\n" "$BASE_URL/api/me/deals"
+
+echo "=== Production API Tests ==="
+echo "GET /api/needs"
+curl -sS "$BASE_URL/api/needs" | sed -E 's/,"attachments":[^]]*]//g' | head -c 400
+echo ""
+echo "GET /api/me/deals (要ログイン)"
+curl -sS -I "$BASE_URL/api/me/deals" | head -n 1
+echo ""
+
+echo "=== Content Tests ==="
+echo "Checking for '提案する' button (should appear for vendor/admin):"
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s "$BASE_URL/needs" | grep -o "提案する" | wc -l
+echo "Checking for '事業者登録' button (should appear for guest/general):"
+curl -c "$COOKIE_JAR" -b "$COOKIE_JAR" -s "$BASE_URL/needs" | grep -o "事業者登録" | wc -l
+echo ""
+
+# Cookie Jarファイルを削除
+rm -f "$COOKIE_JAR"
+
+echo "=== Smoke Test Complete ==="

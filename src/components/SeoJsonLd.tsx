@@ -11,7 +11,7 @@ interface SeoJsonLdProps {
 }
 
 export default function SeoJsonLd({ type, needData }: SeoJsonLdProps) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
   const currentUrl = needData ? `${siteUrl}/needs/${needData.id}` : siteUrl;
 
   const baseStructuredData = {

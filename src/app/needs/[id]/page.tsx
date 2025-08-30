@@ -1,147 +1,121 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { useToast } from "@/components/ui/Toast";
+import { notFound } from 'next/navigation';
+import { getNeedById } from '@/lib/server/needsService';
+import ProposalButton from '@/components/needs/ProposalButton';
+import { UnlockAccessButton } from "@/components/needs/UnlockAccessButton";
+import { ContactPanel } from "./ContactPanel";
 
-type NeedDetail = {
-  id: string;
-  title: string;
-  body?: string;
-  ownerMasked: string;
-  stage: string;
-  supporters: number;
-  proposals: number;
-  estimateYen?: number;
-  isPublished: boolean;
-  isSample: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
+interface NeedDetailPageProps {
+  params: { id: string };
+}
 
-export default function NeedDetailPage() {
-  const params = useParams();
-  const [need, setNeed] = useState<NeedDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const toast = useToast();
-
-  useEffect(() => {
-    // 公開APIからデータを取得
-    async function fetchNeed() {
-      try {
-        const res = await fetch('/api/needs');
-        const data = await res.json();
-        const found = data.items.find((n: NeedDetail) => n.id === params.id);
-        if (found) {
-          setNeed(found);
-        }
-      } catch (error) {
-        console.error('Failed to fetch need:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (params.id) {
-      fetchNeed();
-    }
-  }, [params.id]);
-
-  useEffect(() => {
-    // 閲覧数計測を発火
-    if (params.id) {
-      fetch(`/api/metrics/needs/${params.id}/view`, { method: 'POST' }).catch(() => {});
-    }
-  }, [params.id]);
-
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast("URLをコピーしました", "success");
-    } catch (error) {
-      toast("コピーに失敗しました", "error");
-    }
-  };
-
-  if (loading) {
-    return (
-      <main className="container max-w-4xl py-10">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-          <div className="space-y-3">
-            <div className="h-4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-            <div className="h-4 bg-gray-200 rounded w-4/6"></div>
-          </div>
-        </div>
-      </main>
-    );
-  }
+export default async function NeedDetailPage({ params }: NeedDetailPageProps) {
+  // データを取得
+  const need = await getNeedById(params.id);
 
   if (!need) {
-    return (
-      <main className="container max-w-4xl py-10">
-        <div className="mb-4">
-          <Link href="/needs" className="text-sm text-blue-600 hover:underline">
-            ← 一覧へ戻る
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold text-red-600">ニーズが見つかりません</h1>
-        <p className="mt-2 text-gray-600">このニーズは存在しないか、非公開になっています。</p>
-      </main>
-    );
+    notFound();
   }
 
   return (
-    <main className="container max-w-4xl py-10">
-      <div className="mb-4">
-        <Link href="/needs" className="text-sm text-blue-600 hover:underline">
-          ← 一覧へ戻る
-        </Link>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="flex items-start justify-between mb-4">
-          <h1 className="text-3xl font-bold">{need.title}</h1>
-          <button
-            onClick={handleShare}
-            className="ml-4 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-            aria-label="このページを共有"
-          >
-            共有
-          </button>
-        </div>
-        
-        <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
-          <span>投稿者: {need.ownerMasked}</span>
-          <span>•</span>
-          <span>ステージ: {need.stage}</span>
-          <span>•</span>
-          <span>サポーター: {need.supporters}人</span>
-          <span>•</span>
-          <span>提案: {need.proposals}件</span>
-          {need.estimateYen && (
-            <>
-              <span>•</span>
-              <span>予算: ¥{need.estimateYen.toLocaleString()}</span>
-            </>
-          )}
-        </div>
-
-        {need.body && (
-          <div className="prose max-w-none mb-6">
-            <p className="text-gray-700 whitespace-pre-wrap">{need.body}</p>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        {/* 解放済みなら連絡先表示（未解放だと何も出ない） */}
+        <ContactPanel needId={params.id} />
+        {/* ヘッダー */}
+        <div className="mb-8">
+          <nav className="text-sm text-gray-500 mb-4">
+            <a href="/needs" className="hover:text-gray-700">ニーズ一覧</a>
+            <span className="mx-2">/</span>
+            <span>詳細</span>
+          </nav>
+          
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">{need.title}</h1>
+          
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              {need.category}
+            </span>
+            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+              {need.area}
+            </span>
+            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+              予算: 未設定
+            </span>
+            <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
+              ステータス: {need.status === 'active' ? '募集中' : '終了'}
+            </span>
           </div>
-        )}
+        </div>
 
-        <div className="text-xs text-gray-500">
-          作成日: {new Date(need.createdAt).toLocaleDateString('ja-JP')}
-          {need.updatedAt !== need.createdAt && (
-            <> • 更新日: {new Date(need.updatedAt).toLocaleDateString('ja-JP')}</>
-          )}
+        {/* メインコンテンツ */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 詳細情報 */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-xl font-semibold mb-4">詳細</h2>
+              <div className="prose max-w-none">
+                <p className="text-gray-700 leading-relaxed">{need.summary}</p>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-medium mb-3">要件・条件</h3>
+                <ul className="space-y-2 text-gray-700">
+                  <li>• 経験年数3年以上</li>
+                  <li>• リモートワーク可能</li>
+                  <li>• 月1回の進捗報告</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* サイドバー */}
+          <div className="space-y-6">
+            {/* アクションボタン */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-medium mb-4">アクション</h3>
+              
+              {need.status === 'active' ? (
+                <div className="space-y-3">
+                  <ProposalButton needId={need.id} needTitle={need.title} />
+                  {/* 業者向け：閲覧解放（単発決済） */}
+                  <UnlockAccessButton needId={need.id} />
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">
+                  このニーズは終了しています
+                </p>
+              )}
+            </div>
+
+            {/* 投稿者情報 */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-medium mb-4">投稿者</h3>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span className="text-gray-600 font-medium">A</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">匿名ユーザー</p>
+                  <p className="text-sm text-gray-500">投稿日: {need.created_at}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 関連情報 */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-medium mb-4">関連情報</h3>
+              <div className="space-y-3">
+                <a href="/needs" className="block text-blue-600 hover:text-blue-800">
+                  他のニーズを見る
+                </a>
+                <a href="/service-overview" className="block text-blue-600 hover:text-blue-800">
+                  サービス概要
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

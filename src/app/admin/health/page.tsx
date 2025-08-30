@@ -1,4 +1,5 @@
 import AdminBar from "@/components/admin/AdminBar";
+// import { CheckIcon } from '@/components/icons';
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ interface HealthResponse {
 
 async function getHealthStatus(): Promise<HealthResponse> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/health`, {
+    const response = await fetch(`/api/health`, {
       cache: "no-store"
     });
     
@@ -59,7 +60,7 @@ function getStatusColor(status: string) {
 function getStatusIcon(status: string) {
   switch (status) {
     case "ok":
-      return "✓";
+      return <CheckIcon className="w-4 h-4 text-green-600" />;
     case "warning":
       return "⚠";
     case "error":

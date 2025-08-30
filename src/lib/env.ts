@@ -26,6 +26,7 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_ENABLED: z.boolean().default(false),
   STRIPE_CONNECT_UI: z.boolean().default(false),
+  PAYMENTS_ENABLED: z.boolean().default(false),
   
   // Feature Flags
   FF_MAINTENANCE: z.boolean().default(false),
@@ -99,6 +100,10 @@ export function isTest(): boolean {
 
 export function isStripeEnabled(): boolean {
   return env.STRIPE_ENABLED;
+}
+
+export function isPaymentsEnabled(): boolean {
+  return env.PAYMENTS_ENABLED;
 }
 
 export function isDemoMode(): boolean {

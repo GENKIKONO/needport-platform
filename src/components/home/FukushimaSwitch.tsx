@@ -52,7 +52,7 @@ export default function FukushimaSwitch() {
               <input name="title" className="w-full rounded-md border px-3 py-2" placeholder="まずは件名だけでもOK" />
               <button className="w-full bg-emerald-600 text-white rounded-md py-2">投稿をはじめる</button>
               <p className="mt-2 text-xs text-slate-500">詳細は次の画面で入力できます。</p>
-              <p className="text-xs text-slate-500">投稿前のご相談は <Link className="text-emerald-700 underline" href="/support">無料相談</Link> へ。</p>
+              <p className="text-xs text-slate-500">投稿前のご相談は <Link className="text-emerald-700 underline" href="/support">サポート</Link> へ。</p>
             </form>
           ) : (
             <div className="mt-6 text-slate-600 text-sm">「この面を表示」を押すと投稿フォームが現れます。</div>

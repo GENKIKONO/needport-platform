@@ -1,174 +1,225 @@
-import { supabaseServer } from '@/lib/server/supabase';
-import AdminBar from '@/components/admin/AdminBar';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { getDevSession } from '@/lib/devAuth';
+import { redirect } from 'next/navigation';
 
-export default async function AuditPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = await searchParams;
-  const action = sp.action as string | undefined;
-  const needId = sp.need_id as string | undefined;
-  const page = Math.max(1, Number(sp.page) || 1);
-  const per = Math.min(100, Math.max(1, Number(sp.per) || 20));
-  const offset = (page - 1) * per;
+interface AuditLog {
+  id: string;
+  actor: string;
+  action: string;
+  target?: string;
+  metadata?: any;
+  created_at: string;
+}
 
-  const supabase = supabaseServer();
+interface AuditPageProps {
+  searchParams: {
+    actor?: string;
+    action?: string;
+    start_date?: string;
+    end_date?: string;
+    page?: string;
+  };
+}
+
+async function getAuditLogs(searchParams: AuditPageProps['searchParams']): Promise<{ logs: AuditLog[], total: number }> {
+  const supabase = createAdminClient();
   
-  // Build query
+  const page = parseInt(searchParams.page || '1');
+  const limit = 50;
+  const offset = (page - 1) * limit;
+  
   let query = supabase
     .from('audit_logs')
-    .select('*')
-    .order('at', { ascending: false });
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false });
 
-  if (action) {
-    // @ts-expect-error - Supabase type issue
-    query = query.eq('action', action);
-  }
-  if (needId) {
-    query = query.eq('need_id', needId);
+  // フィルタ適用
+  if (searchParams.actor) {
+    query = query.ilike('actor', `%${searchParams.actor}%`);
   }
 
-  // Get total count
-  // @ts-expect-error - Supabase type issue, will be fixed when types are updated
-  const { count } = await query.select('id', { count: 'exact', head: true });
+  if (searchParams.action) {
+    query = query.eq('action', searchParams.action);
+  }
 
-  // Get paginated data
-  const { data: logs, error } = await query
-    .range(offset, offset + per - 1);
+  if (searchParams.start_date) {
+    query = query.gte('created_at', searchParams.start_date);
+  }
+
+  if (searchParams.end_date) {
+    query = query.lte('created_at', searchParams.end_date + 'T23:59:59');
+  }
+
+  const { data, error, count } = await query.range(offset, offset + limit - 1);
 
   if (error) {
-    console.error('[audit] error:', error);
-    return (
-      <div className="p-6 text-red-500">
-        取得に失敗しました。<pre className="whitespace-pre-wrap text-xs mt-2">{error.message}</pre>
-      </div>
-    );
+    console.error('Error fetching audit logs:', error);
+    return { logs: [], total: 0 };
   }
 
-  const totalPages = Math.ceil((count || 0) / per);
+  return { logs: data || [], total: count || 0 };
+}
 
-  const getActionLabel = (action: string) => {
-    const labels: Record<string, string> = {
-      'offer.add': 'オファー追加',
-      'offer.edit': 'オファー編集',
-      'offer.delete': 'オファー削除',
-      'offer.adopt': 'オファー採用',
-      'offer.unadopt': 'オファー採用解除',
-      'status.change': 'ステータス変更',
-      'settings.save': '設定保存',
-      'need.create': 'ニーズ作成',
-      'need.update': 'ニーズ更新',
-      'need.delete': 'ニーズ削除',
-      'attachment.upload': '添付ファイルアップロード',
-      'attachment.delete': '添付ファイル削除',
-      'note.add': 'メモ追加',
-      'import.csv': 'CSVインポート'
-    };
-    return labels[action] || action;
+function formatAction(action: string): string {
+  const actionMap: Record<string, string> = {
+    'message.create': 'メッセージ作成',
+    'match.mark_paid_manual': '手動支払い',
+    'need.continue': 'ニーズ継続',
+    'need.close': 'ニーズ完了',
+    'need.view': 'ニーズ閲覧',
+    'kaichu.filter': '海中フィルタ',
+    'room.message': 'ルームメッセージ'
   };
+  
+  return actionMap[action] || action;
+}
+
+function formatMetadata(metadata: any): string {
+  if (!metadata) return '';
+  
+  if (typeof metadata === 'object') {
+    return Object.entries(metadata)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(', ');
+  }
+  
+  return String(metadata);
+}
+
+export default async function AuditPage(props: AuditPageProps) {
+  const devSession = getDevSession();
+  if (!devSession || devSession.role !== 'admin') {
+    redirect('/admin/login');
+  }
+
+  const { logs, total } = await getAuditLogs(props.searchParams);
+  const page = parseInt(props.searchParams.page || '1');
+  const totalPages = Math.ceil(total / 50);
 
   return (
-    <div className="space-y-6">
-      <AdminBar title="監査ログ" />
-      <div className="p-6">
-        <h1 className="text-xl font-semibold mb-6">監査ログ</h1>
-        
-        {/* Filters */}
-        <div className="mb-6 space-y-4">
-          <form method="GET" className="flex flex-wrap gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">アクション</label>
-              <select
-                name="action"
-                defaultValue={action}
-                className="rounded-lg bg-zinc-800 px-3 py-2 outline-none ring-1 ring-white/10"
-              >
-                <option value="">すべて</option>
-                <option value="offer.add">オファー追加</option>
-                <option value="offer.edit">オファー編集</option>
-                <option value="offer.delete">オファー削除</option>
-                <option value="offer.adopt">オファー採用</option>
-                <option value="offer.unadopt">オファー採用解除</option>
-                <option value="status.change">ステータス変更</option>
-                <option value="settings.save">設定保存</option>
-                <option value="need.create">ニーズ作成</option>
-                <option value="need.update">ニーズ更新</option>
-                <option value="need.delete">ニーズ削除</option>
-                <option value="attachment.upload">添付ファイルアップロード</option>
-                <option value="attachment.delete">添付ファイル削除</option>
-                <option value="note.add">メモ追加</option>
-                <option value="import.csv">CSVインポート</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">ニーズID</label>
-              <input
-                type="text"
-                name="need_id"
-                defaultValue={needId}
-                placeholder="UUID"
-                className="rounded-lg bg-zinc-800 px-3 py-2 outline-none ring-1 ring-white/10"
-              />
-            </div>
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-              >
-                フィルター
-              </button>
-            </div>
-          </form>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">監査ログ</h1>
+        <p className="text-gray-600">
+          システム内の操作履歴を表示しています（{total}件）
+        </p>
+      </div>
 
-        {/* Logs table */}
+      {/* フィルタ */}
+      <div className="bg-gray-50 rounded-lg p-4 mb-6">
+        <form method="GET" className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">アクター</label>
+            <input
+              type="text"
+              name="actor"
+              defaultValue={props.searchParams.actor}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="ユーザーID"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">アクション</label>
+            <select
+              name="action"
+              defaultValue={props.searchParams.action}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">すべて</option>
+              <option value="message.create">メッセージ作成</option>
+              <option value="match.mark_paid_manual">手動支払い</option>
+              <option value="need.continue">ニーズ継続</option>
+              <option value="need.close">ニーズ完了</option>
+              <option value="need.view">ニーズ閲覧</option>
+              <option value="kaichu.filter">海中フィルタ</option>
+              <option value="room.message">ルームメッセージ</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">開始日</label>
+            <input
+              type="date"
+              name="start_date"
+              defaultValue={props.searchParams.start_date}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">終了日</label>
+            <input
+              type="date"
+              name="end_date"
+              defaultValue={props.searchParams.end_date}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex items-end">
+            <button
+              type="submit"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              検索
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* ログ一覧 */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-gray-700">
-                <th className="text-left p-3">日時</th>
-                <th className="text-left p-3">アクター</th>
-                <th className="text-left p-3">アクション</th>
-                <th className="text-left p-3">ニーズID</th>
-                <th className="text-left p-3">参照ID</th>
-                <th className="text-left p-3">メタデータ</th>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  日時
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  アクター
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  アクション
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ターゲット
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  詳細
+                </th>
               </tr>
             </thead>
-            <tbody>
-              {(logs || []).map((log) => (
-                <tr key={log.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                  <td className="p-3 text-sm">
-                    {new Date(log.at).toLocaleString('ja-JP')}
+            <tbody className="bg-white divide-y divide-gray-200">
+              {logs.map((log) => (
+                <tr key={log.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {new Date(log.created_at).toLocaleString('ja-JP')}
                   </td>
-                  <td className="p-3 text-sm">{log.actor}</td>
-                  <td className="p-3 text-sm">
-                    <span className="px-2 py-1 bg-gray-700 rounded text-xs">
-                      {getActionLabel(log.action)}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                      {log.actor}
+                    </code>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {formatAction(log.action)}
                     </span>
                   </td>
-                  <td className="p-3 text-sm font-mono">
-                    {log.need_id ? (
-                      <a
-                        href={`/admin/needs/${log.need_id}/offers`}
-                        className="text-emerald-400 hover:text-emerald-300 underline"
-                      >
-                        {log.need_id.slice(0, 8)}...
-                      </a>
-                    ) : '-'}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {log.target && (
+                      <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                        {log.target}
+                      </code>
+                    )}
                   </td>
-                  <td className="p-3 text-sm font-mono">
-                    {log.ref_id || '-'}
-                  </td>
-                  <td className="p-3 text-sm">
-                    {log.meta ? (
-                      <details className="cursor-pointer">
-                        <summary className="text-xs text-gray-400">詳細</summary>
-                        <pre className="text-xs mt-1 bg-gray-800 p-2 rounded overflow-auto">
-                          {log.meta}
-                        </pre>
-                      </details>
-                    ) : '-'}
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {log.metadata && (
+                      <div className="text-xs text-gray-600 max-w-xs truncate">
+                        {formatMetadata(log.metadata)}
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -176,47 +227,47 @@ export default async function AuditPage({
           </table>
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 mt-6">
+        {logs.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">該当するログが見つかりませんでした</p>
+          </div>
+        )}
+      </div>
+
+      {/* ページネーション */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <div className="flex space-x-2">
             {page > 1 && (
               <a
-                href={`?${new URLSearchParams({
-                  ...(action && { action }),
-                  ...(needId && { need_id: needId }),
-                  page: String(page - 1),
-                  per: String(per)
+                href={`/admin/audit?${new URLSearchParams({
+                  ...props.searchParams,
+                  page: (page - 1).toString()
                 })}`}
-                className="rounded-lg border border-white/10 px-4 py-2 text-sm hover:bg-white/5"
+                className="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50"
               >
                 前へ
               </a>
             )}
-            <span className="text-sm text-gray-400">
-              ページ {page} / {totalPages}
+            
+            <span className="px-3 py-2 text-gray-600">
+              {page} / {totalPages}
             </span>
+            
             {page < totalPages && (
               <a
-                href={`?${new URLSearchParams({
-                  ...(action && { action }),
-                  ...(needId && { need_id: needId }),
-                  page: String(page + 1),
-                  per: String(per)
+                href={`/admin/audit?${new URLSearchParams({
+                  ...props.searchParams,
+                  page: (page + 1).toString()
                 })}`}
-                className="rounded-lg border border-white/10 px-4 py-2 text-sm hover:bg-white/5"
+                className="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50"
               >
                 次へ
               </a>
             )}
           </div>
-        )}
-
-        {logs?.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
-            ログがありません
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

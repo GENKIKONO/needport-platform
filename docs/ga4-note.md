@@ -1,0 +1,2 @@
+- gtag.js を layout.tsx で遅延読み込み（defer）、Cookie Consent後に有効化。
+- 送信イベント：page_view, search, purchase(Checkout完了時).

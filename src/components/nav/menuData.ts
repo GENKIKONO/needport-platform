@@ -1,33 +1,16 @@
-import { 
-  Squares2X2Icon, 
-  PlusCircleIcon, 
-  BuildingOffice2Icon,
-  BookOpenIcon, 
-  MapIcon, 
-  QuestionMarkCircleIcon,
-  MegaphoneIcon, 
-  InformationCircleIcon 
-} from '@/components/icons';
+import type { CmsTag } from "@/lib/cms/types";
+import { readCms } from "@/lib/cms/storage";
 
-export type MenuItem = { label: string; href: string; icon?: any };
-export type MenuGroup = { title: string; items: MenuItem[] };
+export type MenuItem = { label: string; href: string; icon?: any; tag?: CmsTag };
+export type MenuGroup = { title: string; items: MenuItem[]; tag?: CmsTag };
 
-export const MENU: MenuGroup[] = [
-  { title: "みんなの『欲しい』", items: [
-    { label: "ニーズ一覧", href: "/needs", icon: Squares2X2Icon },
-    { label: "ニーズを投稿", href: "/post", icon: PlusCircleIcon },
-  ]},
-  { title: "企業の『できる』", items: [
-    { label: "事業者登録", href: "/vendor/register", icon: BuildingOffice2Icon },
-    { label: "提案ガイド", href: "/guide/offer", icon: BookOpenIcon },
-  ]},
-  { title: "ガイド", items: [
-    { label: "使い方ガイド", href: "/guide/using", icon: BookOpenIcon },
-    { label: "サービス航海図", href: "/how-it-works", icon: MapIcon },
-    { label: "よくある質問", href: "/faq", icon: QuestionMarkCircleIcon },
-  ]},
-  { title: "サイト情報", items: [
-    { label: "お知らせ", href: "/news", icon: MegaphoneIcon },
-    { label: "このサイトについて", href: "/about", icon: InformationCircleIcon },
-  ]},
-];
+export async function getMenuData(): Promise<MenuGroup[]> {
+  const cms = await readCms();
+  // 既存の固定データをCMSで上書き（tag==="cms" のもの）
+  const groups = cms.navigation.groups.map((g) => ({
+    title: g.title,
+    items: g.items.map((it) => ({ label: it.label, href: it.href, tag: "cms" as const })),
+    tag: "cms" as const
+  }));
+  return groups;
+}

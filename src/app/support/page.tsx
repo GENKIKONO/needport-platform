@@ -1,7 +1,7 @@
 export default function Support(){
   return (
     <main className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold">無料相談</h1>
+      <h1 className="text-2xl font-bold">サポート</h1>
       <div className="mt-6 space-y-6">
         <div>
           <h2 className="text-lg font-semibold mb-2">相談の流れ</h2>

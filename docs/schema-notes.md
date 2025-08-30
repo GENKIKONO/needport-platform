@@ -1,0 +1,5 @@
+-- 例スキーマ（既存のテーブルに合わせて調整してください）
+-- vendor_accesses: 業者が特定のneedの連絡先/詳細にアクセスできる権利
+--   id uuid pk, need_id uuid, stripe_customer_id text, unlocked_at timestamptz
+-- user_phone_supports: エンドユーザーの電話サポ購読状態
+--   id uuid pk, stripe_customer_id text unique, active boolean, updated_at timestamptz

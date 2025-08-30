@@ -8,9 +8,8 @@ export default function NotFound(){
       <p className="mt-4 text-slate-600">以下から目的の情報に移動できます。</p>
       <ul className="mt-6 list-disc pl-6 text-sky-700">
         <li><a href="/needs">ニーズ一覧</a></li>
-        <li><a href="/post">ニーズを投稿</a></li>
-        <li><a href="/how-it-works">サービス航海図</a></li>
-        <li><a href="/support">無料相談</a></li>
+        <li><a href="/needs/new">ニーズを投稿</a></li>
+        <li><a href="/service-overview">サービス航海図</a></li>
       </ul>
     </main>
   );

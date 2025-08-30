@@ -19,6 +19,7 @@ export default function MktFooter() {
               <li><Link href="/mkt/how-it-works" className="hover:underline">使い方</Link></li>
               <li><Link href="/mkt/security" className="hover:underline">セキュリティ</Link></li>
               <li><Link href="/mkt/pricing" className="hover:underline">料金</Link></li>
+              <li><Link href="/kaichu" className="hover:underline">海中（長期・保管ニーズ）</Link></li>
             </ul>
           </div>
           <div>
@@ -35,6 +36,7 @@ export default function MktFooter() {
               <li><Link href="/legal/privacy" className="hover:underline">プライバシーポリシー</Link></li>
               <li><Link href="/legal/terms" className="hover:underline">利用規約</Link></li>
               <li><Link href="/legal/tokusho" className="hover:underline">特定商取引法</Link></li>
+              <li><Link href="/legal/tokusho" className="hover:underline" aria-label="運営会社（特商法）">運営会社（特商法）</Link></li>
             </ul>
           </div>
         </div>

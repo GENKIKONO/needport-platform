@@ -89,6 +89,7 @@ export function toRows(needs: NeedDetail[]): NeedRow[] {
   return needs.map(n => ({
     id: n.id,
     title: n.title,
+    body: n.body, // Add body field to fix the search functionality
     ownerMasked: n.ownerMasked,
     ownerUserId: n.ownerUserId,
     stage: n.stage,

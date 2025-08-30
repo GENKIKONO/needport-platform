@@ -39,7 +39,7 @@ export default function ReadmePage() {
 
   const generateReadme = () => {
     const now = new Date().toISOString();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
     
     // Extract feature flags
     const flagsCheck = health?.checks.find(check => check.name === "Feature Flags");

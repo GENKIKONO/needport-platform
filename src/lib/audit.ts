@@ -117,3 +117,35 @@ export const auditHelpers = {
     });
   }
 };
+
+import { supabaseAdmin } from './supabase-server';
+import { captureException } from './sentry';
+
+export async function insertAudit(i: {
+  actorType: 'user' | 'admin' | 'system';
+  action: string;
+  targetType: string;
+  targetId: string;
+  actorId?: string | null;
+  meta?: Record<string, any>;
+}) {
+  try {
+    const s = supabaseAdmin();
+    const { error } = await s.from('audits').insert({
+      actor_type: i.actorType,
+      action: i.action,
+      target_type: i.targetType,
+      target_id: i.targetId,
+      actor_id: i.actorId ?? null,
+      meta: i.meta ?? {}
+    });
+    
+    if (error) {
+      console.error('[audit:db_error]', error);
+      captureException(new Error('Audit insert failed'), { audit: i, dbError: error });
+    }
+  } catch (e) {
+    console.error('[audit:failed]', e);
+    captureException(e as Error, { audit: i });
+  }
+}

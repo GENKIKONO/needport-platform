@@ -1,0 +1,14 @@
+# Global owners
+* @repo-owner
+
+# Protected areas - do not edit without approval
+/src/app/(public)/**  @repo-owner
+/src/app/page.tsx     @repo-owner
+
+# Auth and core functionality
+/src/lib/auth/**      @repo-owner
+/src/app/api/**       @repo-owner
+
+# Database and server utilities
+/src/lib/server/**    @repo-owner
+/src/lib/supabase/**  @repo-owner

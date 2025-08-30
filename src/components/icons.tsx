@@ -14,5 +14,6 @@ export {
   UserGroupIcon,
   AcademicCapIcon,
   MegaphoneIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
+  ArchiveBoxIcon
 } from "@heroicons/react/24/outline";
