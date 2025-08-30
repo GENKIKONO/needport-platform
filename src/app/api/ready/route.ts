@@ -10,5 +10,9 @@ export async function GET() {
     origin: !!process.env.PLATFORM_ORIGIN,
   };
   const ok = Object.values(checks).every(Boolean);
-  return NextResponse.json({ ok, checks });
+  return NextResponse.json({
+    ok,
+    checks,
+    release: process.env.NEXT_PUBLIC_RELEASE || null
+  });
 }
