@@ -7,7 +7,7 @@ export default function CmsLoginPage() {
   
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch('/cms/login', { 
+    const res = await fetch('/cms/login/api', { 
       method: 'POST', 
       body: new URLSearchParams({ pass }) 
     });
