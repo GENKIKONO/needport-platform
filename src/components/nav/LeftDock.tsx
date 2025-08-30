@@ -32,7 +32,7 @@ export default function LeftDock() {
     getMenuData().then(setMenu);
   }, []);
   return (
-    <aside className="hidden lg:flex lg:flex-col lg:w-[300px] lg:h-dvh lg:sticky lg:top-0 lg:overflow-y-auto border-r bg-white">
+    <aside className="flex flex-col overflow-hidden w-64 h-screen bg-gray-50 border-r">
       {/* ロゴ（船）/サイト名 */}
       <div className="flex items-center gap-2 p-4 border-b">
         <Logo className="w-7 h-7" />
@@ -40,7 +40,7 @@ export default function LeftDock() {
       </div>
       
       {/* メニュー（アイコン+テキスト） */}
-      <nav className="flex-1 px-2 py-4 space-y-6">
+      <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto">
         {menu.map(g => (
           <div key={g.title}>
             <div className="px-2 text-xs font-semibold text-[var(--ink-500)] mb-2">{g.title}</div>
@@ -98,11 +98,11 @@ function getIcon(icon: string) {
     case 'book': return <BookOpenIcon />;
     case 'guide': return <AcademicCapIcon />;
     case 'route': return <MapIcon />;
-    case 'help': return <QuestionMarkCircleIcon />;
+    case 'question': return <QuestionMarkCircleIcon />;
     case 'megaphone': return <MegaphoneIcon />;
     case 'info': return <InformationCircleIcon />;
     case 'document': return <DocumentTextIcon />;
-    default: return null;
+    default: return <ListBulletIcon />;
   }
 }
 
