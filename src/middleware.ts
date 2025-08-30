@@ -3,6 +3,9 @@ import { NextResponse } from "next/server";
 import { buildCSP, makeNonce } from "@/lib/security/csp";
 
 export function middleware(req: NextRequest) {
+  const hasClerkEnv =
+    !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !!process.env.CLERK_SECRET_KEY;
+
   // CMS ゲート（パスワード保護）
   if (req.nextUrl.pathname.startsWith('/cms')) {
     const cookie = req.headers.get('cookie') ?? '';
