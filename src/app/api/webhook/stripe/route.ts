@@ -22,6 +22,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // まず去重：同じevent.idを二重処理しない
+    try {
+      const sadmin = (await import("@/lib/supabase-server")).supabaseAdmin();
+      const { error: dedupeErr } = await sadmin.from("webhook_events").insert({ id: event.id });
+      if (dedupeErr) {
+        // 既に処理済み
+        return NextResponse.json({ ok: true });
+      }
+    } catch (e) {
+      console.error("[stripe:webhook:dedupe_fail]", e);
+    }
+
     if (event.type === "checkout.session.completed") {
       const s = event.data.object as Stripe.Checkout.Session;
       await insertAudit({
@@ -40,6 +52,14 @@ export async function POST(req: NextRequest) {
         const customerId = typeof s.customer === "string" ? s.customer : null;
         const kind = s.metadata?.kind ?? "payment";
         const needId = s.metadata?.needId || null;
+        const clerkUserId = s.metadata?.clerkUserId || null;
+
+        if (clerkUserId && customerId) {
+          await sadmin.from("user_identities").upsert({
+            clerk_user_id: clerkUserId,
+            stripe_customer_id: customerId
+          }, { onConflict: "clerk_user_id" });
+        }
 
         if (kind === "payment" && needId && customerId) {
           await sadmin.from("vendor_accesses").insert({

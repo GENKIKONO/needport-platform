@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getNeedById } from '@/lib/server/needsService';
 import ProposalButton from '@/components/needs/ProposalButton';
 import { UnlockAccessButton } from "@/components/needs/UnlockAccessButton";
+import { ContactPanel } from "./ContactPanel";
 
 interface NeedDetailPageProps {
   params: { id: string };
@@ -18,6 +19,8 @@ export default async function NeedDetailPage({ params }: NeedDetailPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
+        {/* 解放済みなら連絡先表示（未解放だと何も出ない） */}
+        <ContactPanel needId={params.id} />
         {/* ヘッダー */}
         <div className="mb-8">
           <nav className="text-sm text-gray-500 mb-4">
