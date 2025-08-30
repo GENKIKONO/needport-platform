@@ -1,6 +1,6 @@
 import "@/styles/tokens.css";
-import AppShell from "@/components/layout/AppShell";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+  // NOTE: アプリ側もサイドナビを出さない（ルートレイアウトで既に描画済み）
+  return <main className="min-h-dvh">{children}</main>;
 }

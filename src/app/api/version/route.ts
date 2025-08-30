@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+
 export async function GET() {
-  return NextResponse.json({
-    release: process.env.NEXT_PUBLIC_RELEASE || null,
-    ts: Date.now(),
-    note: "hotfix-check"
-  });
+  const sha = process.env.VERCEL_GIT_COMMIT_SHA || null;
+  const branch = process.env.VERCEL_GIT_COMMIT_REF || null;
+  const env = process.env.VERCEL_ENV || process.env.NODE_ENV || 'unknown';
+  return NextResponse.json({ ok: true, sha, branch, env, at: new Date().toISOString() });
 }
