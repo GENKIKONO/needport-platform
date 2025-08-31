@@ -8,15 +8,18 @@ async function isAdmin(userId?: string|null) {
   return !!data;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const mine = url.searchParams.get('mine') === '1';
+  const limit = Number(url.searchParams.get('limit') ?? 200);
   const { userId } = auth();
-  if (!(await isAdmin(userId))) return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  const admin = await isAdmin(userId);
+  if (!admin && !mine) return NextResponse.json({ error: 'forbidden' }, { status: 403 });
 
-  const { data, error } = await supabaseAdmin()
-    .from('project_settlements')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(200);
-  if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
+  let q = supabaseAdmin().from('project_settlements').select('*').order('created_at', { ascending:false }).limit(Math.min(limit,200));
+  if (mine && userId) q = q.eq('vendor_id', userId);
+
+  const { data, error } = await q;
+  if (error) return NextResponse.json([], { status: 200 });
   return NextResponse.json(data ?? []);
 }
