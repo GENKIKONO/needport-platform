@@ -6,6 +6,7 @@ export async function GET() {
     clerk: !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !!process.env.CLERK_SECRET_KEY,
     stripe: !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY && !!process.env.STRIPE_SECRET_KEY && !!process.env.PRICE_FLAT_UNLOCK && !!process.env.PRICE_PHONE_SUPPORT,
     stripe_webhook: !!process.env.STRIPE_WEBHOOK_SECRET,
+    stripe_connect: true, // APIキー存在のみチェック（詳細はダッシュボードで）
     turnstile: !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !!process.env.TURNSTILE_SECRET_KEY,
     sentry: !!process.env.SENTRY_DSN && !!process.env.NEXT_PUBLIC_SENTRY_DSN,
     origin: !!process.env.PLATFORM_ORIGIN,

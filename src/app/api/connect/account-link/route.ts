@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
     // Stripe環境変数チェック
@@ -9,7 +11,17 @@ export async function POST(req: Request) {
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
-    const { accountId, returnUrl } = await req.json();
+    const ct = req.headers.get('content-type') || '';
+    let accountId = ''; let returnUrl = '/vendor/connect';
+    if (ct.includes('application/json')) {
+      const body = await req.json().catch(() => ({}));
+      accountId = body?.accountId || '';
+      returnUrl = body?.returnUrl || returnUrl;
+    } else {
+      const form = await req.formData().catch(() => null);
+      accountId = String(form?.get('accountId') || '');
+      returnUrl = String(form?.get('returnUrl') || returnUrl);
+    }
     
     if (!accountId) return NextResponse.json({ error: 'accountId_required' }, { status: 400 });
 

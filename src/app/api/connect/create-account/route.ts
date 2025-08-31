@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
     // Stripe環境変数チェック
@@ -9,7 +11,15 @@ export async function POST(req: Request) {
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
-    const { returnUrl } = await req.json().catch(() => ({ returnUrl: process.env.PLATFORM_ORIGIN }));
+    const ct = req.headers.get('content-type') || '';
+    let returnUrl = '/vendor/connect';
+    if (ct.includes('application/json')) {
+      const body = await req.json().catch(() => ({}));
+      if (body?.returnUrl) returnUrl = body.returnUrl;
+    } else {
+      const form = await req.formData().catch(() => null);
+      if (form?.get('returnUrl')) returnUrl = String(form.get('returnUrl'));
+    }
 
     // 1) Create Express account (if you already store accountId per vendor, skip creation)
     const account = await stripe.accounts.create({
