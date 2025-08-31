@@ -31,6 +31,14 @@ export async function POST(req: Request) {
   const participant = (pp.vendor_id === userId) || (pp.owner_id === userId);
   if (!participant) return NextResponse.json({ error: 'forbidden' }, { status: 403 });
 
+  // NGプリチェック
+  const pv = await fetch(`${process.env.PLATFORM_ORIGIN}/api/mod/precheck`, {
+    method:'POST', headers:{'content-type':'application/json','x-needport-internal':'1'},
+    body: JSON.stringify({ kind:'message', text: parsed.data.body })
+  }).then(r=>r.json()).catch(()=>({ level:'pass' }));
+  if (pv.level === 'block') return NextResponse.json({ error:'ng_blocked' }, { status:400 });
+  // 作成は status='pending' のまま（管理者承認で相手通知）
+
   // 変更: insert 時は status='pending'
   // 相手ユーザーへの通知は送らず、管理者宛に「審査キュー追加」の通知/メール（任意）を入れる
   const { data, error } = await sadmin.from('proposal_messages')

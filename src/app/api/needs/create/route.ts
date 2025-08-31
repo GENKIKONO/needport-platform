@@ -26,6 +26,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid_input', issues: parsed.error.issues }, { status: 400 });
   }
 
+  // NGプリチェック
+  const pv = await fetch(`${process.env.PLATFORM_ORIGIN}/api/mod/precheck`, {
+    method:'POST', headers:{'content-type':'application/json','x-needport-internal':'1'},
+    body: JSON.stringify({ kind:'need', text: parsed.data.summary })
+  }).then(r=>r.json()).catch(()=>({ level:'pass' }));
+  if (pv.level === 'block') return NextResponse.json({ error:'ng_blocked' }, { status:400 });
+  // review状態で作成は既定。pv.level==='review' の場合は UIに「審査中」を出すなど。
+
   const sadmin = supabaseAdmin();
   const { data, error } = await sadmin
     .from('needs')

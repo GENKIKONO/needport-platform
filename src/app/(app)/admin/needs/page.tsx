@@ -35,7 +35,10 @@ export default async function AdminNeedsQueue() {
           <tbody>
             {queue.rows?.map((n: any) => (
               <tr key={n.id} className="border-t">
-                <td className="px-3 py-2">{n.title}</td>
+                <td className="px-3 py-2">
+                  <div>{n.title}</div>
+                  <Highlighted text={n.summary}/>
+                </td>
                 <td className="px-3 py-2 text-center">{n.region}</td>
                 <td className="px-3 py-2 text-center">{n.category}</td>
                 <td className="px-3 py-2 text-center">{n.status}</td>
@@ -60,4 +63,15 @@ export default async function AdminNeedsQueue() {
       </div>
     </div>
   );
+}
+
+function Highlighted({ text }:{ text:string }) {
+  const [html,setHtml] = require('react').useState('');
+  require('react').useEffect(()=>{
+    (async ()=>{
+      const r = await fetch('/api/admin/ng-words/preview', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ text }) });
+      const j = await r.json(); setHtml(j.html||'');
+    })();
+  },[text]);
+  return <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: html }}/>;
 }
