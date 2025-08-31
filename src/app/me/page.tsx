@@ -35,6 +35,8 @@ export default async function MePage() {
   const notifications = await fetchJSON('/api/notifications/list?limit=10');
   const rows = notifications?.rows || [];
   const unread = rows.filter((r:any)=>!r.read).length;
+  const prefsRes = await fetch(`${process.env.PLATFORM_ORIGIN}/api/notifications/prefs`, { headers:{ 'x-needport-internal':'1' }, cache:'no-store' }).catch(()=>null);
+  const prefs = prefsRes && prefsRes.ok ? await prefsRes.json() : { email_on_message:true, email_on_proposal:true, email_on_settlement:true };
 
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-6">
@@ -94,6 +96,36 @@ export default async function MePage() {
         <div className="text-right mt-2">
           <Link className="text-blue-600 underline text-sm" href="/vendor/dashboard">提案一覧へ</Link>
         </div>
+      </section>
+
+      <section className="rounded border p-4">
+        <h2 className="font-medium">通知設定（メール）</h2>
+        <form action="/api/notifications/prefs" method="post" onSubmit={(e)=>{}}>
+          <input type="hidden" name="_method" value="PUT" />
+          <div className="mt-2 space-y-2 text-sm">
+            <label className="flex items-center gap-2">
+              <input name="email_on_message" type="checkbox" defaultChecked={!!prefs.email_on_message} /> メッセージ受信
+            </label>
+            <label className="flex items-center gap-2">
+              <input name="email_on_proposal" type="checkbox" defaultChecked={!!prefs.email_on_proposal} /> 提案の更新
+            </label>
+            <label className="flex items-center gap-2">
+              <input name="email_on_settlement" type="checkbox" defaultChecked={!!prefs.email_on_settlement} /> 入金/成約
+            </label>
+          </div>
+          <button className="mt-3 rounded bg-blue-600 px-3 py-1.5 text-white text-sm"
+            onClick={async (ev:any)=> {
+              ev.preventDefault();
+              const form = ev.currentTarget.form as HTMLFormElement;
+              const body = {
+                email_on_message: (form.email_on_message as any)?.checked || false,
+                email_on_proposal: (form.email_on_proposal as any)?.checked || false,
+                email_on_settlement: (form.email_on_settlement as any)?.checked || false,
+              };
+              await fetch('/api/notifications/prefs', { method:'PUT', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+              location.reload();
+            }}>保存</button>
+        </form>
       </section>
     </div>
   );

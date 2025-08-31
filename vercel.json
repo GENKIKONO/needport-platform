@@ -26,7 +26,8 @@
     }
   ],
   "crons": [
-    { "path": "/api/admin/cron/daily", "schedule": "0 0 * * *" }
+    { "path": "/api/admin/cron/daily", "schedule": "0 0 * * *" },
+    { "path": "/api/ops/email-flush", "schedule": "*/5 * * * *" }
   ],
   "functions": {
     "src/app/api/**/*.ts": { "maxDuration": 30 }

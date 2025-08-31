@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { pushNotification } from '@/lib/notify/notify';
+import { enqueueEmail } from '@/lib/notify/email';
+import { formatAnonId } from '@/lib/visibility';
 
 const schema = z.object({
   id: z.string().uuid(),
@@ -35,6 +38,48 @@ export async function POST(req: Request) {
   await sadmin.from('audit_logs').insert({
     actor_id: userId, action: 'PROPOSAL_STATUS_UPDATE', target_type: 'proposal', target_id: id, meta: { status }
   });
+
+  if (status === 'accepted') {
+    // 参加者（vendor / need owner）を取得
+    const { data: parts } = await sadmin
+      .from('proposal_participants').select('vendor_id, owner_id').eq('proposal_id', id).maybeSingle();
+    
+    if (parts) {
+      const vendorId = parts.vendor_id;
+      const ownerId = parts.owner_id;
+      
+      // 送信
+      for (const targetId of [vendorId, ownerId]) {
+        if (!targetId) continue;
+        await pushNotification({
+          userId: targetId,
+          type: 'proposal',
+          title: '提案が承認されました',
+          body: 'チャットで詳細を詰めましょう。',
+          meta: { proposalId: id }
+        });
+        // メールはプリファレンスを尊重
+        const { data: pref } = await sadmin
+          .from('notification_prefs').select('email_on_proposal').eq('user_id', targetId).maybeSingle();
+        if (pref?.email_on_proposal !== false) {
+          // メールアドレスを取得（vendor_profilesから）
+          let toEmail: string | null = null;
+          const { data: vp } = await sadmin.from('vendor_profiles').select('email').eq('user_id', targetId).maybeSingle();
+          if (vp?.email) toEmail = vp.email;
+          if (toEmail) {
+            await enqueueEmail({
+              to: toEmail,
+              toUserId: targetId,
+              subject: '【NeedPort】提案が承認されました',
+              text: `提案が承認されました。詳細はチャットでご確認ください。\n\nhttps://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'needport.jp'}/proposals/${id}/chat`,
+              html: `<p>提案が承認されました。詳細はチャットでご確認ください。</p><p><a href="https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'needport.jp'}/proposals/${id}/chat">チャットを開く</a></p>`,
+              meta: { proposalId: id }
+            });
+          }
+        }
+      }
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

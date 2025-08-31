@@ -2,8 +2,22 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+async function fetchUnread() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_PLATFORM_ORIGIN || ''}/api/notifications/list?limit=20`, { cache:'no-store', headers:{ 'x-needport-internal':'1' } });
+    if (!res.ok) return 0;
+    const js = await res.json();
+    return (js.rows || []).filter((r:any)=>!r.read).length;
+  } catch { return 0; }
+}
+
 export default function Header(){
   const [open, setOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    fetchUnread().then(setUnread);
+  }, []);
   // 背景のスクロール固定（モバイルメニュー開時）
   useEffect(()=>{
     if (open) { document.body.style.overflow='hidden'; }
@@ -23,6 +37,12 @@ export default function Header(){
           <a href="/vendor/connect" className="text-sm hover:underline">事業者口座登録</a>
           <a href="/needs" className="text-sm hover:underline">ニーズ一覧</a>
           <a href="/guide" className="text-sm hover:underline">ガイド</a>
+          <Link href="/me" className="relative inline-flex items-center justify-center rounded px-2 py-1 text-sm">
+            <span>通知</span>
+            {unread > 0 && (
+              <span className="absolute -right-2 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">{unread}</span>
+            )}
+          </Link>
           <a href="/admin/settlements" className="text-xs text-muted-foreground hover:underline">運用</a>
           <a href="/admin/needs" className="text-xs text-gray-500 hover:text-gray-700">承認キュー</a>
         </nav>
@@ -45,7 +65,12 @@ export default function Header(){
           <a href="/vendor/connect" onClick={()=>setOpen(false)} className="py-2">事業者口座登録</a>
           <Link href="/needs" onClick={()=>setOpen(false)} className="py-2">ニーズ一覧</Link>
           <Link href="/guide" onClick={()=>setOpen(false)} className="py-2">ガイド</Link>
-          <Link href="/me" onClick={()=>setOpen(false)} className="py-2">マイページ</Link>
+          <Link href="/me" onClick={()=>setOpen(false)} className="py-2 relative">
+            通知
+            {unread > 0 && (
+              <span className="absolute -right-2 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">{unread}</span>
+            )}
+          </Link>
           <a href="/admin/settlements" onClick={()=>setOpen(false)} className="py-2 text-xs text-muted-foreground">運用</a>
           <a href="/admin/needs" onClick={()=>setOpen(false)} className="py-2 text-xs text-gray-500">承認キュー</a>
         </nav>
