@@ -23,10 +23,17 @@ export async function GET() {
   };
   const ok = Object.values(checks).every(Boolean);
   const missing = Object.entries(checks).filter(([,v])=>!v).map(([k])=>k);
+  const legal = {
+    terms: true,
+    privacy: true,
+    tokushoho: true,
+    contact: true,
+  };
   return NextResponse.json({
     ok,
     checks,
     missing,
+    legal,
     release: process.env.NEXT_PUBLIC_RELEASE || null,
     perf: { needsSelectSlim: true, needsPerCap: 24 },
     security: { apiRateLimit: '60/min/ip (in-memory)', webhooks: checks.stripe_webhook === true }
