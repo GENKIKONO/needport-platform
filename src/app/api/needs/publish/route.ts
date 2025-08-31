@@ -1,0 +1,35 @@
+import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
+import { supabaseAdmin } from '@/lib/supabase/admin';
+
+const schema = z.object({
+  id: z.string().uuid()
+});
+
+export async function POST(req: Request) {
+  const { userId } = auth();
+  if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+
+  const sadmin = supabaseAdmin();
+  const { data: role } = await sadmin.from('user_roles')
+    .select('role').eq('user_id', userId).eq('role','admin').maybeSingle();
+  if (!role) return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+
+  const body = await req.json().catch(() => ({}));
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: 'invalid_input' }, { status: 400 });
+
+  const { id } = parsed.data;
+  const { error } = await sadmin.from('needs').update({ status: 'published' }).eq('id', id);
+  if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
+
+  await sadmin.from('audit_logs').insert({
+    actor_id: userId,
+    action: 'NEED_PUBLISHED',
+    target_type: 'need',
+    target_id: id
+  });
+
+  return NextResponse.json({ ok: true });
+}
