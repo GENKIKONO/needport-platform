@@ -20,7 +20,9 @@ export default function Header(){
           </div>
         </Link>
         <nav className="hidden md:flex items-center gap-4">
-          {/* 既存のトップナビ（必要に応じて） */}
+          <a href="/vendor/connect" className="text-sm hover:underline">事業者口座登録</a>
+          <a href="/needs" className="text-sm hover:underline">ニーズ一覧</a>
+          <a href="/guide" className="text-sm hover:underline">ガイド</a>
         </nav>
         <button
           className="md:hidden inline-flex items-center justify-center h-9 w-9 rounded hover:bg-gray-100"
@@ -38,6 +40,7 @@ export default function Header(){
         className={`md:hidden fixed inset-x-0 top-14 bg-white border-t transition-[max-height,opacity] duration-200 overflow-hidden ${open ? 'max-h-[50vh] opacity-100' : 'max-h-0 opacity-0'}`}
       >
         <nav className="px-4 py-3 flex flex-col">
+          <a href="/vendor/connect" onClick={()=>setOpen(false)} className="py-2">事業者口座登録</a>
           <Link href="/needs" onClick={()=>setOpen(false)} className="py-2">ニーズ一覧</Link>
           <Link href="/guide" onClick={()=>setOpen(false)} className="py-2">ガイド</Link>
           <Link href="/me" onClick={()=>setOpen(false)} className="py-2">マイページ</Link>
