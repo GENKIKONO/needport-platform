@@ -48,6 +48,17 @@ export default async function NeedDetailPage({ params }: NeedDetailPageProps) {
       {/* 既存のヘッダー・概要ブロック等 */}
       <div className="text-sm text-gray-500">提案数: {countRes?.count ?? 0}</div>
 
+      {/* 交渉メッセージ（提案後に使う簡易UIへの導線） */}
+      <div className="rounded-md border p-4 space-y-2">
+        <h2 className="font-semibold">交渉チャット</h2>
+        <p className="text-sm text-muted-foreground">
+          提案を送信後、相手とこの案件について1対1でメッセージできます。
+        </p>
+        <p className="text-xs text-gray-500">
+          ※ 実メッセージ画面は「マイページ」や「事業者ダッシュボード」からも開けます（後で強化）。
+        </p>
+      </div>
+
       {/* 提案フォーム（最低限） */}
       <div className="border rounded-md p-4 space-y-2">
         <h2 className="font-semibold">提案する</h2>

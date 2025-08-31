@@ -37,7 +37,8 @@ export async function GET() {
   const meta = {
     rls: true,
     audit: true,
-    webhook_dedupe: true
+    webhook_dedupe: true,
+    conversations: { messages: true, readReceipt: true, rls: true }
   };
   return NextResponse.json({
     ok,
