@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { resolveRevealLevel, formatAnonId } from '@/lib/visibility';
 
 const querySchema = z.object({
   needId: z.string().uuid().optional(),
@@ -39,5 +40,14 @@ export async function GET(req: Request) {
   const { data, count, error } = await query;
   if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
 
-  return NextResponse.json({ rows: data ?? [], total: count ?? 0, page, per });
+  // 匿名ID表示の処理（将来的に実装）
+  const processed = (data ?? []).map(r => {
+    const level = resolveRevealLevel({ proposalStatus: r.status });
+    const base = r; // 将来的にpartner情報を取得
+    // ユーザー側は accepted までは匿名表示に
+    const displayName = formatAnonId(r.vendor_id);
+    return { ...r, partner: { display_name: displayName, role: 'vendor' } };
+  });
+
+  return NextResponse.json({ rows: processed, total: count ?? 0, page, per });
 }

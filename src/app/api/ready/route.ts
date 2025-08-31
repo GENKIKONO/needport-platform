@@ -9,6 +9,7 @@ export async function GET() {
   const hasTurnstile = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !!process.env.TURNSTILE_SECRET_KEY;
   const hasSentry = !!process.env.SENTRY_DSN && !!process.env.NEXT_PUBLIC_SENTRY_DSN;
   const hasOrigin = !!process.env.PLATFORM_ORIGIN;
+  const hasEmail = !!process.env.RESEND_API_KEY && !!process.env.MAIL_FROM;
 
   const checks = {
     supabase: hasSupabase,
@@ -19,6 +20,7 @@ export async function GET() {
     turnstile: hasTurnstile,
     sentry: hasSentry,
     origin: hasOrigin,
+    email: hasEmail,
     paymentsEnabled: (process.env.PAYMENTS_ENABLED === 'true' || process.env.NEXT_PUBLIC_STRIPE_ENABLED === 'true') && hasStripePrices
   };
   const ok = Object.values(checks).every(Boolean);

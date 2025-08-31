@@ -31,6 +31,11 @@ export default async function MePage() {
   const connectId = connect?.stripe_connect_account_id as string|undefined;
   const connectReady = !!connect?.stripe_connect_ready;
 
+  // 通知一覧を取得
+  const notifications = await fetchJSON('/api/notifications/list?limit=10');
+  const rows = notifications?.rows || [];
+  const unread = rows.filter((r:any)=>!r.read).length;
+
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-6">
       <header>
@@ -73,9 +78,22 @@ export default async function MePage() {
         </div>
       </section>
 
-      <section className="rounded border p-4 space-y-2">
-        <h2 className="font-medium">通知設定（ダミー）</h2>
-        <p className="text-sm text-muted-foreground">提案受信・解放完了時にメール通知（後日ON）。</p>
+      <section className="rounded border p-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-medium">通知</h2>
+          <span className="text-xs text-muted-foreground">{unread} 未読</span>
+        </div>
+        <ul className="mt-2 space-y-2">
+          {rows.map((n:any)=>(
+            <li key={n.id} className="text-sm">
+              <div className="font-medium">{n.title}</div>
+              {n.body && <div className="text-muted-foreground">{n.body}</div>}
+            </li>
+          ))}
+        </ul>
+        <div className="text-right mt-2">
+          <Link className="text-blue-600 underline text-sm" href="/vendor/dashboard">提案一覧へ</Link>
+        </div>
       </section>
     </div>
   );
