@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import Stripe from "stripe";
 import { insertAudit } from "@/lib/audit";
+import { pushNotification } from '@/lib/notify/notify';
+import { enqueueEmail } from '@/lib/notify/email';
 
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
@@ -74,6 +76,61 @@ export async function POST(req: NextRequest) {
             active: true,
             updated_at: new Date().toISOString()
           }, { onConflict: "stripe_customer_id" });
+        }
+        
+        // 成約手数料の決済完了処理
+        if (s.metadata?.type === 'settlement_fee') {
+          const settlementId = s.metadata.settlementId;
+          const { data: updated, error } = await sadmin
+            .from('project_settlements')
+            .update({
+              status: 'paid',
+              paid_at: new Date().toISOString(),
+              stripe_checkout_session: s.id
+            })
+            .eq('id', settlementId)
+            .select('id, need_id, vendor_id, final_price, fee_amount')
+            .maybeSingle();
+          if (error) {
+            console.error('Settlement update error:', error);
+          } else if (updated) {
+            // 参加者（vendor と need owner）へ通知＆メール
+            const { data: need } = await sadmin
+              .from('needs').select('owner_id,title').eq('id', updated.need_id).maybeSingle();
+            const participants = [
+              { user_id: updated.vendor_id, role: 'vendor' },
+              { user_id: need?.owner_id, role: 'owner' }
+            ].filter(Boolean) as {user_id:string, role:'vendor'|'owner'}[];
+
+            for (const p of participants) {
+              await pushNotification({
+                userId: p.user_id,
+                type: 'settlement',
+                title: '成約が確定しました（お支払い完了）',
+                body: `案件「${need?.title ?? ''}」の成約が確定しました。明細は成約一覧をご確認ください。`,
+                meta: { settlementId: updated.id, needId: updated.need_id }
+              });
+              // メール（ユーザーのプリファレンス尊重）
+              const { data: pref } = await sadmin
+                .from('notification_prefs').select('email_on_settlement').eq('user_id', p.user_id).maybeSingle();
+              if (pref?.email_on_settlement !== false) {
+                // 送信先メールを vendor_profiles / profiles などから取得（存在する方を採用）
+                const { data: vendorMail } = await sadmin
+                  .from('vendor_profiles').select('email').eq('user_id', p.user_id).maybeSingle();
+                const to = vendorMail?.email || s.customer_details?.email || null;
+                if (to) {
+                  await enqueueEmail({
+                    to,
+                    toUserId: p.user_id,
+                    subject: '【NeedPort】成約が確定しました（お支払い完了）',
+                    text: `案件「${need?.title ?? ''}」の成約が確定しました。\n成約明細: https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'needport.jp'}/admin/settlements`,
+                    html: `<p>案件「${need?.title ?? ''}」の成約が確定しました。</p><p><a href="https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'needport.jp'}/admin/settlements">成約明細を見る</a></p>`,
+                    meta: { settlementId: updated.id, needId: updated.need_id }
+                  });
+                }
+              }
+            }
+          }
         }
       } catch (e) {
         console.error("[stripe:webhook:db_update_failed]", e);

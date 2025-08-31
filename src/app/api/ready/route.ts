@@ -40,7 +40,8 @@ export async function GET() {
     rls: true,
     audit: true,
     webhook_dedupe: true,
-    conversations: { messages: true, readReceipt: true, rls: true }
+    conversations: { messages: true, readReceipt: true, rls: true },
+    notify: { prefs: true, headerBadge: true, emailFlushCron: true, settlementPaid: true, dailyDigest: true }
   };
   return NextResponse.json({
     ok,
