@@ -35,21 +35,31 @@ export default async function VendorDash() {
           <div className="text-lg">オンライン決済：準備中</div>
         </div>
       </div>
-      <div className="rounded border p-4">
-        <div className="font-medium mb-2">最近の成約</div>
+      <section className="rounded border p-4">
+        <h2 className="font-medium mb-3">最近の成約</h2>
         {(!recent || recent.length===0) ? (
-          <div className="text-sm text-muted-foreground">まだ成約はありません。</div>
+          <p className="text-sm text-muted-foreground">まだ成約はありません。</p>
         ) : (
-          <div className="text-sm divide-y">
-            {recent.map((r:any)=>(
-              <div key={r.id} className="py-2 flex items-center justify-between">
-                <div>#{r.id.slice(0,8)} / {r.method} / {r.status}</div>
-                <div className="tabular-nums">{Math.round(r.fee_amount/1000)} 千円</div>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-muted-foreground">
+                <tr><th className="py-2 pr-4">日時</th><th className="py-2 pr-4">方法</th><th className="py-2 pr-4">売価</th><th className="py-2 pr-4">手数料</th><th className="py-2 pr-4">状態</th></tr>
+              </thead>
+              <tbody>
+                {recent.map((r:any)=>(
+                  <tr key={r.id} className="border-t">
+                    <td className="py-2 pr-4">{new Date(r.created_at).toLocaleString()}</td>
+                    <td className="py-2 pr-4">{r.method}</td>
+                    <td className="py-2 pr-4">{(r.final_price/1000).toFixed(0)} 千円</td>
+                    <td className="py-2 pr-4">{(r.fee_amount/1000).toFixed(0)} 千円</td>
+                    <td className="py-2 pr-4">{r.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
