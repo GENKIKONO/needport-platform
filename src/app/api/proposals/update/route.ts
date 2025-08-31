@@ -46,13 +46,28 @@ export async function POST(req: Request) {
     
     // care_taxi の場合の追加処理
     const { data: need } = await sadmin.from('needs')
-      .select('kind, user_reveal_policy')
+      .select('kind, user_reveal_policy, industry_id')
       .eq('id', (await sadmin.from('proposals').select('need_id').eq('id', id).maybeSingle())?.data?.need_id)
       .maybeSingle();
     
+    // 業種の課金方針を確認
+    let shouldRevealContact = false;
     if (need?.kind === 'care_taxi' && need?.user_reveal_policy === 'accepted') {
-      // care_taxi で accepted の場合：ユーザー連絡先開示可能フラグを設定
-      // （messages/list で判定用）
+      shouldRevealContact = true;
+    } else if (need?.industry_id) {
+      const { data: industry } = await sadmin
+        .from('industries')
+        .select('fee_applicable')
+        .eq('id', need.industry_id)
+        .maybeSingle();
+      
+      if (industry && !industry.fee_applicable && need?.user_reveal_policy === 'accepted') {
+        shouldRevealContact = true;
+      }
+    }
+    
+    if (shouldRevealContact) {
+      // 成果報酬対象外の業種で accepted の場合：ユーザー連絡先開示可能フラグを設定
       await sadmin.from('proposals').update({ 
         meta: { user_contact_revealed: true } 
       }).eq('id', id);

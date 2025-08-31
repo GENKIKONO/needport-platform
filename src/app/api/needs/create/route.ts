@@ -22,7 +22,9 @@ const schema = z.object({
   who_count: z.number().min(1).optional(),
   wheelchair: z.boolean().optional(),
   helpers_needed: z.number().min(0).optional(),
-  notes: z.string().optional()
+  notes: z.string().optional(),
+  // 業種指定（任意）
+  industry_id: z.string().uuid().optional()
 });
 
 export async function POST(req: Request) {
@@ -56,6 +58,20 @@ export async function POST(req: Request) {
   if (parsed.data.kind === 'care_taxi') {
     insertData.user_reveal_policy = 'accepted';
     insertData.vendor_visibility = 'public';
+  }
+  
+  // industry_id が指定されている場合の課金方針分岐
+  if (parsed.data.industry_id) {
+    const { data: industry } = await sadmin
+      .from('industries')
+      .select('fee_applicable')
+      .eq('id', parsed.data.industry_id)
+      .maybeSingle();
+    
+    if (industry && !industry.fee_applicable) {
+      insertData.user_reveal_policy = 'accepted';
+      insertData.vendor_visibility = 'public';
+    }
   }
   
   const { data, error } = await sadmin

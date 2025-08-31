@@ -15,3 +15,16 @@ export const FEE_CONFIG = {
   },
   stripeFeeRate: 0.036, // 参考表示用（収益内訳の可視化用）
 };
+
+/**
+ * 業種ごとの課金ポリシー決定（industries.fee_applicable=false を優先）
+ * - fee_applicable=false の場合：決済/手数料UIを隠し、承認→開示で進める（care_taxiと同等運用）
+ * - true の場合：既存の default ポリシー（決済で開示など）を利用
+ */
+export function resolveFeePolicy(industry: { fee_applicable: boolean } | null | undefined) {
+  if (!industry) return { usesSettlement: true, revealPolicy: 'paid' as const };
+  if (industry.fee_applicable === false) {
+    return { usesSettlement: false, revealPolicy: 'accepted' as const };
+  }
+  return { usesSettlement: true, revealPolicy: 'paid' as const };
+}

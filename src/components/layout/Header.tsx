@@ -37,6 +37,7 @@ export default function Header(){
           <a href="/vendor/connect" className="text-sm hover:underline">事業者口座登録</a>
           <a href="/needs" className="text-sm hover:underline">ニーズ一覧</a>
           <a href="/needs/new" className="text-sm hover:underline">介護タクシー依頼</a>
+          <a href="/vendors" className="text-sm hover:underline">事業者リスト</a>
           <a href="/guide" className="text-sm hover:underline">ガイド</a>
           <Link href="/me" className="relative inline-flex items-center justify-center rounded px-2 py-1 text-sm">
             <span>通知</span>
@@ -48,6 +49,7 @@ export default function Header(){
           <a href="/admin/needs" className="text-xs text-gray-500 hover:text-gray-700">承認キュー</a>
           <a href="/admin/messages" className="text-xs text-gray-500 hover:text-gray-700">メッセージ承認</a>
           <a href="/admin/ng-words" className="text-xs text-gray-500 hover:text-gray-700">NGワード管理</a>
+          <a href="/admin/industries" className="text-xs text-gray-500 hover:text-gray-700">業種管理</a>
         </nav>
         <button
           className="md:hidden inline-flex items-center justify-center h-9 w-9 rounded hover:bg-gray-100"
@@ -68,6 +70,7 @@ export default function Header(){
           <a href="/vendor/connect" onClick={()=>setOpen(false)} className="py-2">事業者口座登録</a>
           <Link href="/needs" onClick={()=>setOpen(false)} className="py-2">ニーズ一覧</Link>
           <Link href="/needs/new" onClick={()=>setOpen(false)} className="py-2">介護タクシー依頼</Link>
+          <Link href="/vendors" onClick={()=>setOpen(false)} className="py-2">事業者リスト</Link>
           <Link href="/guide" onClick={()=>setOpen(false)} className="py-2">ガイド</Link>
           <Link href="/me" onClick={()=>setOpen(false)} className="py-2 relative">
             通知
@@ -79,6 +82,7 @@ export default function Header(){
           <a href="/admin/needs" onClick={()=>setOpen(false)} className="py-2 text-xs text-gray-500">承認キュー</a>
           <a href="/admin/messages" onClick={()=>setOpen(false)} className="py-2 text-xs text-gray-500">メッセージ承認</a>
           <a href="/admin/ng-words" onClick={()=>setOpen(false)} className="py-2 text-xs text-gray-500">NGワード管理</a>
+          <a href="/admin/industries" onClick={()=>setOpen(false)} className="py-2 text-xs text-gray-500">業種管理</a>
         </nav>
       </div>
     </header>

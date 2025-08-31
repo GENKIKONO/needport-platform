@@ -1,115 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { VendorSchema } from '@/lib/validation/vendor';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 
-// Simple in-memory storage for demo (replace with database in production)
-const vendorStore = new Map<string, any>();
-const reviewQueue = new Map<string, any>();
-let vendorCounter = 1;
-
-// Rate limiting: 5 minutes per user
-const rateLimitStore = new Map<string, number>();
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    
-    // Validate input
-    const validationResult = VendorSchema.safeParse(body);
-    if (!validationResult.success) {
-      return NextResponse.json({
-        ok: false,
-        message: '入力内容に問題があります',
-        fieldErrors: validationResult.error.flatten().fieldErrors
-      }, { status: 422 });
-    }
-    
-    const data = validationResult.data;
-    
-    // Rate limiting
-    const userIp = request.ip || 'unknown';
-    const now = Date.now();
-    const lastSubmission = rateLimitStore.get(userIp);
-    
-    if (lastSubmission && (now - lastSubmission) < 5 * 60 * 1000) {
-      return NextResponse.json({
-        ok: false,
-        message: '送信が頻繁すぎます。5分後に再試行してください。'
-      }, { status: 429 });
-    }
-    
-    // Create vendor record
-    const vendorId = `vendor-${vendorCounter++}`;
-    const vendor = {
-      id: vendorId,
-      ...data,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    // Store vendor (in production, save to database)
-    vendorStore.set(vendorId, vendor);
-    
-    // Add to review queue
-    const reviewId = `review-${vendorId}`;
-    const review = {
-      id: reviewId,
-      vendorId: vendorId,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      vendor: {
-        companyName: vendor.companyName,
-        orgType: vendor.orgType,
-        email: vendor.email
-      }
-    };
-    reviewQueue.set(reviewId, review);
-    
-    // Update rate limit
-    rateLimitStore.set(userIp, now);
-    
-    // Clean up old rate limit entries (older than 10 minutes)
-    for (const [ip, timestamp] of rateLimitStore.entries()) {
-      if (now - timestamp > 10 * 60 * 1000) {
-        rateLimitStore.delete(ip);
-      }
-    }
-    
-    return NextResponse.json({
-      ok: true,
-      id: vendorId,
-      reviewId: reviewId,
-      status: 'pending',
-      message: '事業者登録を受け付けました。審査後にご連絡いたします。'
-    }, { status: 201 });
-    
-  } catch (error) {
-    console.error('Vendor registration error:', error);
-    return NextResponse.json({
-      ok: false,
-      message: 'サーバーエラーが発生しました。しばらく時間をおいて再試行してください。'
-    }, { status: 500 });
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const slug = url.searchParams.get('slug'); // industry slug
+  // vendors_directory_v をベースにしつつ、slug指定時は industry join で絞り込み
+  if (!slug) {
+    const { data, error } = await supabaseAdmin()
+      .from('vendors_directory_v')
+      .select('*')
+      .limit(60);
+    if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
+    return NextResponse.json({ rows: data });
   }
-}
-
-// GET endpoint for admin to view vendors (optional)
-export async function GET() {
-  try {
-    const vendors = Array.from(vendorStore.values());
-    return NextResponse.json({
-      ok: true,
-      vendors: vendors.map(v => ({
-        id: v.id,
-        companyName: v.companyName,
-        orgType: v.orgType,
-        status: v.status,
-        createdAt: v.createdAt
-      }))
-    });
-  } catch (error) {
-    return NextResponse.json({
-      ok: false,
-      message: 'サーバーエラーが発生しました。'
-    }, { status: 500 });
+  // slugあり（industry_id引き→join）
+  const { data: ind } = await supabaseAdmin()
+    .from('industries')
+    .select('id, slug, name, fee_applicable')
+    .eq('slug', slug).maybeSingle();
+  if (!ind) return NextResponse.json({ rows: [] });
+  const { data, error } = await supabaseAdmin()
+    .rpc('vendors_by_industry', { p_industry_id: ind.id }) // 事前に簡単なRPC用意しても良い。なければSQLでやってもOK
+    .limit(60);
+  if (error || !data) {
+    // RPCが無い場合のフォールバック：手動結合
+    const { data: list, error: err2 } = await supabaseAdmin()
+      .from('vendor_industries')
+      .select('vendor_id')
+      .eq('industry_id', ind.id)
+      .limit(200);
+    if (err2) return NextResponse.json({ error: 'db_error' }, { status: 500 });
+    const ids = (list||[]).map(r=>r.vendor_id);
+    if (ids.length===0) return NextResponse.json({ rows: [] });
+    const { data: dir, error: err3 } = await supabaseAdmin()
+      .from('vendors_directory_v')
+      .select('*').in('user_id', ids);
+    if (err3) return NextResponse.json({ error: 'db_error' }, { status: 500 });
+    return NextResponse.json({ rows: dir, industry: ind });
   }
+  return NextResponse.json({ rows: data, industry: ind });
 }
