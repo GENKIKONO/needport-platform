@@ -9,6 +9,7 @@ export default function NeedCard({ item }: { item: any }) {
         <h3 className="font-semibold line-clamp-1">{item.title ?? '無題'}</h3>
         <span className="text-xs text-muted-foreground">{new Date(item.updated_at ?? item.created_at).toLocaleDateString()}</span>
       </div>
+      {item.deadline && <div className="text-xs"><span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">期限 {new Date(item.deadline).toLocaleDateString()}</span></div>}
       <div className="text-sm text-muted-foreground line-clamp-2">{masked(item.summary ?? '')}</div>
       <div className="text-xs flex gap-2 text-muted-foreground">
         {item.region && <span>📍{item.region}</span>}

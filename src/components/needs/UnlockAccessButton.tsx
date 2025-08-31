@@ -10,7 +10,7 @@ export function UnlockAccessButton({ needId }: { needId: string }) {
     return (
       <div className="rounded border p-4 space-y-2">
         <div className="font-medium">見積・連絡を依頼</div>
-        <p className="text-sm text-muted-foreground">オンライン決済は準備中です。依頼後、事務局/事業者からご連絡します。</p>
+        <p className="text-sm text-muted-foreground">オンライン決済は準備中です。依頼後、事務局/事業者からご連絡します。個人情報は解放前は伏字で表示されます。</p>
         <button className="px-3 py-2 rounded bg-blue-600 text-white">依頼を送信</button>
       </div>
     );

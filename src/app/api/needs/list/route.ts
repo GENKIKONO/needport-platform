@@ -7,9 +7,12 @@ export async function GET(req: Request) {
   const region = url.searchParams.get('region')?.trim();
   const cat = url.searchParams.get('cat')?.trim();
   const sort = url.searchParams.get('sort') || 'new';
+  const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
+  const per = Math.min(30, Math.max(6, Number(url.searchParams.get('per') || '12')));
+  const from = (page-1)*per, to = from + per - 1;
 
   let query = supabaseAdmin().from('needs')
-    .select('id,title,summary,region,category,created_at,updated_at,public', { count: 'exact' })
+    .select('id,title,summary,region,category,deadline,created_at,updated_at,public', { count: 'exact' })
     .eq('public', true);
 
   if (q) query = query.ilike('title', `%${q}%`);
@@ -20,7 +23,7 @@ export async function GET(req: Request) {
   else if (sort === 'deadline') query = query.order('deadline', { ascending: true }).order('updated_at', { ascending: false });
   else query = query.order('created_at', { ascending: false });
 
-  const { data, error } = await query.limit(60);
-  if (error) return NextResponse.json([], { status: 200 });
-  return NextResponse.json(data ?? []);
+  const { data, count, error } = await query.range(from, to);
+  if (error) return NextResponse.json({ rows: [], page, per, total: 0 }, { status: 200 });
+  return NextResponse.json({ rows: data ?? [], page, per, total: count ?? 0 });
 }

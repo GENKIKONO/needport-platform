@@ -35,6 +35,21 @@ export default async function VendorDash() {
           <div className="text-lg">オンライン決済：準備中</div>
         </div>
       </div>
+      <div className="rounded border p-4">
+        <div className="font-medium mb-2">最近の成約</div>
+        {(!recent || recent.length===0) ? (
+          <div className="text-sm text-muted-foreground">まだ成約はありません。</div>
+        ) : (
+          <div className="text-sm divide-y">
+            {recent.map((r:any)=>(
+              <div key={r.id} className="py-2 flex items-center justify-between">
+                <div>#{r.id.slice(0,8)} / {r.method} / {r.status}</div>
+                <div className="tabular-nums">{Math.round(r.fee_amount/1000)} 千円</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
