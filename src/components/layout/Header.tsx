@@ -38,6 +38,7 @@ export default function Header(){
           <a href="/needs" className="text-sm hover:underline">ニーズ一覧</a>
           <a href="/needs/new" className="text-sm hover:underline">介護タクシー依頼</a>
           <a href="/vendors" className="text-sm hover:underline">事業者リスト</a>
+          <a href="/v2" className="text-sm hover:underline text-slate-500">UI v2</a>
           <a href="/guide" className="text-sm hover:underline">ガイド</a>
           <Link href="/me" className="relative inline-flex items-center justify-center rounded px-2 py-1 text-sm">
             <span>通知</span>
@@ -71,6 +72,7 @@ export default function Header(){
           <Link href="/needs" onClick={()=>setOpen(false)} className="py-2">ニーズ一覧</Link>
           <Link href="/needs/new" onClick={()=>setOpen(false)} className="py-2">介護タクシー依頼</Link>
           <Link href="/vendors" onClick={()=>setOpen(false)} className="py-2">事業者リスト</Link>
+          <Link href="/v2" onClick={()=>setOpen(false)} className="py-2 text-slate-500">UI v2</Link>
           <Link href="/guide" onClick={()=>setOpen(false)} className="py-2">ガイド</Link>
           <Link href="/me" onClick={()=>setOpen(false)} className="py-2 relative">
             通知
