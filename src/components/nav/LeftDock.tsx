@@ -31,8 +31,22 @@ export default function LeftDock() {
     // Load menu data
     getMenuData().then(setMenu);
   }, []);
+
+  // 安全ガード：メニューが空の場合はデフォルトアイテムを表示
+  const items = menu.length > 0 ? menu : [
+    { title: 'メニュー', items: [
+      { href: '/needs', label: 'ニーズ一覧' },
+      { href: '/guide', label: 'ガイド' },
+      { href: '/news', label: 'お知らせ' },
+      { href: '/me', label: 'マイページ' },
+    ]}
+  ];
+
   return (
-    <aside className="flex flex-col overflow-hidden w-64 h-screen bg-gray-50 border-r">
+    <aside
+      className="flex flex-col overflow-hidden w-64 h-screen bg-gray-50 border-r"
+      aria-label="サイドナビゲーション"
+    >
       {/* ロゴ（船）/サイト名 */}
       <div className="flex items-center gap-2 p-4 border-b">
         <Logo className="w-7 h-7" />
@@ -40,8 +54,8 @@ export default function LeftDock() {
       </div>
       
       {/* メニュー（アイコン+テキスト） */}
-      <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto">
-        {menu.map(g => (
+      <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto overflow-x-hidden">
+        {items.map(g => (
           <div key={g.title}>
             <div className="px-2 text-xs font-semibold text-[var(--ink-500)] mb-2">{g.title}</div>
             <ul className="space-y-1">

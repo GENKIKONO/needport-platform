@@ -31,7 +31,10 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="min-h-screen bg-gray-50 text-gray-900">
-        {/* スキップリンクは現状の要件では非表示（描画もしない） */}
+        {/* キーボード利用者向け：メインコンテンツへスキップ */}
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:bg-black focus:text-white focus:px-3 focus:py-2 rounded">
+          コンテンツへスキップ
+        </a>
         <ClerkProvider>
           <ErrorBoundary>
             <ToastProvider>
@@ -43,7 +46,7 @@ export default async function RootLayout({
 
                 {/* メイン＋フッター（ナビとは独立） */}
                 <div className="flex min-h-screen flex-col">
-                  <main id="main-content" className="flex-1">
+                  <main id="main" className="flex-1">
                     {children}
                   </main>
                   <Footer />

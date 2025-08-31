@@ -1,34 +1,48 @@
-'use client'
-import Link from "next/link"
-import { useState } from "react"
-import { Menu } from "lucide-react"
-import LeftDock from "@/components/nav/LeftDock"
+'use client';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-export default function Header() {
-  const [open, setOpen] = useState(false)
-
+export default function Header(){
+  const [open, setOpen] = useState(false);
+  // 背景のスクロール固定（モバイルメニュー開時）
+  useEffect(()=>{
+    if (open) { document.body.style.overflow='hidden'; }
+    else { document.body.style.overflow=''; }
+    return ()=>{ document.body.style.overflow=''; };
+  },[open]);
   return (
-    <header className="flex items-center justify-between px-4 py-2 border-b bg-white">
-      {/* 左上ロゴ */}
-      <Link href="/" className="flex items-center space-x-2 text-xl font-bold text-blue-600">
-        <span>🌀 NeedPort</span>
-      </Link>
-
-      {/* モバイル用ハンバーガー */}
-      <button
-        className="lg:hidden p-2"
-        onClick={() => setOpen(!open)}
-        aria-label="Toggle navigation"
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
+      <div className="mx-auto max-w-7xl flex items-center justify-between h-14 px-4">
+        {/* 左上ロゴ：常にホームへ */}
+        <Link href="/" aria-label="NeedPort ホームへ">
+          <div className="flex items-center gap-2">
+            <img src="/logo.svg" alt="NeedPort" className="h-6 w-auto" />
+          </div>
+        </Link>
+        <nav className="hidden md:flex items-center gap-4">
+          {/* 既存のトップナビ（必要に応じて） */}
+        </nav>
+        <button
+          className="md:hidden inline-flex items-center justify-center h-9 w-9 rounded hover:bg-gray-100"
+          aria-expanded={open}
+          aria-controls="mobile-menu"
+          onClick={()=>setOpen(v=>!v)}
+        >
+          <span className="sr-only">メニュー</span>
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor"/></svg>
+        </button>
+      </div>
+      {/* モバイルメニュー（開閉時に背景固定） */}
+      <div
+        id="mobile-menu"
+        className={`md:hidden fixed inset-x-0 top-14 bg-white border-t transition-[max-height,opacity] duration-200 overflow-hidden ${open ? 'max-h-[50vh] opacity-100' : 'max-h-0 opacity-0'}`}
       >
-        <Menu className="h-6 w-6" />
-      </button>
-
-      {/* モバイル時のサイドナビ */}
-      {open && (
-        <div className="absolute top-12 left-0 w-64 h-screen bg-white shadow-lg z-50">
-          <LeftDock />
-        </div>
-      )}
+        <nav className="px-4 py-3 flex flex-col">
+          <Link href="/needs" onClick={()=>setOpen(false)} className="py-2">ニーズ一覧</Link>
+          <Link href="/guide" onClick={()=>setOpen(false)} className="py-2">ガイド</Link>
+          <Link href="/me" onClick={()=>setOpen(false)} className="py-2">マイページ</Link>
+        </nav>
+      </div>
     </header>
-  )
+  );
 }
