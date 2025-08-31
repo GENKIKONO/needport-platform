@@ -104,6 +104,30 @@ export async function POST(req: NextRequest) {
         console.error("[stripe:webhook:sub_update_failed]", e);
       }
     }
+    
+    // Stripe Connect: account.updated
+    if (event.type === 'account.updated') {
+      const account = event.data.object as Stripe.Account;
+      if (account.charges_enabled && account.payouts_enabled) {
+        try {
+          const sadmin = (await import("@/lib/supabase-server")).supabaseAdmin();
+          const { error } = await sadmin
+            .from('vendor_profiles')
+            .update({
+              stripe_connect_ready: true,
+              stripe_connect_updated_at: new Date().toISOString()
+            })
+            .eq('stripe_connect_account_id', account.id);
+          if (error) {
+            console.error('Vendor profile update error:', error);
+          } else {
+            console.log(`Vendor ${account.id} onboarding completed`);
+          }
+        } catch (e) {
+          console.error("[stripe:webhook:connect_update_failed]", e);
+        }
+      }
+    }
   } catch (err:any) {
     console.error("[stripe:webhook:handler_error]", err?.message || err);
     return NextResponse.json({ error: "handler_error" }, { status: 500 });
