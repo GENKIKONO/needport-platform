@@ -27,6 +27,8 @@ export async function GET() {
     ok,
     checks,
     missing,
-    release: process.env.NEXT_PUBLIC_RELEASE || null
+    release: process.env.NEXT_PUBLIC_RELEASE || null,
+    perf: { needsSelectSlim: true, needsPerCap: 24 },
+    security: { apiRateLimit: '60/min/ip (in-memory)', webhooks: checks.stripe_webhook === true }
   });
 }

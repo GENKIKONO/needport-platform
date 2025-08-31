@@ -8,7 +8,9 @@ export async function GET(req: Request) {
   const cat = url.searchParams.get('cat')?.trim();
   const sort = url.searchParams.get('sort') || 'new';
   const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
-  const per = Math.min(30, Math.max(6, Number(url.searchParams.get('per') || '12')));
+  // 上限ガード（DoS対策）
+  const perRaw = Number(url.searchParams.get('per') || '12');
+  const per = Number.isFinite(perRaw) ? Math.min(Math.max(perRaw, 1), 24) : 12;
   const from = (page-1)*per, to = from + per - 1;
 
   let query = supabaseAdmin().from('needs')

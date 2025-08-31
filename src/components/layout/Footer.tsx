@@ -1,34 +1,20 @@
 import { readCms } from "@/lib/cms/storage";
 
-export default async function Footer() {
-  const cms = await readCms();
-  const footer = cms.footer;
-
+export function Footer() {
   return (
-    <footer className="mt-auto border-t bg-white">
-      <div className="mx-auto max-w-6xl px-6 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-          {footer.columns.map((column, i) => (
-            <div key={i}>
-              <h3 className="font-semibold text-gray-900 mb-2">{column.title}</h3>
-              <ul className="space-y-1">
-                {column.links.map((link, j) => (
-                  <li key={j}>
-                    <a 
-                      href={link.href} 
-                      className="text-sm text-gray-600 hover:text-gray-900"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+    <footer className="mt-20 border-t bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/50">
+      <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-gray-600 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-2">
+          <img src="/logo.svg" alt="NeedPort" className="h-5 w-auto" />
+          <span>© NeedPort</span>
         </div>
-        <div className="text-xs text-gray-500 border-t pt-4">
-          {footer.copyright}
-        </div>
+        <nav className="flex flex-wrap gap-x-4 gap-y-2">
+          <a href="/about" className="hover:underline">会社情報</a>
+          <a href="/terms" className="hover:underline">利用規約</a>
+          <a href="/commerce" className="hover:underline">特定商取引法に基づく表記</a>
+          <a href="/privacy" className="hover:underline">プライバシー</a>
+          <a href="/contact" className="hover:underline">お問い合わせ</a>
+        </nav>
       </div>
     </footer>
   );

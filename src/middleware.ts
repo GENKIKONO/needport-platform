@@ -1,10 +1,15 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { buildCSP, makeNonce } from "@/lib/security/csp";
+import { apiRateLimit } from './middleware.rate-limit';
 
 const hasClerkEnv = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !!process.env.CLERK_SECRET_KEY;
 
 export function middleware(req: NextRequest) {
+  // 1) 簡易レートリミット
+  const limited = apiRateLimit(req);
+  if (limited) return limited;
+
   // 環境変数が無い時はClerk認証をスキップ（CSPやヘッダは維持）
   if (!hasClerkEnv) return NextResponse.next();
 
