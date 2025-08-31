@@ -29,11 +29,17 @@ export async function GET() {
     tokushoho: true,
     contact: true,
   };
+  const meta = {
+    rls: true,
+    audit: true,
+    webhook_dedupe: true
+  };
   return NextResponse.json({
     ok,
     checks,
     missing,
     legal,
+    meta,
     release: process.env.NEXT_PUBLIC_RELEASE || null,
     perf: { needsSelectSlim: true, needsPerCap: 24 },
     security: { apiRateLimit: '60/min/ip (in-memory)', webhooks: checks.stripe_webhook === true }
