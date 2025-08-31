@@ -38,6 +38,7 @@ export default async function AdminNeedsQueue() {
                 <td className="px-3 py-2">
                   <div>{n.title}</div>
                   <Highlighted text={n.summary}/>
+                  <DecisionPanel needId={n.id}/>
                 </td>
                 <td className="px-3 py-2 text-center">{n.region}</td>
                 <td className="px-3 py-2 text-center">{n.category}</td>
@@ -74,4 +75,49 @@ function Highlighted({ text }:{ text:string }) {
     })();
   },[text]);
   return <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: html }}/>;
+}
+
+// 承認操作パネル（テンプレ＋理由＋承認/却下）
+function DecisionPanel({ needId }:{ needId:string }) {
+  const React = require('react');
+  const useSWR = require('swr').default;
+  const fetcher = (u:string)=> fetch(u).then((r)=>r.json());
+  const { data } = useSWR('/api/admin/approval-templates', fetcher);
+  const [templateId,setTemplateId] = React.useState('');
+  const [reason,setReason] = React.useState('');
+  const [busy,setBusy] = React.useState(false);
+  const templates = (data?.rows || []).filter((t:any)=> t.kind==='need' && t.enabled);
+
+  const applyTpl = ()=>{
+    const t = templates.find((x:any)=> x.id===templateId);
+    if(t) setReason(t.body);
+  };
+  const approve = async ()=>{
+    setBusy(true);
+    await fetch('/api/admin/needs/approve', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ needId, templateId: templateId || undefined, reasonText: reason || undefined }) });
+    setBusy(false); location.reload();
+  };
+  const reject = async ()=>{
+    if(!reason) { alert('却下理由を入力してください'); return; }
+    setBusy(true);
+    await fetch('/api/admin/needs/reject', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ needId, templateId: templateId || undefined, reasonText: reason }) });
+    setBusy(false); location.reload();
+  };
+  return (
+    <div className="mt-3 border rounded p-3 space-y-2">
+      <div className="text-sm font-medium">審査</div>
+      <div className="flex flex-wrap gap-2 items-center">
+        <select className="border rounded px-2 py-1" value={templateId} onChange={(e)=>setTemplateId(e.target.value)}>
+          <option value="">テンプレを選択</option>
+          {templates.map((t:any)=>(<option key={t.id} value={t.id}>{t.title}</option>))}
+        </select>
+        <button className="px-2 py-1 rounded bg-gray-200" onClick={applyTpl}>本文に挿入</button>
+      </div>
+      <textarea className="w-full border rounded p-2 min-h-[100px]" placeholder="審査の理由（申請者に通知されます）" value={reason} onChange={(e)=>setReason(e.target.value)} />
+      <div className="flex gap-2">
+        <button disabled={busy} className="px-3 py-1 rounded bg-emerald-600 text-white" onClick={approve}>承認して公開</button>
+        <button disabled={busy} className="px-3 py-1 rounded bg-rose-600 text-white" onClick={reject}>却下（差し戻し）</button>
+      </div>
+    </div>
+  );
 }

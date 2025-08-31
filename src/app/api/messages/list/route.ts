@@ -19,14 +19,11 @@ export async function GET(req: Request) {
   const { proposalId } = parsed.data;
   const limit = Math.min(50, Math.max(1, parseInt(parsed.data.limit || '20', 10)));
 
-  // 参加者向け: 承認済みのみ返す
-  // 承認前の自分の投稿は /api/messages/mine で返す運用に（下で追加）
+  // 既定で可視メッセージのみ
   const sadmin = supabaseAdmin();
-  let query = sadmin.from('v_proposal_messages_visible')
-    .select('id, sender_id, body, created_at, read_by')
-    .eq('proposal_id', proposalId)
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  const isAdmin = !!(await sadmin.from('user_roles').select('role').eq('user_id', userId).eq('role','admin').maybeSingle()).data;
+  let query = sadmin.from('proposal_messages').select('id, sender_id, body, created_at, read_by').eq('proposal_id', proposalId).order('created_at', { ascending: false }).limit(limit);
+  if(!isAdmin) query = query.eq('visible', true);
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
