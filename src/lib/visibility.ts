@@ -1,5 +1,12 @@
 export type RevealLevel = 'anonymous' | 'named' | 'contact';
-export function resolveRevealLevel(p: { proposalStatus?: string; settlementStatus?: string }): RevealLevel {
+export function resolveRevealLevel(p: { proposalStatus?: string; settlementStatus?: string; needKind?: string; userRevealPolicy?: string }): RevealLevel {
+  // care_taxi 分岐
+  if (p?.needKind === 'care_taxi') {
+    if (p?.userRevealPolicy === 'accepted' && p?.proposalStatus === 'accepted') return 'contact';
+    return 'named'; // vendorは常に公開
+  }
+  
+  // default 縦ライン
   if (p?.settlementStatus === 'paid') return 'contact';
   if (p?.proposalStatus === 'accepted') return 'named';
   return 'anonymous';

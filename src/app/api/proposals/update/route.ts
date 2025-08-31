@@ -44,6 +44,20 @@ export async function POST(req: Request) {
     const { data: parts } = await sadmin
       .from('proposal_participants').select('vendor_id, owner_id').eq('proposal_id', id).maybeSingle();
     
+    // care_taxi の場合の追加処理
+    const { data: need } = await sadmin.from('needs')
+      .select('kind, user_reveal_policy')
+      .eq('id', (await sadmin.from('proposals').select('need_id').eq('id', id).maybeSingle())?.data?.need_id)
+      .maybeSingle();
+    
+    if (need?.kind === 'care_taxi' && need?.user_reveal_policy === 'accepted') {
+      // care_taxi で accepted の場合：ユーザー連絡先開示可能フラグを設定
+      // （messages/list で判定用）
+      await sadmin.from('proposals').update({ 
+        meta: { user_contact_revealed: true } 
+      }).eq('id', id);
+    }
+    
     if (parts) {
       const vendorId = parts.vendor_id;
       const ownerId = parts.owner_id;

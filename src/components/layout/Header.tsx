@@ -36,6 +36,7 @@ export default function Header(){
         <nav className="hidden md:flex items-center gap-4">
           <a href="/vendor/connect" className="text-sm hover:underline">事業者口座登録</a>
           <a href="/needs" className="text-sm hover:underline">ニーズ一覧</a>
+          <a href="/needs/new" className="text-sm hover:underline">介護タクシー依頼</a>
           <a href="/guide" className="text-sm hover:underline">ガイド</a>
           <Link href="/me" className="relative inline-flex items-center justify-center rounded px-2 py-1 text-sm">
             <span>通知</span>
@@ -66,6 +67,7 @@ export default function Header(){
         <nav className="px-4 py-3 flex flex-col">
           <a href="/vendor/connect" onClick={()=>setOpen(false)} className="py-2">事業者口座登録</a>
           <Link href="/needs" onClick={()=>setOpen(false)} className="py-2">ニーズ一覧</Link>
+          <Link href="/needs/new" onClick={()=>setOpen(false)} className="py-2">介護タクシー依頼</Link>
           <Link href="/guide" onClick={()=>setOpen(false)} className="py-2">ガイド</Link>
           <Link href="/me" onClick={()=>setOpen(false)} className="py-2 relative">
             通知

@@ -12,7 +12,17 @@ const schema = z.object({
   deadline: z.string().optional(), // ISO
   pii_phone: z.string().optional(),
   pii_email: z.string().email().optional(),
-  pii_address: z.string().optional()
+  pii_address: z.string().optional(),
+  // care_taxi の5W1H最小投稿に対応
+  kind: z.enum(['default','care_taxi']).optional().default('default'),
+  when_date: z.string().optional(),
+  when_time: z.string().optional(),
+  where_from: z.string().optional(),
+  where_to: z.string().optional(),
+  who_count: z.number().min(1).optional(),
+  wheelchair: z.boolean().optional(),
+  helpers_needed: z.number().min(0).optional(),
+  notes: z.string().optional()
 });
 
 export async function POST(req: Request) {
@@ -35,13 +45,22 @@ export async function POST(req: Request) {
   // review状態で作成は既定。pv.level==='review' の場合は UIに「審査中」を出すなど。
 
   const sadmin = supabaseAdmin();
+  
+  // care_taxi の場合の設定を強制
+  const insertData = {
+    ...parsed.data,
+    status: 'review',            // 作成時は review へ
+    creator_id: userId
+  };
+  
+  if (parsed.data.kind === 'care_taxi') {
+    insertData.user_reveal_policy = 'accepted';
+    insertData.vendor_visibility = 'public';
+  }
+  
   const { data, error } = await sadmin
     .from('needs')
-    .insert({
-      ...parsed.data,
-      status: 'review',            // 作成時は review へ
-      creator_id: userId
-    })
+    .insert(insertData)
     .select('id,status')
     .single();
 

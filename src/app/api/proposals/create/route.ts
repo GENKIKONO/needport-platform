@@ -22,9 +22,21 @@ export async function POST(req: Request) {
 
   // need が published か review かの確認（少なくとも draft には提案しない）
   const sadmin = supabaseAdmin();
-  const { data: need, error: needErr } = await sadmin.from('needs').select('id,status').eq('id', needId).maybeSingle();
+  const { data: need, error: needErr } = await sadmin.from('needs').select('id,status,kind').eq('id', needId).maybeSingle();
   if (needErr || !need) return NextResponse.json({ error: 'need_not_found' }, { status: 404 });
   if (!['published','review'].includes(need.status)) return NextResponse.json({ error: 'need_not_accepting' }, { status: 400 });
+  
+  // care_taxi の場合: vendorプロフィールが public であることをチェック
+  if (need.kind === 'care_taxi') {
+    const { data: vendorProfile } = await sadmin.from('vendor_profiles')
+      .select('categories')
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    if (!vendorProfile?.categories?.includes('care_taxi')) {
+      return NextResponse.json({ error: 'vendor_not_eligible' }, { status: 403 });
+    }
+  }
 
   const { data, error } = await sadmin.from('proposals')
     .insert({

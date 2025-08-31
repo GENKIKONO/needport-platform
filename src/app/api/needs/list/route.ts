@@ -21,11 +21,11 @@ export async function GET(req: Request) {
   const sadmin = supabaseAdmin();
   let query;
   if (status === 'published') {
-    // 公開ビュー（PIIは mask 済）
-    query = sadmin.from('needs_public').select('id,title,summary,region,category,created_at,updated_at,deadline,status,pii_phone_masked,pii_email_masked,pii_address_masked', { count: 'exact' });
+    // 公開ビュー（care_taxiは needs_public_v の masked フィールドを優先）
+    query = sadmin.from('needs_public_v').select('id,title,summary,region,category,created_at,updated_at,deadline,status,kind,where_from_masked,where_to_masked,when_date,when_time,who_count,wheelchair,helpers_needed', { count: 'exact' });
   } else {
     // 管理用（テーブル直）
-    query = sadmin.from('needs').select('id,title,summary,region,category,created_at,updated_at,deadline,status', { count: 'exact' }).eq('status', status);
+    query = sadmin.from('needs').select('id,title,summary,region,category,created_at,updated_at,deadline,status,kind,where_from,where_to,when_date,when_time,who_count,wheelchair,helpers_needed', { count: 'exact' }).eq('status', status);
   }
 
   if (q) query = query.ilike('title', `%${q}%`);

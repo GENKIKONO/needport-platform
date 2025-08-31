@@ -35,6 +35,33 @@ export default async function NeedDetailPage({ params }: NeedDetailPageProps) {
       <section className="rounded border p-4 space-y-2">
         <h2 className="font-medium">概要</h2>
         <p className="whitespace-pre-line">{need.summary}</p>
+        
+        {/* care_taxi の場合の5W1H表示 */}
+        {need.kind === 'care_taxi' && (
+          <div className="mt-4 p-3 bg-gray-50 rounded space-y-2">
+            <h3 className="font-medium text-sm">詳細情報</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+              {need.when_date && (
+                <div>日時: {new Date(need.when_date).toLocaleDateString()}{need.when_time && ` ${need.when_time}`}</div>
+              )}
+              {need.where_from_masked && (
+                <div>出発: {need.where_from_masked}</div>
+              )}
+              {need.where_to_masked && (
+                <div>到着: {need.where_to_masked}</div>
+              )}
+              {need.who_count && (
+                <div>人数: {need.who_count}名</div>
+              )}
+              {need.wheelchair !== undefined && (
+                <div>車椅子: {need.wheelchair ? '必要' : '不要'}</div>
+              )}
+              {need.helpers_needed !== undefined && (
+                <div>介助希望: {need.helpers_needed}名</div>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       {need.deadline && (
