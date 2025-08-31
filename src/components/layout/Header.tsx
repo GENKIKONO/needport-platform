@@ -23,6 +23,7 @@ export default function Header(){
           <a href="/vendor/connect" className="text-sm hover:underline">事業者口座登録</a>
           <a href="/needs" className="text-sm hover:underline">ニーズ一覧</a>
           <a href="/guide" className="text-sm hover:underline">ガイド</a>
+          <a href="/admin/settlements" className="text-xs text-muted-foreground hover:underline">運用</a>
         </nav>
         <button
           className="md:hidden inline-flex items-center justify-center h-9 w-9 rounded hover:bg-gray-100"
@@ -44,6 +45,7 @@ export default function Header(){
           <Link href="/needs" onClick={()=>setOpen(false)} className="py-2">ニーズ一覧</Link>
           <Link href="/guide" onClick={()=>setOpen(false)} className="py-2">ガイド</Link>
           <Link href="/me" onClick={()=>setOpen(false)} className="py-2">マイページ</Link>
+          <a href="/admin/settlements" onClick={()=>setOpen(false)} className="py-2 text-xs text-muted-foreground">運用</a>
         </nav>
       </div>
     </header>
