@@ -54,9 +54,7 @@ export default async function NeedDetailPage({ params }: NeedDetailPageProps) {
         <p className="text-sm text-muted-foreground">
           提案を送信後、相手とこの案件について1対1でメッセージできます。
         </p>
-        <p className="text-xs text-gray-500">
-          ※ 実メッセージ画面は「マイページ」や「事業者ダッシュボード」からも開けます（後で強化）。
-        </p>
+        <p className="text-xs text-gray-500">※ 提案送信後、ダッシュボードの「チャットを開く」から遷移できます。</p>
       </div>
 
       {/* 提案フォーム（最低限） */}

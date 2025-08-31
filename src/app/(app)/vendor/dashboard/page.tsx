@@ -73,10 +73,7 @@ export default async function VendorDash() {
             <div key={p.id} className="py-2">
               <div className="text-sm font-medium">{p.title}</div>
               <div className="text-xs text-gray-500">status: {p.status} / {new Date(p.created_at).toLocaleString()}</div>
-              <form action="/api/messages/list" method="get" className="mt-1">
-                <input type="hidden" name="proposalId" value={p.id} />
-                <button className="text-xs text-sky-600 underline">メッセージを見る（JSON）</button>
-              </form>
+              <a className="text-xs text-sky-600 underline" href={`/proposals/${p.id}/chat`}>チャットを開く</a>
             </div>
           ))}
           {!proposals.rows?.length && <div className="py-2 text-sm text-gray-500">まだ提案はありません。</div>}
