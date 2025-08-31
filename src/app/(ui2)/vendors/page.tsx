@@ -1,5 +1,7 @@
 import HeaderV2 from "../_parts/Header";
 import FooterV2 from "../_parts/Footer";
+import { Card, CardBody } from "../_parts/Card";
+import { Badge } from "../_parts/Badge";
 export const dynamic = "force-dynamic";
 async function getData(searchParams: Record<string,string>){
   const baseUrl = process.env.PLATFORM_ORIGIN || "http://localhost:3000";
@@ -18,20 +20,22 @@ export default async function VendorsV2({ searchParams }:{ searchParams: Record<
         <h2 className="text-xl font-semibold mb-4">事業者リスト（v2）</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {data.rows?.map((v:any)=>(
-            <a key={v.user_id} href={`/vendors/${v.user_id}`} className="block border rounded p-4 hover:shadow-sm">
-              <div className="font-medium">{v.name}</div>
-              {v.public_areas && <div className="text-xs text-slate-500 mt-1">{v.public_areas}</div>}
-              <div className="mt-2 flex flex-wrap gap-1">
-                {(v.industries||[]).map((n:string,i:number)=>(
-                  <span key={i} className="px-2 py-0.5 border rounded text-xs">{n}</span>
-                ))}
-              </div>
-              {v.any_fee_blocked && (
-                <div className="mt-2 text-xs text-amber-700 bg-amber-50 border rounded px-2 py-1">
-                  成果報酬対象外のカテゴリを含みます
-                </div>
-              )}
-            </a>
+            <Card key={v.user_id}>
+              <a href={`/vendors/${v.user_id}`} className="block hover:opacity-90">
+                <CardBody>
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">{v.name}</div>
+                    {v.any_fee_blocked && <Badge tone="amber">成果報酬対象外含む</Badge>}
+                  </div>
+                  {v.public_areas && <div className="text-xs text-slate-500 mt-1">{v.public_areas}</div>}
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {(v.industries||[]).map((n:string,i:number)=>(
+                      <Badge key={i} tone="slate">{n}</Badge>
+                    ))}
+                  </div>
+                </CardBody>
+              </a>
+            </Card>
           ))}
           {(!data.rows || data.rows.length===0) && <div className="text-slate-500 text-sm">事業者が見つかりません</div>}
         </div>
