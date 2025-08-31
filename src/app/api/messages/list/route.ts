@@ -19,9 +19,10 @@ export async function GET(req: Request) {
   const { proposalId } = parsed.data;
   const limit = Math.min(50, Math.max(1, parseInt(parsed.data.limit || '20', 10)));
 
-  // RLSで自動制限される
+  // 参加者向け: 承認済みのみ返す
+  // 承認前の自分の投稿は /api/messages/mine で返す運用に（下で追加）
   const sadmin = supabaseAdmin();
-  let query = sadmin.from('proposal_messages')
+  let query = sadmin.from('v_proposal_messages_visible')
     .select('id, sender_id, body, created_at, read_by')
     .eq('proposal_id', proposalId)
     .order('created_at', { ascending: false })

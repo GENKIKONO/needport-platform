@@ -45,6 +45,7 @@ export default function Header(){
           </Link>
           <a href="/admin/settlements" className="text-xs text-muted-foreground hover:underline">運用</a>
           <a href="/admin/needs" className="text-xs text-gray-500 hover:text-gray-700">承認キュー</a>
+          <a href="/admin/messages" className="text-xs text-gray-500 hover:text-gray-700">メッセージ承認</a>
         </nav>
         <button
           className="md:hidden inline-flex items-center justify-center h-9 w-9 rounded hover:bg-gray-100"
@@ -73,6 +74,7 @@ export default function Header(){
           </Link>
           <a href="/admin/settlements" onClick={()=>setOpen(false)} className="py-2 text-xs text-muted-foreground">運用</a>
           <a href="/admin/needs" onClick={()=>setOpen(false)} className="py-2 text-xs text-gray-500">承認キュー</a>
+          <a href="/admin/messages" onClick={()=>setOpen(false)} className="py-2 text-xs text-gray-500">メッセージ承認</a>
         </nav>
       </div>
     </header>

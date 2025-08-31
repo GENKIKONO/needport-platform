@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { pushNotification } from '@/lib/notify/notify';
 
 const schema = z.object({
   title: z.string().min(3).max(120),
@@ -45,6 +46,16 @@ export async function POST(req: Request) {
     target_type: 'need',
     target_id: data.id,
     meta: { status: data.status }
+  });
+
+  // 既存の通り review で作成（管理者の /api/needs/publish でのみ公開）
+  // 追加: 投稿者本人にも「審査中」トースト/通知を出す（notifyUser を呼ぶ）
+  await pushNotification({
+    userId: userId,
+    type: 'system',
+    title: 'ニーズ投稿を受け付けました',
+    body: '審査後に公開されます。',
+    meta: { needId: data.id }
   });
 
   return NextResponse.json({ ok: true, id: data.id, status: data.status });

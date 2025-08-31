@@ -21,6 +21,8 @@ export default function ChatClient({ proposalId }: { proposalId: string }) {
   const [sending, setSending] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
 
+  // 送信後は即描画（楽観反映）＋「審査中」バッジ表示
+  // list は承認済みのみ返すため、自分のpendingは /api/messages/mine でも取得して併せて描画
   const { data, mutate, isLoading } = useSWR<{rows: Row[]}>(`/api/messages/list?proposalId=${proposalId}&limit=50`, fetcher, {
     refreshInterval: 4000, // 軽ポーリング（後でSSEに差し替え可）
     revalidateOnFocus: true,
