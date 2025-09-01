@@ -28,6 +28,7 @@ function Header(){
           <Link href="/v2/needs" className={cn("hover:underline", isActivePath(pathname||'',"/v2/needs") && "underline font-semibold")}>ニーズ</Link>
           <Link href="/v2/vendors" className={cn("hover:underline", isActivePath(pathname||'',"/v2/vendors") && "underline font-semibold")}>事業者</Link>
           <Link href="/v2/needs/new" className={cn("hover:underline", isActivePath(pathname||'',"/v2/needs/new") && "underline font-semibold")}>投稿</Link>
+          <Link href="/v2/checklist" className={cn("hover:underline text-amber-200", isActivePath(pathname||'',"/v2/checklist") && "underline font-semibold")}>チェック</Link>
         </nav>
         <MobileNav />
       </div>

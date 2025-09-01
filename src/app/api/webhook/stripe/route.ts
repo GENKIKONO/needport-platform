@@ -6,6 +6,12 @@ import { pushNotification } from '@/lib/notify/notify';
 import { enqueueEmail } from '@/lib/notify/email';
 
 export async function POST(req: NextRequest) {
+  // 本番初期は「決済画面で止める」運用：確定処理をスキップ
+  const { FLAGS } = await import("../../../../config/flags");
+  if (FLAGS.DISABLE_STRIPE_CAPTURE) {
+    return NextResponse.json({ ok: true, skipped: "capture_disabled" }, { status: 200 });
+  }
+
   const stripe = getStripe();
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) return NextResponse.json({ error: "missing_webhook_secret" }, { status: 500 });

@@ -42,7 +42,12 @@ export async function GET() {
     webhook_dedupe: true,
     conversations: { messages: true, readReceipt: true, rls: true },
     notify: { prefs: true, headerBadge: true, emailFlushCron: true, settlementPaid: true, dailyDigest: true },
-    moderation: { chat: true, needs: true } // chat=承認制、needs=review/publish必須
+    moderation: { chat: true, needs: true }, // chat=承認制、needs=review/publish必須
+    prod: {
+      uiV2Default: true,
+      canonicalHost: process.env.NEXT_PUBLIC_ROOT_DOMAIN || null,
+      stripeCapture: false
+    }
   };
   return NextResponse.json({
     ok,
