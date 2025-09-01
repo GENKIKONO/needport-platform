@@ -5,7 +5,7 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     prod: {
-      uiV2Default: true,
+      uiV2Default: !!FLAGS.UI_V2_DEFAULT,
       canonicalHost: FLAGS.CANONICAL_HOST || null,
       stripeCapture: !FLAGS.DISABLE_STRIPE_CAPTURE ? true : false,
     },

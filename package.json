@@ -26,7 +26,8 @@
     "cron:close": "curl -s -X POST http://localhost:3000/api/admin/cron/close-expired",
     "build:analyze": "ANALYZE=true next build",
     "vercel-build": "next build",
-    "postvercel-build": "node scripts/guard-next-manifests.mjs"
+    "postvercel-build": "node scripts/guard-next-manifests.mjs",
+    "smoke:prod": "bash ./scripts/smoke-prod.sh"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.6",
