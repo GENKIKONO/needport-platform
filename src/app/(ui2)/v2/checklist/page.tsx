@@ -51,6 +51,10 @@ export default function Page(){
         </ol>
       </section>
       <p className="text-xs text-slate-500">詳細版は docs/LEVEL2_CHECKLIST.md を参照してください。</p>
+      <div className="border rounded p-4 bg-white">
+        <h2 className="font-medium mb-2">管理者向けショートカット</h2>
+        <a href="/admin/inspector" className="text-sky-700 underline text-sm">Admin Thread Inspector を開く</a>
+      </div>
     </div>
   );
 }
