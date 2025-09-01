@@ -1,101 +1,102 @@
 "use client";
-
 import useSWR from "swr";
 import { useSearchParams, useRouter } from "next/navigation";
-import { fetcher } from "../../_parts/useSWRFetcher";
-import Card from "../../_parts/Card";
-import Badge from "../../_parts/Badge";
-import Skeleton from "../../_parts/Skeleton";
-import ErrorBox from "../../_parts/ErrorBox";
-import { useToast } from "../../_parts/ToastProvider";
+import fetcher from "@/app/(ui2)/_parts/useSWRFetcher";
+import Link from "next/link";
+import { useMemo } from "react";
 
-type Industry = { id: string; slug: string; name: string; fee_applicable: boolean };
-type Vendor = {
-  user_id: string;
-  name: string;
-  public_areas?: string;
-  avatar_url?: string;
-  website?: string;
-  industries?: string[];
-  any_fee_blocked?: boolean;
-};
-
-export default function VendorsV2Page() {
+export default function VendorsV2Page(){
   const sp = useSearchParams();
-  const slug = sp.get("slug") || "";
   const router = useRouter();
+  const q = sp.get("q") || "";
+  const slug = sp.get("slug") || "";
+  const page = Math.max(1, parseInt(sp.get("page")||"1",10));
+  const per = 12;
 
-  const { data: inds, isLoading: indLoading } = useSWR<{ rows: Industry[] }>(
-    "/api/industries",
-    fetcher,
-    { refreshInterval: 120000 }
-  );
-  const listUrl = slug ? `/api/vendors?slug=${encodeURIComponent(slug)}` : "/api/vendors";
-  const { data, error, isLoading } = useSWR<{ rows: Vendor[] }>(listUrl, fetcher, { refreshInterval: 10000 });
-  const { push } = useToast();
-  if (error) { push({ kind:"error", message:"事業者リストの読み込みに失敗しました" }); }
+  const qs = new URLSearchParams();
+  if (q) qs.set("q", q);
+  if (slug) qs.set("slug", slug);
+  qs.set("page", String(page));
+  qs.set("per", String(per));
+
+  const { data, error, isLoading } = useSWR<{ rows:any[]; total:number; inds?:any[] }>(`/api/vendors?${qs.toString()}`, fetcher, { refreshInterval: 8000, revalidateOnFocus:false });
+
+  const total = data?.total || 0;
+  const totalPages = Math.max(1, Math.ceil(total / per));
+  const rows = data?.rows || [];
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-4">
-      <h1 className="text-2xl font-semibold">事業者リスト</h1>
+    <div className="space-y-4">
+      <header className="flex flex-wrap items-center gap-2 justify-between">
+        <h1 className="text-2xl font-bold">事業者リスト</h1>
+        <div className="flex gap-2">
+          <input
+            defaultValue={q}
+            placeholder="事業者名・エリアで検索"
+            className="border rounded px-3 py-1.5 text-sm"
+            onKeyDown={(e)=>{ if(e.key==='Enter'){ const p = new URLSearchParams(sp as any); const v=(e.target as HTMLInputElement).value; v ? p.set('q',v) : p.delete('q'); p.set('page','1'); router.push(`/v2/vendors?${p.toString()}`); }}}
+          />
+        </div>
+      </header>
 
-      {/* タブ */}
+      {/* カテゴリタブ */}
       <div className="flex flex-wrap gap-2">
-        <button
-          className={`px-3 py-1.5 rounded border ${!slug ? 'bg-slate-900 text-white' : ''}`}
-          onClick={() => router.push("/v2/vendors")}
-        >すべて</button>
-        {indLoading ? (
-          <Skeleton.Pill />
-        ) : (
-          inds?.rows?.map((i) => (
-            <button
-              key={i.id}
-              className={`px-3 py-1.5 rounded border ${slug === i.slug ? 'bg-slate-900 text-white' : ''}`}
-              onClick={() => router.push(`/v2/vendors?slug=${i.slug}`)}
-              title={i.fee_applicable ? "成果報酬 対象" : "成果報酬 対象外"}
-            >
-              {i.name}{i.fee_applicable ? "" : "（対象外）"}
-            </button>
-          ))
-        )}
+        <a href="/v2/vendors" className={`px-3 py-1.5 rounded border ${!slug ? "bg-slate-900 text-white border-slate-900" : "bg-white hover:bg-slate-50"}`}>すべて</a>
+        {(data?.inds||[]).map((i:any)=>(
+          <a key={i.id} href={`/v2/vendors?slug=${i.slug}`} className={`px-3 py-1.5 rounded border ${slug===i.slug ? "bg-slate-900 text-white border-slate-900" : "bg-white hover:bg-slate-50"}`}>
+            {i.name}{i.fee_applicable ? "" : "（成果報酬対象外）"}
+          </a>
+        ))}
       </div>
 
+      {/* ステータス */}
+      <div className="text-xs text-slate-500">{total ? `${total}件中 ${(page-1)*per+1}–${Math.min(page*per,total)} を表示` : isLoading ? "読み込み中…" : "該当する事業者がいません"}</div>
+
       {/* 一覧 */}
-      {isLoading && (
+      {isLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton.Card key={i} />)}
+          {Array.from({length:6}).map((_,i)=>(<div key={i} className="h-28 rounded bg-slate-100 animate-pulse" />))}
         </div>
-      )}
-      {error && <div className="mt-3"><ErrorBox /></div>}
-      {!isLoading && !error && (
+      ) : error ? (
+        <div className="rounded border border-red-200 bg-red-50 p-3 text-red-700">読み込みに失敗しました。</div>
+      ) : rows.length === 0 ? (
+        <div className="rounded border bg-white p-4">
+          条件に一致する事業者が見つかりませんでした。キーワードやカテゴリを調整してください。
+        </div>
+      ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {data?.rows?.map((v) => (
-            <Card key={v.user_id}>
-              <Card.Header>
-                <div className="font-medium">{v.name}</div>
-                <div className="flex flex-wrap gap-1">
-                  {(v.industries || []).map((n, idx) => (
-                    <Badge key={idx} color="slate">{n}</Badge>
+          {rows.map((v:any)=>(
+            <Link key={v.user_id} href={`/v2/vendors/${v.user_id}`} className="p-4 rounded border bg-white hover:bg-slate-50">
+              <div className="flex items-center gap-3">
+                {v.avatar_url ? <img src={v.avatar_url} alt="" className="w-12 h-12 rounded-full border object-cover"/> : <div className="w-12 h-12 rounded-full border bg-slate-100"/>}
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{v.name || "事業者"}</div>
+                  <div className="text-xs text-slate-500 truncate">{v.public_areas || "—"}</div>
+                </div>
+              </div>
+              {Array.isArray(v.industries) && v.industries.length>0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {v.industries.map((n:string,i:number)=>(
+                    <span key={i} className="px-2 py-0.5 text-xs rounded bg-slate-100 border">{n}</span>
                   ))}
                 </div>
-              </Card.Header>
-              <Card.Body>
-                <div className="text-sm text-slate-700">{v.public_areas || "対応エリア未設定"}</div>
-                {v.website && (
-                  <a href={v.website} target="_blank" className="text-sky-700 text-sm underline">Webサイト</a>
-                )}
-                {v.any_fee_blocked && (
-                  <div className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
-                    成果報酬対象外のカテゴリを含みます
-                  </div>
-                )}
-              </Card.Body>
-              <Card.Footer>
-                <a className="px-3 py-2 rounded border" href={`/v2/vendors/${v.user_id}`}>プロフィール</a>
-              </Card.Footer>
-            </Card>
+              )}
+              {v.any_fee_blocked && (
+                <div className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                  成果報酬対象外のカテゴリを含みます
+                </div>
+              )}
+            </Link>
           ))}
+        </div>
+      )}
+
+      {/* ページネーション */}
+      {totalPages>1 && (
+        <div className="flex items-center justify-center gap-2">
+          <a aria-disabled={page<=1} className={`px-3 py-1.5 rounded border ${page<=1 ? "pointer-events-none opacity-50" : "hover:bg-slate-50"}`} href={`/v2/vendors?${new URLSearchParams({...Object.fromEntries(sp.entries()), page:String(page-1)})}`}>前へ</a>
+          <span className="text-sm">{page}/{totalPages}</span>
+          <a aria-disabled={page>=totalPages} className={`px-3 py-1.5 rounded border ${page>=totalPages ? "pointer-events-none opacity-50" : "hover:bg-slate-50"}`} href={`/v2/vendors?${new URLSearchParams({...Object.fromEntries(sp.entries()), page:String(page+1)})}`}>次へ</a>
         </div>
       )}
     </div>

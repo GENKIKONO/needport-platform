@@ -1,16 +1,8 @@
 "use client";
-
 import useSWR from "swr";
-import { useMemo, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { fetcher } from "../../_parts/useSWRFetcher";
-import Badge from "../../_parts/Badge";
-import Card from "../../_parts/Card";
-import Skeleton from "../../_parts/Skeleton";
-import Modal from "../../_parts/Modal";
-import Toast, { useToast } from "../../_parts/Toast";
-import ErrorBox from "../../_parts/ErrorBox";
-import { useToast as useToastV2 } from "../../_parts/ToastProvider";
+import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 
 type Need = {
   id: string;
@@ -21,197 +13,97 @@ type Need = {
   deadline?: string | null;
   created_at?: string;
   proposals_count?: number;
+  industry_name?: string;
 };
 
-export default function NeedsV2Page() {
+function deadlineColor(d?:string){
+  if (!d) return "bg-slate-100 text-slate-700 border";
+  const diff = (new Date(d).getTime() - Date.now())/(86400000);
+  if (diff < 0) return "bg-red-50 text-red-700 border border-red-200";
+  if (diff <= 3) return "bg-amber-50 text-amber-700 border border-amber-200";
+  return "bg-slate-100 text-slate-700 border";
+}
+
+export default function NeedsV2Page(){
   const sp = useSearchParams();
   const router = useRouter();
-  const { push } = router;
-  const q = sp.get("q") ?? "";
-  const region = sp.get("region") ?? "";
-  const category = sp.get("category") ?? "";
-  const page = Number(sp.get("page") ?? "1");
-  const per = Number(sp.get("per") ?? "12");
+  const q = sp.get("q") || "";
+  const region = sp.get("region") || "";
+  const category = sp.get("category") || "";
+  const page = Math.max(1, parseInt(sp.get("page")||"1",10));
+  const per = 12;
 
   const qs = new URLSearchParams();
-  if (q) qs.set("q", q);
-  if (region) qs.set("region", region);
-  if (category) qs.set("category", category);
+  if (q) qs.set("q",q);
+  if (region) qs.set("region",region);
+  if (category) qs.set("category",category);
   qs.set("page", String(page));
   qs.set("per", String(per));
 
-  const { data, error, isLoading, mutate } = useSWR<{ rows: Need[]; total: number }>(
-    `/api/needs/list?${qs.toString()}`,
-    fetcher,
-    { refreshInterval: 4000, revalidateOnFocus: false }
-  );
-  const { push: pushToast } = useToastV2();
-  if (error) { pushToast({ kind:"error", message:"一覧の読み込みに失敗しました" }); }
+  const { data, error, isLoading } = useSWR<{ rows:any[]; total:number }>(`/api/needs/list?${qs.toString()}`, fetcher, { refreshInterval: 8000, revalidateOnFocus:false });
 
-  const [open, setOpen] = useState<string | null>(null);
-  const { toast, Toaster } = useToast();
-
-  const onReset = () => {
-    const params = new URLSearchParams();
-    params.set("page", "1");
-    params.set("per", String(per));
-    push(`/v2/needs?${params.toString()}`);
-  };
+  const total = data?.total || 0;
+  const totalPages = Math.max(1, Math.ceil(total / per));
+  const rows = data?.rows || [];
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-4">
-      <Toaster />
-      <h1 className="text-2xl font-semibold">ニーズ一覧</h1>
-
-      {/* Filters（URLパラ連動の簡易版） */}
-      <div className="grid gap-2 sm:grid-cols-4">
-        <input
-          placeholder="キーワード"
-          className="border rounded px-3 py-2"
-          defaultValue={q}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              const params = new URLSearchParams(sp.toString());
-              const v = (e.target as HTMLInputElement).value;
-              if (v) params.set("q", v); else params.delete("q");
-              params.set("page", "1");
-              push(`/v2/needs?${params.toString()}`);
-            }
-          }}
-        />
-        <input
-          placeholder="地域"
-          className="border rounded px-3 py-2"
-          defaultValue={region}
-          onBlur={(e) => {
-            const params = new URLSearchParams(sp.toString());
-            const v = e.target.value;
-            if (v) params.set("region", v); else params.delete("region");
-            params.set("page", "1");
-            push(`/v2/needs?${params.toString()}`);
-          }}
-        />
-        <input
-          placeholder="カテゴリ"
-          className="border rounded px-3 py-2"
-          defaultValue={category}
-          onBlur={(e) => {
-            const params = new URLSearchParams(sp.toString());
-            const v = e.target.value;
-            if (v) params.set("category", v); else params.delete("category");
-            params.set("page", "1");
-            push(`/v2/needs?${params.toString()}`);
-          }}
-        />
+    <div className="space-y-4">
+      <header className="flex flex-wrap items-center gap-2 justify-between">
+        <h1 className="text-2xl font-bold">ニーズ一覧</h1>
         <div className="flex gap-2">
-          <button className="px-3 py-2 rounded border" onClick={onReset}>リセット</button>
-          <a href="/v2/needs/new" className="px-3 py-2 rounded bg-sky-600 text-white">5W1Hで投稿</a>
+          <input
+            defaultValue={q}
+            placeholder="キーワード検索"
+            className="border rounded px-3 py-1.5 text-sm"
+            onKeyDown={(e)=>{ if(e.key==='Enter'){ const p = new URLSearchParams(sp as any); const v=(e.target as HTMLInputElement).value; v ? p.set('q',v) : p.delete('q'); p.set('page','1'); router.push(`/v2/needs?${p.toString()}`); }}}
+          />
         </div>
-      </div>
+      </header>
 
-      {/* Meta */}
-      {data && (
-        <div className="text-sm text-slate-500">
-          全{data.total}件中 {data.rows.length}件を表示
-        </div>
-      )}
+      <div className="text-xs text-slate-500">{total ? `${total}件中 ${(page-1)*per+1}–${Math.min(page*per,total)} を表示` : isLoading ? "読み込み中…" : "該当なし"}</div>
 
-      {/* List */}
-      {isLoading && (
+      {isLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton.Card key={i} />)}
+          {Array.from({length:6}).map((_,i)=>(<div key={i} className="h-32 rounded bg-slate-100 animate-pulse" />))}
         </div>
-      )}
-      {error && (
-        <div className="mt-3"><ErrorBox /></div>
-      )}
-      {!isLoading && !error && (
+      ) : error ? (
+        <div className="rounded border border-red-200 bg-red-50 p-3 text-red-700">読み込みに失敗しました。</div>
+      ) : rows.length === 0 ? (
+        <div className="rounded border bg-white p-4">条件に一致するニーズが見つかりませんでした。</div>
+      ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {data?.rows?.map((n) => (
-            <Card key={n.id}>
-              <Card.Header>
+          {rows.map((n:any)=>(
+            <Link key={n.id} href={`/v2/needs/${n.id}`} className="rounded border bg-white p-3 hover:bg-slate-50">
+              <div className="flex items-start justify-between gap-2">
                 <div className="font-medium line-clamp-2">{n.title}</div>
-                <div className="flex gap-2">
-                  {n.deadline && <Badge color="amber">期限 {new Date(n.deadline).toLocaleDateString()}</Badge>}
-                  {typeof n.proposals_count === "number" && <Badge color="sky">提案 {n.proposals_count}</Badge>}
-                </div>
-              </Card.Header>
-              <Card.Body>
-                <p className="text-sm text-slate-700 line-clamp-3">{n.summary}</p>
-                <div className="mt-2 text-xs text-slate-500 space-x-2">
-                  {n.region && <span>地域: {n.region}</span>}
-                  {n.category && <span>カテゴリ: {n.category}</span>}
-                </div>
-              </Card.Body>
-              <Card.Footer>
-                <a className="px-3 py-2 rounded border" href={`/needs/${n.id}`}>詳細を見る</a>
-                <button className="px-3 py-2 rounded bg-amber-600 text-white" onClick={() => setOpen(n.id)}>
-                  かんたん提案
-                </button>
-              </Card.Footer>
-
-              {/* Quick Proposal Modal */}
-              <Modal open={open === n.id} onClose={() => setOpen(null)} title="かんたん提案">
-                <form
-                  className="space-y-3"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    const fd = new FormData(e.currentTarget);
-                    const body = {
-                      needId: n.id,
-                      title: String(fd.get("title") || ""),
-                      body: String(fd.get("body") || ""),
-                      estimate_price: Number(fd.get("estimate_price") || 0) || null
-                    };
-                    const res = await fetch("/api/proposals/create", {
-                      method: "POST",
-                      headers: { "content-type": "application/json" },
-                      body: JSON.stringify(body)
-                    });
-                    if (res.ok) {
-                      toast("提案を送信しました。承認後に相手へ表示されます。");
-                      setOpen(null);
-                      mutate();
-                    } else {
-                      const j = await res.json().catch(()=>({}));
-                      toast(j?.error ? `送信失敗: ${j.error}` : "送信に失敗しました", "error");
-                    }
-                  }}
-                >
-                  <input name="title" placeholder="件名（任意）" className="w-full border rounded px-3 py-2" />
-                  <textarea name="body" placeholder="提案内容（必須）" required className="w-full border rounded px-3 py-2 min-h-[120px]" />
-                  <input name="estimate_price" type="number" placeholder="概算金額（任意）" className="w-full border rounded px-3 py-2" />
-                  <div className="flex justify-end gap-2">
-                    <button type="button" className="px-3 py-2 rounded border" onClick={()=>setOpen(null)}>キャンセル</button>
-                    <button type="submit" className="px-3 py-2 rounded bg-sky-600 text-white">送信</button>
-                  </div>
-                </form>
-              </Modal>
-            </Card>
+                <span className={`text-[11px] px-2 py-0.5 rounded ${deadlineColor(n.deadline)}`}>{n.deadline ? `期限 ${new Date(n.deadline).toLocaleDateString()}` : "期限—"}</span>
+              </div>
+              <div className="mt-1 text-sm text-slate-600 line-clamp-3">{n.summary}</div>
+              <div className="mt-2 text-xs text-slate-500">{n.region || "—"} / {n.category || "—"}</div>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {/* 提案枚数（公開APIの count-by-need を使うなら別途SWR化可。ここは最小表示の例） */}
+                {typeof n.proposals_count === 'number' && (
+                  <span className="px-2 py-0.5 text-[11px] rounded bg-slate-100 border">提案 {n.proposals_count}</span>
+                )}
+                {n.industry_name && (
+                  <span className="px-2 py-0.5 text-[11px] rounded bg-slate-100 border">{n.industry_name}</span>
+                )}
+              </div>
+              <div className="mt-2 text-[11px] text-slate-500">
+                ※ メッセージ・提案は<b>管理者承認後</b>に相手に表示されます
+              </div>
+            </Link>
           ))}
         </div>
       )}
 
-      {/* Pagination（簡易） */}
-      <div className="flex justify-center gap-2 pt-4">
-        <button
-          className="px-3 py-2 rounded border disabled:opacity-50"
-          disabled={page <= 1}
-          onClick={() => {
-            const params = new URLSearchParams(sp.toString());
-            params.set("page", String(Math.max(1, page - 1)));
-            push(`/v2/needs?${params.toString()}`);
-          }}
-        >前へ</button>
-        <button
-          className="px-3 py-2 rounded border"
-          onClick={() => {
-            const params = new URLSearchParams(sp.toString());
-            params.set("page", String(page + 1));
-            push(`/v2/needs?${params.toString()}`);
-          }}
-        >次へ</button>
-      </div>
+      {totalPages>1 && (
+        <div className="flex items-center justify-center gap-2">
+          <a aria-disabled={page<=1} className={`px-3 py-1.5 rounded border ${page<=1 ? "pointer-events-none opacity-50" : "hover:bg-slate-50"}`} href={`/v2/needs?${new URLSearchParams({...Object.fromEntries(sp.entries()), page:String(page-1)})}`}>前へ</a>
+          <span className="text-sm">{page}/{totalPages}</span>
+          <a aria-disabled={page>=totalPages} className={`px-3 py-1.5 rounded border ${page>=totalPages ? "pointer-events-none opacity-50" : "hover:bg-slate-50"}`} href={`/v2/needs?${new URLSearchParams({...Object.fromEntries(sp.entries()), page:String(page+1)})}`}>次へ</a>
+        </div>
+      )}
     </div>
   );
 }
