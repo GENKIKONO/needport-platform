@@ -47,6 +47,11 @@ export async function GET() {
       uiV2Default: true,
       canonicalHost: process.env.NEXT_PUBLIC_ROOT_DOMAIN || null,
       stripeCapture: false
+    },
+    runtime: {
+      vercelEnv: process.env.VERCEL_ENV || null,
+      nodeEnv: process.env.NODE_ENV || null,
+      enforceCanonical: true
     }
   };
   return NextResponse.json({
