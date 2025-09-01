@@ -45,6 +45,9 @@ function Footer(){
         <a className="hover:underline" href="/legal/tokushoho">特商法</a>
         <a className="hover:underline" href="/contact">お問い合わせ</a>
       </div>
+      {/* Optional: 軽量解析（envで有効化） */}
+      {/* @ts-expect-error Server Component script */}
+      {require("../_parts/Analytics").default()}
     </footer>
   );
 }

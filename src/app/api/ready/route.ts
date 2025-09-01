@@ -52,6 +52,8 @@ export async function GET() {
     meta: { ...meta, ...level2 },
     release: process.env.NEXT_PUBLIC_RELEASE || null,
     perf: { needsSelectSlim: true, needsPerCap: 24 },
-    security: { apiRateLimit: '60/min/ip (in-memory)', webhooks: checks.stripe_webhook === true }
+    security: { apiRateLimit: '60/min/ip (in-memory)', webhooks: checks.stripe_webhook === true },
+    seo: { sitemap: true, robots: true, dynamicMeta: true, og: true },
+    analytics: { plausible: !!process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN },
   });
 }

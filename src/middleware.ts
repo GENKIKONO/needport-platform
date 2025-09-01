@@ -1,70 +1,20 @@
-import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { buildCSP, makeNonce } from "@/lib/security/csp";
-import { apiRateLimit } from './middleware.rate-limit';
-
-const hasClerkEnv = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !!process.env.CLERK_SECRET_KEY;
+import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
-  // 1) 簡易レートリミット
-  const limited = apiRateLimit(req);
-  if (limited) return limited;
-
-  // 環境変数が無い時はClerk認証をスキップ（CSPやヘッダは維持）
-  if (!hasClerkEnv) return NextResponse.next();
-
-  // CMS ゲート（パスワード保護）
-  if (req.nextUrl.pathname.startsWith('/cms')) {
-    const cookie = req.headers.get('cookie') ?? '';
-    const authed = cookie.includes('cms_auth=1');
-    if (authed) {
-      // 認証済み：通常のCSP処理を続行
-    } else if (req.nextUrl.pathname === '/cms/login') {
-      // ログインページ：通常のCSP処理を続行
-    } else {
-      // 未認証：ログインページにリダイレクト
-      const loginUrl = new URL('/cms/login', req.url);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
   const res = NextResponse.next();
-  const nonce = makeNonce();
 
-  // App Router 側へ nonce を伝搬（必要に応じて useCSPNonce で取得）
-  res.headers.set("x-nonce", nonce);
-
-  // 環境に応じた CSP を付与
-  const isPreview = process.env.VERCEL_ENV === 'preview';
-  const isDev = process.env.NODE_ENV === 'development';
-  
-  if (isPreview) {
-    // プレビュー環境用の緩和されたCSP（Vercel live feedback等を許可）
-    const previewCSP = [
-      "default-src 'self'",
-      "img-src 'self' data: https:",
-      "style-src 'self' 'unsafe-inline'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live",
-      "connect-src 'self' https://vercel.live https:",
-      "font-src 'self' data:",
-      "frame-ancestors 'self'",
-    ].join('; ');
-    
-    res.headers.set("Content-Security-Policy", previewCSP);
-  } else {
-    // 本番・開発環境用の通常CSP
-    res.headers.set("Content-Security-Policy", buildCSP(nonce));
-  }
-
-  // Security Headers
-  res.headers.set("X-Frame-Options", "DENY");
+  // Basic security headers（CSPはreport-onlyで本番観察→後で厳格化）
+  res.headers.set("X-Frame-Options", "SAMEORIGIN");
   res.headers.set("X-Content-Type-Options", "nosniff");
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  res.headers.set("Permissions-Policy", "geolocation=(), camera=(), microphone=()");
-
+  res.headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+  res.headers.set(
+    "Content-Security-Policy-Report-Only",
+    "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https:; frame-ancestors 'self';"
+  );
   return res;
 }
-
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api/ready).*)"], // readyは素通し
 };
