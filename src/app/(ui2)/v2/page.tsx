@@ -3,6 +3,7 @@
 import Card from "../_parts/Card";
 
 export default function V2HomePage() {
+  // NOTE: app router の metadata ではファイル分割が望ましいが、最低限の静的見出しを保持
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold text-slate-900">NeedPort（ニードポート）</h1>

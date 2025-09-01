@@ -6,6 +6,8 @@ import { fetcher } from "../../_parts/useSWRFetcher";
 import Card from "../../_parts/Card";
 import Badge from "../../_parts/Badge";
 import Skeleton from "../../_parts/Skeleton";
+import ErrorBox from "../../_parts/ErrorBox";
+import { useToast } from "../../_parts/ToastProvider";
 
 type Industry = { id: string; slug: string; name: string; fee_applicable: boolean };
 type Vendor = {
@@ -30,6 +32,8 @@ export default function VendorsV2Page() {
   );
   const listUrl = slug ? `/api/vendors?slug=${encodeURIComponent(slug)}` : "/api/vendors";
   const { data, error, isLoading } = useSWR<{ rows: Vendor[] }>(listUrl, fetcher, { refreshInterval: 10000 });
+  const { push } = useToast();
+  if (error) { push({ kind:"error", message:"事業者リストの読み込みに失敗しました" }); }
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-4">
@@ -63,7 +67,7 @@ export default function VendorsV2Page() {
           {Array.from({ length: 6 }).map((_, i) => <Skeleton.Card key={i} />)}
         </div>
       )}
-      {error && <div className="text-red-600">読み込みエラーが発生しました。</div>}
+      {error && <div className="mt-3"><ErrorBox /></div>}
       {!isLoading && !error && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {data?.rows?.map((v) => (

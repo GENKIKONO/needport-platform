@@ -9,6 +9,8 @@ import Card from "../../_parts/Card";
 import Skeleton from "../../_parts/Skeleton";
 import Modal from "../../_parts/Modal";
 import Toast, { useToast } from "../../_parts/Toast";
+import ErrorBox from "../../_parts/ErrorBox";
+import { useToast as useToastV2 } from "../../_parts/ToastProvider";
 
 type Need = {
   id: string;
@@ -43,6 +45,8 @@ export default function NeedsV2Page() {
     fetcher,
     { refreshInterval: 4000, revalidateOnFocus: false }
   );
+  const { push: pushToast } = useToastV2();
+  if (error) { pushToast({ kind:"error", message:"一覧の読み込みに失敗しました" }); }
 
   const [open, setOpen] = useState<string | null>(null);
   const { toast, Toaster } = useToast();
@@ -119,7 +123,7 @@ export default function NeedsV2Page() {
         </div>
       )}
       {error && (
-        <div className="text-red-600">読み込みエラーが発生しました。リロードしてください。</div>
+        <div className="mt-3"><ErrorBox /></div>
       )}
       {!isLoading && !error && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
