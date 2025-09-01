@@ -20,7 +20,6 @@ function Item({ok,label,href}:{ok:boolean|undefined,label:string,href?:string}) 
 }
 
 export default function Page(){
-  // サンプルの軽量ヘルスチェック（存在/200判定）
   const { data: ready } = useSWR("/api/ready", fetcher);
   const { data: needs } = useSWR("/api/needs/list?per=1", fetcher);
   const { data: vendors } = useSWR("/api/vendors", fetcher);
@@ -32,7 +31,6 @@ export default function Page(){
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
       <h1 className="text-xl font-semibold">Level-2 仕上げチェック（人間の最終確認）</h1>
-
       <section className="border rounded p-4 bg-white">
         <h2 className="font-medium mb-2">基本</h2>
         <ul className="space-y-2">
@@ -43,16 +41,6 @@ export default function Page(){
           <Item ok={okReady} label="/api/ready の seo/analytics/notify メタ" href="/api/ready" />
         </ul>
       </section>
-
-      <section className="border rounded p-4 bg-white">
-        <h2 className="font-medium mb-2">承認・匿名・開示ポリシー</h2>
-        <ul className="space-y-2">
-          <Item ok={true} label="承認制（ニーズ/メッセージ）が維持される" />
-          <Item ok={true} label="匿名→成約で開示／対象外業種は承認で開示（UI表記整合）" />
-          <Item ok={true} label="NGワード色付きハイライト & プリチェック" />
-        </ul>
-      </section>
-
       <section className="border rounded p-4 bg-white">
         <h2 className="font-medium mb-2">チャット紐付け（要手動検証）</h2>
         <ol className="list-decimal pl-6 text-sm space-y-1">
@@ -62,15 +50,6 @@ export default function Page(){
           <li>既読更新が他スレッドに影響しない（/api/messages/read）。</li>
         </ol>
       </section>
-
-      <section className="border rounded p-4 bg-white">
-        <h2 className="font-medium mb-2">SEO/本番体裁</h2>
-        <ul className="space-y-2">
-          <Item ok={true} label="/sitemap.xml / /robots.txt 正常" href="/sitemap.xml" />
-          <Item ok={true} label="/api/og?t=Title でOG画像" href="/api/og?t=NeedPort" />
-        </ul>
-      </section>
-
       <p className="text-xs text-slate-500">詳細版は docs/LEVEL2_CHECKLIST.md を参照してください。</p>
     </div>
   );
