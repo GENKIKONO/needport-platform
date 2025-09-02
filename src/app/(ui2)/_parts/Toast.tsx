@@ -8,17 +8,17 @@ export function useToast(){
   const toast = (m:string, t:'ok'|'error'='ok')=>{ setTone(t); setMsg(m); };
   const hide = ()=> setMsg(null);
   
-  const Toaster = msg ? (
+  const Toaster = () => msg ? (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
       <div className={`px-4 py-2 rounded shadow text-sm text-white ${tone==='ok'?'bg-slate-900':'bg-red-600'}`}>
         {msg}
       </div>
     </div>
-  ) : null;
+  ) : <div style={{display: 'none'}} />;
   
   return { toast, hide, Toaster };
 }
 
 export default function Toast() {
-  return null; // Placeholder component
+  return <div />; // Valid React element
 }
