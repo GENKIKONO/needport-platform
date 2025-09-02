@@ -1,62 +1,110 @@
-"use client";
+import Link from "next/link";
+import { Badge } from "../_parts/Badge";
+import { Card } from "../_parts/Card";
+import { Button } from "../_parts/Button";
 
-import Card from "../_parts/Card";
+export const metadata = {
+  title: "NeedPort – 埋もれた声を、つなぐ。形にする。",
+  description: "顔が見えない安心感 × ニーズの束ね × 透明な取引で、生活ニーズを事業に変えるプラットフォーム。",
+  openGraph: { title: "NeedPort", url: "https://needport.jp/v2" }
+};
 
-export default function V2HomePage() {
-  // NOTE: app router の metadata ではファイル分割が望ましいが、最低限の静的見出しを保持
+export default function V2Landing() {
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-slate-900">NeedPort（ニードポート）</h1>
-      <p className="text-slate-600 text-lg">
-        匿名で条件を合わせてから顔合わせすることでフラットなマッチング。<br/>
-        埋もれた声をつなぎ、形にするプラットフォームです。
-      </p>
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white -mx-4 sm:mx-0">
+      {/* Hero */}
+      <header className="relative">
+        <div className="container-page py-14 sm:py-20">
+          <div className="space-y-6">
+            <Badge>NeedPort（ニードポート）とは？</Badge>
+            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
+              埋もれた声を、<span className="text-brand">つなぐ</span>。形にする。
+            </h1>
+            <p className="text-slate-600 max-w-2xl">
+              顔が見えない安心感 × ニーズの束ね × 透明な取引で、
+              これまで成立しなかった生活ニーズを事業に変えるプラットフォーム。
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/v2/needs"><Button size="lg">ニーズを探す</Button></Link>
+              <Link href="/v2/needs/new"><Button variant="secondary" size="lg">ニーズを投稿</Button></Link>
+              <Badge variant="soft">匿名で安心</Badge>
+              <Badge variant="soft">賛同で実現</Badge>
+              <Badge variant="soft">成約時10%</Badge>
+            </div>
+          </div>
+        </div>
+        <svg className="absolute bottom-[-1px] left-0 w-full" viewBox="0 0 1440 120" aria-hidden>
+          <path fill="#e0f2fe" d="M0,64L80,69.3C160,75,320,85,480,90.7C640,96,800,96,960,85.3C1120,75,1280,53,1360,42.7L1440,32L1440,0L0,0Z"/>
+        </svg>
+      </header>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card>
-          <Card.Header><div className="font-semibold text-xl">ニーズを探す</div></Card.Header>
-          <Card.Body>
-            生活や地域に埋もれたニーズを検索・フィルタ。<br/>
-            気になる案件には「かんたん提案」も可能です。
-          </Card.Body>
-          <Card.Footer>
-            <a href="/v2/needs" className="px-3 py-2 rounded bg-sky-600 text-white">ニーズ一覧へ</a>
-          </Card.Footer>
-        </Card>
+      {/* 価値（不変の軸） */}
+      <section className="section container-page">
+        <h2 className="text-xl font-bold mb-6">NeedPort が大事にしていること</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            ["小さな声を拾う","匿名で"言いづらい"ニーズも投稿できます。"],
+            ["共感が力になる","賛同が集まれば一人では無理でも実現に近づく。"],
+            ["顔が見えないから安心","成約まで匿名。しがらみなくフラットに。"],
+            ["シンプルな仕組み","成約時10%の手数料。特定業種は月額登録。"],
+            ["データが未来をつくる","地域のニーズデータを資産化し次の事業へ。"],
+            ["運営が最初の種まき","想定ニーズを提示して鶏卵問題を解消。"],
+          ].map(([h,b], i) => (
+            <Card key={i} className="card">
+              <Card.Header>{h}</Card.Header>
+              <Card.Body className="text-slate-600">{b}</Card.Body>
+            </Card>
+          ))}
+        </div>
+      </section>
 
-        <Card>
-          <Card.Header><div className="font-semibold text-xl">事業者を探す</div></Card.Header>
-          <Card.Body>
-            登録済みの事業者プロフィールをカテゴリ別に一覧。<br/>
-            成果報酬対象外カテゴリも分かりやすく表示します。
-          </Card.Body>
-          <Card.Footer>
-            <a href="/v2/vendors" className="px-3 py-2 rounded bg-sky-600 text-white">事業者リストへ</a>
-          </Card.Footer>
-        </Card>
+      {/* 流れ（3ステップ） */}
+      <section className="section container-page">
+        <h2 className="text-xl font-bold mb-6">使い方（匿名→条件すり合わせ→成約）</h2>
+        <ol className="grid gap-4 sm:grid-cols-3 list-decimal list-inside">
+          {[
+            ["ニーズを投稿 / 賛同", "匿名で投稿。賛同が集まると事業者から提案が来ます。"],
+            ["承認制チャットで条件調整", "提案ごとに独立したチャット。混線せず安心。"],
+            ["成約で必要最小限だけ開示", "成約時にだけ事業者情報を開示し、取引へ。"],
+          ].map(([h,b],i)=>(
+            <li key={i} className="card p-4">
+              <div className="font-semibold">{h}</div>
+              <div className="text-slate-600 text-sm mt-1">{b}</div>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-        <Card>
-          <Card.Header><div className="font-semibold text-xl">介護タクシー依頼</div></Card.Header>
-          <Card.Body>
-            5W1Hの簡単入力で介護タクシーのニーズ投稿が可能。<br/>
-            承認後、対応事業者が提案を送信できます。
-          </Card.Body>
-          <Card.Footer>
-            <a href="/v2/needs/new" className="px-3 py-2 rounded bg-sky-600 text-white">依頼を投稿</a>
-          </Card.Footer>
-        </Card>
-      </div>
+      {/* 具体例 */}
+      <section className="section container-page">
+        <h2 className="text-xl font-bold mb-6">例えば、こんな声から始まります</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            ["建築・リフォーム",""自宅サウナをつけたい"など、複数で束ねて実現。"],
+            ["冠婚葬祭＋介護タクシー",""結婚式に車イスの家族を呼びたい"を支援。"],
+            ["生活支援",""週3回だけ作り置き"など日常の小さな困りごと。"],
+          ].map(([h,b],i)=>(
+            <Card key={i} className="card">
+              <Card.Header>{h}</Card.Header>
+              <Card.Body className="text-slate-600">{b}</Card.Body>
+            </Card>
+          ))}
+        </div>
+      </section>
 
-      <div className="bg-slate-50 border rounded p-4 space-y-2">
-        <h2 className="text-xl font-semibold">NeedPortが大事にしていること</h2>
-        <ul className="list-disc pl-6 text-slate-700 space-y-1">
-          <li>小さな声を拾い、匿名で投稿できる</li>
-          <li>共感が集まることで事業性を生む</li>
-          <li>匿名からスタートする安心な取引</li>
-          <li>成約時のみシンプルな手数料</li>
-          <li>データを活かして未来のサービスへ</li>
-        </ul>
-      </div>
+      {/* CTA */}
+      <section className="section container-page">
+        <div className="card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-sky-50 border-sky-100">
+          <div>
+            <div className="font-bold">NeedPort をはじめましょう</div>
+            <div className="text-slate-600 text-sm">匿名で投稿して、賛同を集め、事業者とマッチング。</div>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/v2/needs/new"><Button size="lg">ニーズを投稿</Button></Link>
+            <Link href="/v2/vendors"><Button variant="secondary" size="lg">事業者として参加</Button></Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

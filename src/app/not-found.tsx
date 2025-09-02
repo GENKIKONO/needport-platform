@@ -1,17 +1,11 @@
 import Link from "next/link";
-import ShareButtons from "@/components/ShareButtons";
-
 export default function NotFound(){
-  return (
-    <main className="min-h-[60vh] grid place-items-center p-8 text-center">
-      <div>
-        <h1 className="text-2xl font-bold mb-2">ページが見つかりません</h1>
-        <p className="text-gray-600 mb-6">指定されたページは存在しないか、公開されていません。</p>
-        <div className="flex items-center justify-center gap-3">
-          <a className="px-4 py-2 rounded bg-blue-600 text-white" href="/">ホームへ</a>
-          <a className="px-4 py-2 rounded border" href="/needs">ニーズ一覧</a>
-        </div>
-      </div>
-    </main>
-  );
+  return <div className="container-page py-20 text-center space-y-4">
+    <h1 className="text-2xl font-bold">ページが見つかりません</h1>
+    <p className="text-slate-600">お探しのページは移動された可能性があります。</p>
+    <div className="flex gap-3 justify-center">
+      <Link href="/v2" className="text-sky-700 underline">ホームへ</Link>
+      <Link href="/v2/needs" className="text-sky-700 underline">ニーズ一覧へ</Link>
+    </div>
+  </div>;
 }

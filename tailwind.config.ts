@@ -8,12 +8,16 @@ export default {
   ],
   theme: {
     extend: {
+      borderRadius: { 
+        md: "8px",
+        xl: '14px',
+      },
+      boxShadow: {
+        card: "0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03)",
+        port: '0 10px 30px -10px rgba(14,116,144,.15), 0 2px 8px rgba(0,0,0,.04)',
+      },
       colors: {
-        brand: {
-          50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',
-          400:'#818cf8',500:'#6366f1',600:'#2563eb',700:'#4338ca',
-          800:'#3730a3',900:'#312e81',
-        },
+        brand: { DEFAULT: "#0EA5E9" },
         blue: {
           50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
           400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
@@ -36,12 +40,8 @@ export default {
         buoy:    { 500: '#F97316' },                                   // ブイのオレンジ
         light:   { 500: '#F43F5E' },                                   // 灯台の赤
       },
-      borderRadius: {
-        xl: '14px',
-      },
-      boxShadow: {
-        card: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 0 0 1px rgb(0 0 0 / 0.05)',
-        port: '0 10px 30px -10px rgba(14,116,144,.15), 0 2px 8px rgba(0,0,0,.04)',
+      fontFamily: {
+        sans: ['system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans JP', 'sans-serif']
       },
       container: {
         center: true,

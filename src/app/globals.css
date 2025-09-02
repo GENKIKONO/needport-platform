@@ -93,6 +93,9 @@
   --np-pad-lg: 24px;
   --np-gap: 24px;
   --np-gap-lg: 32px;
+  
+  /* 港感トークン */
+  color-scheme: light;
 }
 
 /* セクション余白のユーティリティ（必要箇所で使用） */
@@ -792,3 +795,9 @@ main{ touch-action: pan-y; }
   p  { @apply leading-7 text-neutral-300; }
   a { @apply text-brand-600 underline-offset-4 hover:underline; }
 }
+
+/* 港感ユーティリティクラス */
+.focus-ring { @apply outline-none ring-2 ring-brand/50 rounded-md; }
+.container-page { @apply mx-auto max-w-6xl px-4; }
+.section { @apply py-10 sm:py-14; }
+.card { @apply bg-white rounded-md shadow-card border border-slate-100; }

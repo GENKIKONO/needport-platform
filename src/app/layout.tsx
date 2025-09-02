@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import LeftDock from '@/components/nav/LeftDock';
-import Footer from '@/components/layout/Footer';
+import SiteHeader from "./(ui2)/_layout/SiteHeader";
+import SiteFooter from "./(ui2)/_layout/SiteFooter";
 import { ClerkProvider } from '@clerk/nextjs';
 import { ToastProvider } from '@/components/ui/Toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -31,27 +31,12 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="min-h-screen bg-gray-50 text-gray-900">
-        {/* キーボード利用者向け：メインコンテンツへスキップ */}
-        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:bg-black focus:text-white focus:px-3 focus:py-2 rounded">
-          コンテンツへスキップ
-        </a>
         <ClerkProvider>
           <ErrorBoundary>
             <ToastProvider>
-              <div className="grid min-h-screen grid-cols-1 md:grid-cols-[240px_1fr]">
-                {/* 左ナビ：画面高固定 */}
-                <aside className="hidden md:block sticky top-0 h-[100dvh] overflow-y-auto border-r bg-white">
-                  <LeftDock />
-                </aside>
-
-                {/* メイン＋フッター（ナビとは独立） */}
-                <div className="flex min-h-screen flex-col">
-                  <main id="main" className="flex-1">
-                    {children}
-                  </main>
-                  <Footer />
-                </div>
-              </div>
+              <SiteHeader />
+              <main id="main" className="container-page">{children}</main>
+              <SiteFooter />
             </ToastProvider>
           </ErrorBoundary>
         </ClerkProvider>
