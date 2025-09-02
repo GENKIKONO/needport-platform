@@ -12,7 +12,6 @@ export const metadata = {
 export default function V2Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white -mx-4 sm:mx-0">
-      {/* Hero */}
       <header className="relative">
         <div className="container-page py-14 sm:py-20">
           <div className="space-y-6">
@@ -38,7 +37,6 @@ export default function V2Landing() {
         </svg>
       </header>
 
-      {/* 価値（不変の軸） */}
       <section className="section container-page">
         <h2 className="text-xl font-bold mb-6">NeedPort が大事にしていること</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -58,7 +56,6 @@ export default function V2Landing() {
         </div>
       </section>
 
-      {/* 流れ（3ステップ） */}
       <section className="section container-page">
         <h2 className="text-xl font-bold mb-6">使い方（匿名→条件すり合わせ→成約）</h2>
         <ol className="grid gap-4 sm:grid-cols-3 list-decimal list-inside">
@@ -75,7 +72,6 @@ export default function V2Landing() {
         </ol>
       </section>
 
-      {/* 具体例 */}
       <section className="section container-page">
         <h2 className="text-xl font-bold mb-6">例えば、こんな声から始まります</h2>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -92,7 +88,6 @@ export default function V2Landing() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="section container-page">
         <div className="card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-sky-50 border-sky-100">
           <div>
