@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function V2Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white -mx-4 sm:mx-0">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
       <header className="relative">
         <div className="container-page py-14 sm:py-20">
           <div className="space-y-6">
