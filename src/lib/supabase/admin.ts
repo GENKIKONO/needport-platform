@@ -6,3 +6,9 @@ export function createAdminClient() {
   if (!url || !key) throw new Error("Missing SUPABASE env for admin client");
   return createClient(url, key, { auth: { persistSession: false } });
 }
+
+// compat: named alias for import compatibility
+export const supabaseAdmin = createAdminClient;
+
+// compat: default export
+export default createAdminClient;
