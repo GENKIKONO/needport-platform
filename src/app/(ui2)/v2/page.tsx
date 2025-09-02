@@ -2,15 +2,13 @@ import Link from "next/link";
 
 export const metadata = {
   title: "NeedPort – 埋もれた声を、つなぐ。形にする。",
-  description:
-    "顔が見えない安心感 × ニーズの束ね × 透明な取引で、これまで成立しなかった生活ニーズを事業に変えるプラットフォーム。",
+  description: "顔が見えない安心感 × ニーズの束ね × 透明な取引で、これまで成立しなかった生活ニーズを事業に変えるプラットフォーム。",
   openGraph: { title: "NeedPort", url: "https://needport.jp/v2", siteName: "NeedPort" },
 };
 
 export default function V2Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
-      {/* Hero */}
       <header className="relative">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20 space-y-6">
           <span className="inline-block text-xs font-semibold text-sky-600">
@@ -34,16 +32,11 @@ export default function V2Landing() {
             <span className="px-2 py-1 text-xs rounded bg-sky-100 text-sky-700">成約時10%</span>
           </div>
         </div>
-        {/* 港っぽい波 */}
         <svg className="absolute bottom-[-1px] left-0 w-full" viewBox="0 0 1440 120" aria-hidden>
-          <path
-            fill="#e0f2fe"
-            d="M0,64L80,69.3C160,75,320,85,480,90.7C640,96,800,96,960,85.3C1120,75,1280,53,1360,42.7L1440,32L1440,0L0,0Z"
-          />
+          <path fill="#e0f2fe" d="M0,64L80,69.3C160,75,320,85,480,90.7C640,96,800,96,960,85.3C1120,75,1280,53,1360,42.7L1440,32L1440,0L0,0Z"/>
         </svg>
       </header>
 
-      {/* 価値（不変の軸） */}
       <section className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
         <h2 className="text-xl font-bold mb-6">NeedPort が大事にしていること</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -63,7 +56,6 @@ export default function V2Landing() {
         </div>
       </section>
 
-      {/* 流れ */}
       <section className="mx-auto max-w-6xl px-4 pb-10 sm:pb-14">
         <h2 className="text-xl font-bold mb-6">使い方（匿名→条件すり合わせ→成約）</h2>
         <ol className="grid gap-4 sm:grid-cols-3 list-decimal list-inside">
@@ -80,7 +72,6 @@ export default function V2Landing() {
         </ol>
       </section>
 
-      {/* CTA */}
       <section className="mx-auto max-w-6xl px-4 pb-16">
         <div className="rounded-md border border-sky-100 bg-sky-50 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
