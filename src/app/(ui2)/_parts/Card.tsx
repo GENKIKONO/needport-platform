@@ -10,3 +10,7 @@ export function CardHeader({children, className=""}:{children:React.ReactNode; c
 export function CardFooter({children, className=""}:{children:React.ReactNode; className?:string}) {
   return <div className={`px-4 pb-4 ${className}`}>{children}</div>;
 }
+
+
+// compat: add default export
+export default Card;

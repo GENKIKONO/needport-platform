@@ -7,3 +7,7 @@ export const fetcher = async (url: string) => {
   }
   return r.json();
 };
+
+
+// compat: add default export
+export default fetcher;
