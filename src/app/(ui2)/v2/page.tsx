@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function V2Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white -mx-4 sm:mx-0">
       <header className="relative">
         <div className="container-page py-14 sm:py-20">
           <div className="space-y-6">
@@ -53,51 +53,6 @@ export default function V2Landing() {
               <Card.Body className="text-slate-600">{b}</Card.Body>
             </Card>
           ))}
-        </div>
-      </section>
-
-      <section className="section container-page">
-        <h2 className="text-xl font-bold mb-6">使い方（匿名→条件すり合わせ→成約）</h2>
-        <ol className="grid gap-4 sm:grid-cols-3 list-decimal list-inside">
-          {[
-            ["ニーズを投稿 / 賛同", "匿名で投稿。賛同が集まると事業者から提案が来ます。"],
-            ["承認制チャットで条件調整", "提案ごとに独立したチャット。混線せず安心。"],
-            ["成約で必要最小限だけ開示", "成約時にだけ事業者情報を開示し、取引へ。"],
-          ].map(([h,b],i)=>(
-            <li key={i} className="card p-4">
-              <div className="font-semibold">{h}</div>
-              <div className="text-slate-600 text-sm mt-1">{b}</div>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="section container-page">
-        <h2 className="text-xl font-bold mb-6">例えば、こんな声から始まります</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            ["建築・リフォーム",""自宅サウナをつけたい"など、複数で束ねて実現。"],
-            ["冠婚葬祭＋介護タクシー",""結婚式に車イスの家族を呼びたい"を支援。"],
-            ["生活支援",""週3回だけ作り置き"など日常の小さな困りごと。"],
-          ].map(([h,b],i)=>(
-            <Card key={i} className="card">
-              <Card.Header>{h}</Card.Header>
-              <Card.Body className="text-slate-600">{b}</Card.Body>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="section container-page">
-        <div className="card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-sky-50 border-sky-100">
-          <div>
-            <div className="font-bold">NeedPort をはじめましょう</div>
-            <div className="text-slate-600 text-sm">匿名で投稿して、賛同を集め、事業者とマッチング。</div>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/v2/needs/new"><Button size="lg">ニーズを投稿</Button></Link>
-            <Link href="/v2/vendors"><Button variant="secondary" size="lg">事業者として参加</Button></Link>
-          </div>
         </div>
       </section>
     </div>
