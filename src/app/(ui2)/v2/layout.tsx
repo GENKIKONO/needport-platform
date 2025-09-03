@@ -1,54 +1,21 @@
 "use client";
 import "../../globals.css";
-import Link from "next/link";
-import { ReactNode } from "react";
-import { usePathname } from "next/navigation";
-import MobileNav from "../_parts/MobileNav";
-import { cn, isActivePath } from "../_parts/ui2.utils";
+import type { ReactNode } from "react";
+import SideNav from "@/app/(ui2)/_layout/SideNav";
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function V2Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ja">
-      <body className="min-h-dvh bg-white text-slate-900">
-        <Header />
-        <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
-        <Footer />
-      </body>
-    </html>
-  );
-}
-
-function Header(){
-  const pathname = usePathname();
-  return (
-    <header className="border-b bg-slate-900 text-white" role="banner">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-        <Link href="/v2" className="font-bold text-xl">NeedPort</Link>
-        <nav className="hidden md:flex gap-4 text-sm" aria-label="グローバル">
-          <Link href="/v2/needs" className={cn("hover:underline", isActivePath(pathname||'',"/v2/needs") && "underline font-semibold")}>ニーズ</Link>
-          <Link href="/v2/vendors" className={cn("hover:underline", isActivePath(pathname||'',"/v2/vendors") && "underline font-semibold")}>事業者</Link>
-          <Link href="/v2/needs/new" className={cn("hover:underline", isActivePath(pathname||'',"/v2/needs/new") && "underline font-semibold")}>投稿</Link>
-          <Link href="/v2/checklist" className={cn("hover:underline text-amber-200", isActivePath(pathname||'',"/v2/checklist") && "underline font-semibold")}>チェック</Link>
-        </nav>
-        <MobileNav />
+    <div className="min-h-[calc(100vh-56px)] lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
+      {/* Sidebar (PC常時表示。縦スクロール可 / 横不可) */}
+      <aside className="hidden lg:block border-r border-slate-200">
+        <div className="sticky top-14 h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden">
+          <SideNav />
+        </div>
+      </aside>
+      {/* Main */}
+      <div className="min-w-0 overflow-x-hidden">
+        {children}
       </div>
-    </header>
-  );
-}
-
-function Footer(){
-  return (
-    <footer className="border-t bg-slate-50 text-slate-600 text-sm">
-      <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center gap-3">
-        <span>&copy; {new Date().getFullYear()} NeedPort</span>
-        <a className="hover:underline" href="/legal/terms">利用規約</a>
-        <a className="hover:underline" href="/legal/privacy">プライバシー</a>
-        <a className="hover:underline" href="/legal/tokushoho">特商法</a>
-        <a className="hover:underline" href="/contact">お問い合わせ</a>
-      </div>
-      {/* Optional: 軽量解析（envで有効化） */}
-      {/* @ts-expect-error Server Component script */}
-      {require("../_parts/Analytics").default()}
-    </footer>
+    </div>
   );
 }
