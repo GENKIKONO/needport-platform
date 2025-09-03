@@ -1,9 +1,9 @@
-import type { EmailRequestOptions } from "resend";
+import type { CreateEmailRequestOptions } from "resend";
 let ResendLib: any; try { ResendLib = require("resend").Resend; } catch {}
 const key = process.env.RESEND_API_KEY || "";
 const resend = key && ResendLib ? new ResendLib(key) : null;
 
-export async function sendMail(payload: EmailRequestOptions, attempts=3){
+export async function sendMail(payload: CreateEmailRequestOptions, attempts=3){
   if(!resend) throw new Error("Resend not configured");
   let last: any;
   for(let i=0;i<attempts;i++){
