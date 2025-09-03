@@ -1,10 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  List, Plus, Building2, NotebookText, Compass, Map, HelpCircle,
-  Megaphone, Info, FileText
-} from "lucide-react";
+import { List, Plus, Building2, NotebookText, Compass, Map, HelpCircle, Megaphone, Info, FileText } from "lucide-react";
 
 function Item({ href, label, Icon }:{ href:string; label:string; Icon: React.ComponentType<any> }) {
   const p = usePathname() || "/";

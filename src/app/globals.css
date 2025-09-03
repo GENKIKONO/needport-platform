@@ -801,7 +801,9 @@ main{ touch-action: pan-y; }
 .container-page { @apply mx-auto max-w-7xl px-4; }
 @media (min-width: 1536px){
   /* 超ワイドでもできるだけ広く */
-  .container-page { max-width: 1600px; }
+  .container-page { max-width: 1600px; margin-inline: auto; padding-inline: 16px; }
 }
+/* 折り返し外のセクションは遅延描画ヒント */
+section[data-defer="true"]{ content-visibility: auto; contain-intrinsic-size: 600px 800px; }
 .section { @apply py-10 sm:py-14; }
 .card { @apply bg-white rounded-md shadow-card border border-slate-100; }

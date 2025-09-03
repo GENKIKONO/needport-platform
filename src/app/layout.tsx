@@ -7,6 +7,7 @@ import SiteFooter from "./(ui2)/_layout/SiteFooter";
 import { ClerkProvider } from '@clerk/nextjs';
 import { ToastProvider } from '@/components/ui/Toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,6 +39,7 @@ export default async function RootLayout({
               <SiteHeader />
               <main id="main" className="container-page">{children}</main>
               <SiteFooter />
+              <Analytics />
             </ToastProvider>
           </ErrorBoundary>
         </ClerkProvider>

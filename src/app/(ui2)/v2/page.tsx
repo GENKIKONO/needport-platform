@@ -1,16 +1,18 @@
 import Link from "next/link";
+import { useEffect } from "react";
+import { mark, measure } from "@/app/(ui2)/_lib/rum";
+import SectionBreak from "@/app/(ui2)/_parts/SectionBreak";
 
 export const metadata = {
-  title: "NeedPort – 埋もれた声を、つなぐ。形にする。",
-  description:
-    "顔が見えない安心感 × ニーズの束ね × 透明な取引で、これまで成立しなかった生活ニーズを事業に変えるプラットフォーム。",
-  openGraph: { title: "NeedPort", url: "https://needport.jp/v2", siteName: "NeedPort" },
+  title: "NeedPort - ニーズと事業者をつなぐ港",
+  description: "行政・企業のニーズに、最適な事業者をマッチング。NeedPortが、あなたのプロジェクトを成功に導きます。",
 };
-// 変動の少ないLPは静的化（CDN配信）
+
 export const dynamic = "force-static";
 export const revalidate = 3600; // 1h
 
 export default function V2Landing() {
+  useEffect(()=>{ mark("v2_start"); return ()=>{ measure("v2_visible","v2_start"); }; },[]);
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
       {/* Hero */}
@@ -37,8 +39,8 @@ export default function V2Landing() {
             <span className="px-2 py-1 text-xs rounded bg-sky-100 text-sky-700">成約時10%</span>
           </div>
         </div>
-        {/* 港っぽい波 */}
-        <svg className="absolute bottom-[-1px] left-0 w-full" viewBox="0 0 1440 120" aria-hidden>
+        {/* 港っぽい波（装飾はCSS/inlineで軽量） */}
+        <svg className="absolute bottom-[-1px] left-0 w-full" viewBox="0 0 1440 120" aria-hidden focusable="false">
           <path fill="#e0f2fe" d="M0,64L80,69.3C160,75,320,85,480,90.7C640,96,800,96,960,85.3C1120,75,1280,53,1360,42.7L1440,32L1440,0L0,0Z"/>
         </svg>
       </header>

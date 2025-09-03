@@ -3,6 +3,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useActive } from "@/app/(ui2)/_lib/nav";
 
+const NoPrefetchLink = (props: any) => <Link prefetch={false} {...props} />;
+
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const isHome  = useActive("/v2", true);
@@ -11,7 +13,7 @@ export default function SiteHeader() {
   const isNews  = useActive("/v2/news");
   const isMe    = useActive("/me");
   return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b h-14">
       <div className="container-page h-14 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 font-semibold">
