@@ -1,11 +1,13 @@
 import Link from "next/link";
 export default function NotFound(){
-  return <div className="container-page py-20 text-center space-y-4">
-    <h1 className="text-2xl font-bold">ページが見つかりません</h1>
-    <p className="text-slate-600">お探しのページは移動された可能性があります。</p>
-    <div className="flex gap-3 justify-center">
-      <Link href="/v2" className="text-sky-700 underline">ホームへ</Link>
-      <Link href="/v2/needs" className="text-sky-700 underline">ニーズ一覧へ</Link>
+  return (
+    <div className="container-page py-16 text-center space-y-4">
+      <h1 className="text-3xl font-extrabold">ページが見つかりません</h1>
+      <p className="text-slate-600">URLが間違っているか、削除された可能性があります。</p>
+      <div className="flex gap-2 justify-center">
+        <Link className="px-4 py-2 rounded bg-sky-600 text-white" href="/v2">ホームへ</Link>
+        <Link className="px-4 py-2 rounded border" href="/v2/needs">ニーズ一覧へ</Link>
+      </div>
     </div>
-  </div>;
+  );
 }
