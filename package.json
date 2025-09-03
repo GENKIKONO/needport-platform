@@ -27,7 +27,9 @@
     "build:analyze": "ANALYZE=true next build",
     "vercel-build": "next build",
     "postvercel-build": "node scripts/guard-next-manifests.mjs",
-    "smoke:prod": "bash ./scripts/smoke-prod.sh"
+    "smoke:prod": "bash ./scripts/smoke-prod.sh",
+    "routes:check": "node ./scripts/check-routes.js",
+    "env:check": "node ./scripts/check-env.js"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.6",
