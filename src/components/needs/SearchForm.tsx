@@ -1,8 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { u } from '@/components/ui/u';
+
+// デバウンス用フック
+function useDebounced<T>(value: T, ms = 300) {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return v;
+}
 
 const AREAS = [
   { value: '', label: 'すべてのエリア' },
@@ -44,6 +54,9 @@ export default function SearchForm() {
     sort: searchParams.get('sort') ?? 'recent'
   });
 
+  // デバウンスされたキーワード
+  const dq = useDebounced(localValue.keyword, 350);
+
   // URL→フォームの一方向同期（戻る操作など）
   useEffect(() => {
     setLocalValue({
@@ -53,6 +66,13 @@ export default function SearchForm() {
       sort: searchParams.get('sort') ?? 'recent'
     });
   }, [searchParams]);
+
+  // デバウンスされたキーワードで検索実行
+  useEffect(() => {
+    if (dq !== localValue.keyword) {
+      // キーワードが変更された場合の処理（必要に応じて実装）
+    }
+  }, [dq, localValue.keyword]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

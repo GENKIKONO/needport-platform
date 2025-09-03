@@ -6,6 +6,9 @@ export const metadata = {
     "顔が見えない安心感 × ニーズの束ね × 透明な取引で、これまで成立しなかった生活ニーズを事業に変えるプラットフォーム。",
   openGraph: { title: "NeedPort", url: "https://needport.jp/v2", siteName: "NeedPort" },
 };
+// 変動の少ないLPは静的化（CDN配信）
+export const dynamic = "force-static";
+export const revalidate = 3600; // 1h
 
 export default function V2Landing() {
   return (

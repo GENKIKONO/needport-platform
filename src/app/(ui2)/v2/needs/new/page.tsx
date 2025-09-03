@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Toast, { useToast } from "../../../_parts/Toast";
 
+// 投稿フォームは常に最新（CSRF/認証もある）
+export const dynamic = "force-dynamic";
+
 export default function NeedsNewCareTaxiPage() {
   const { toast, Toaster } = useToast();
   const [pending, setPending] = useState(false);

@@ -12,6 +12,9 @@ export async function GET() {
     runtime: {
       vercelEnv: process.env.VERCEL_ENV || null,
       nodeEnv: process.env.NODE_ENV || null,
+      commit: process.env.VERCEL_GIT_COMMIT_SHA || null,
+      buildId: process.env.VERCEL_BUILD_OUTPUT_ID || null,
+      region: process.env.VERCEL_REGION || null,
     }
   });
 }
