@@ -41,7 +41,7 @@ export default function V2Landing() {
       </header>
 
       {/* 価値（不変の軸） */}
-      <section className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+      <section className="container-page py-10 sm:py-14">
         <h2 className="text-xl font-bold mb-6">NeedPort が大事にしていること</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
@@ -61,7 +61,7 @@ export default function V2Landing() {
       </section>
 
       {/* 流れ */}
-      <section className="mx-auto max-w-6xl px-4 pb-10 sm:pb-14">
+      <section className="container-page pb-10 sm:pb-14">
         <h2 className="text-xl font-bold mb-6">使い方（匿名→条件すり合わせ→成約）</h2>
         <ol className="grid gap-4 sm:grid-cols-3 list-decimal list-inside">
           {[
@@ -78,7 +78,7 @@ export default function V2Landing() {
       </section>
 
       {/* CTA */}
-      <section className="mx-auto max-w-6xl px-4 pb-16">
+      <section className="container-page pb-16">
         <div className="rounded-md border border-sky-100 bg-sky-50 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <div className="font-bold">NeedPort をはじめましょう</div>
