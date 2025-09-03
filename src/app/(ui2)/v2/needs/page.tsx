@@ -2,14 +2,10 @@ import { normalize } from "@/app/(ui2)/_lib/paging";
 import { headers } from "next/headers";
 
 export const metadata = { title: "ニーズ一覧 – NeedPort" };
-// 一覧は頻繁に更新されるため短命ISR
-export const dynamic = "force-static";
-export const revalidate = 30; // 30s
+// 一覧は頻繁に更新されるため動的レンダリング
+export const dynamic = "force-dynamic";
 
 export default async function NeedsIndex({ searchParams }: { searchParams?: any }) {
-  const h = headers();
-  // 軽い負荷分散用：CDNレイヤの短命キャッシュを明示
-  h.set("Cache-Control","public, s-maxage=30, stale-while-revalidate=60");
   const { page, size, q, area, cat } = normalize(searchParams ?? {});
   return <div className="space-y-4">
     <h1 className="text-xl font-bold">ニーズ一覧</h1>
