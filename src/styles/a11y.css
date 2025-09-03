@@ -1,0 +1,6 @@
+.focus-ring:focus-visible{ outline: 2px solid rgba(2,132,199,.6); outline-offset: 2px }
+.focus-ring-inset:focus-visible{ box-shadow: 0 0 0 2px rgba(2,132,199,.6) inset }
+.skip-link {
+  position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;
+}
+.skip-link:focus { left: 1rem; top: .75rem; width:auto; height:auto; padding:.5rem .75rem; background:#fff; border:1px solid #e2e8f0; border-radius:.375rem; z-index:50 }
