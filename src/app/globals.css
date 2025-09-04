@@ -449,7 +449,7 @@ html, body {
   max-width: 100vw; 
   overflow-x: hidden; 
 }
-body { 
+body {
   overscroll-behavior-x: none;      /* iOSの横オーバースクロールを抑止 */
 }
 .np-lock-vert { 
@@ -805,5 +805,8 @@ main{ touch-action: pan-y; }
 }
 /* 折り返し外のセクションは遅延描画ヒント */
 section[data-defer="true"]{ content-visibility: auto; contain-intrinsic-size: 600px 800px; }
+
+/* lazy paint for below-the-fold sections */
+.cv-section{content-visibility:auto;contain-intrinsic-size:700px 1000px}
 .section { @apply py-10 sm:py-14; }
 .card { @apply bg-white rounded-md shadow-card border border-slate-100; }
