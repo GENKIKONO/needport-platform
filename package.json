@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "kill-port 3000 3001 && next dev -p 3000",
+    "guard:no-v2": "node scripts/check-no-v2-links.js",
+    "prebuild": "npm run guard:no-v2",
     "build": "SKIP_TYPE_CHECK=true next build --no-lint",
     "start": "cross-env PORT=3000 next start -p 3000",
     "lint": "next lint",
