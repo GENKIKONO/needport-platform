@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { useEffect } from "react";
-import { mark, measure } from "@/app/(ui2)/_lib/rum";
 import SectionBreak from "@/app/(ui2)/_parts/SectionBreak";
+import RUMTracker from "@/app/(ui2)/_parts/RUMTracker";
 
 export const metadata = {
   title: "NeedPort - ニーズと事業者をつなぐ港",
@@ -12,9 +11,9 @@ export const dynamic = "force-static";
 export const revalidate = 3600; // 1h
 
 export default function V2Landing() {
-  useEffect(()=>{ mark("v2_start"); return ()=>{ measure("v2_visible","v2_start"); }; },[]);
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
+      <RUMTracker />
       {/* Hero */}
       <header className="relative">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20 space-y-6">

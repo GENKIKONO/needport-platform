@@ -6,6 +6,9 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 
 const baseConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ['lucide-react']
+  },
   /* 既存の設定はそのまま */
   images: {
     formats: ['image/avif', 'image/webp'],
