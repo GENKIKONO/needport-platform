@@ -34,3 +34,11 @@ const baseConfig: NextConfig = {
 };
 
 export default withBundleAnalyzer(baseConfig);
+
+// added by script: canonicalize /v2 -> /
+export async function redirects() {
+  return [
+    { source: '/v2', destination: '/', permanent: true },
+    { source: '/v2/:path*', destination: '/:path*', permanent: true },
+  ];
+}

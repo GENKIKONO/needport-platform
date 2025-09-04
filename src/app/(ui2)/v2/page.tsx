@@ -27,10 +27,10 @@ export default function V2Landing() {
             顔が見えない安心感 × ニーズの束ね × 透明な取引で、これまで成立しなかった生活ニーズを事業に変えるプラットフォーム。
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/v2/needs" className="px-4 py-2 rounded bg-sky-600 text-white hover:bg-sky-700">
+            <Link href="//needs" className="px-4 py-2 rounded bg-sky-600 text-white hover:bg-sky-700">
               ニーズを探す
             </Link>
-            <Link href="/v2/needs/new" className="px-4 py-2 rounded border border-slate-300 hover:bg-slate-50">
+            <Link href="//needs/new" className="px-4 py-2 rounded border border-slate-300 hover:bg-slate-50">
               ニーズを投稿
             </Link>
             <span className="px-2 py-1 text-xs rounded bg-sky-100 text-sky-700">匿名で安心</span>
@@ -89,8 +89,8 @@ export default function V2Landing() {
             <div className="text-slate-600 text-sm">匿名で投稿して、賛同を集め、事業者とマッチング。</div>
           </div>
           <div className="flex gap-2">
-            <Link href="/v2/needs/new" className="px-4 py-2 rounded bg-sky-600 text-white hover:bg-sky-700">ニーズを投稿</Link>
-            <Link href="/v2/vendors" className="px-4 py-2 rounded border border-slate-300 hover:bg-slate-50">事業者として参加</Link>
+            <Link href="//needs/new" className="px-4 py-2 rounded bg-sky-600 text-white hover:bg-sky-700">ニーズを投稿</Link>
+            <Link href="//vendors" className="px-4 py-2 rounded border border-slate-300 hover:bg-slate-50">事業者として参加</Link>
           </div>
         </div>
       </section>

@@ -22,10 +22,10 @@ export default function SiteHeader() {
           </Link>
         </div>
         <nav className="hidden md:flex items-center gap-5 text-sm">
-          <Link href="/v2"        className={isHome  ? "text-sky-700 font-semibold" : "text-slate-700 hover:text-sky-700"}>ホーム</Link>
-          <Link href="/v2/needs"  className={isNeeds ? "text-sky-700 font-semibold" : "text-slate-700 hover:text-sky-700"}>ニーズ一覧</Link>
-          <Link href="/v2/guide"  className={isGuide ? "text-sky-700 font-semibold" : "text-slate-700 hover:text-sky-700"}>ガイド</Link>
-          <Link href="/v2/news"   className={isNews  ? "text-sky-700 font-semibold" : "text-slate-700 hover:text-sky-700"}>お知らせ</Link>
+          <Link href="/"        className={isHome  ? "text-sky-700 font-semibold" : "text-slate-700 hover:text-sky-700"}>ホーム</Link>
+          <Link href="//needs"  className={isNeeds ? "text-sky-700 font-semibold" : "text-slate-700 hover:text-sky-700"}>ニーズ一覧</Link>
+          <Link href="//guide"  className={isGuide ? "text-sky-700 font-semibold" : "text-slate-700 hover:text-sky-700"}>ガイド</Link>
+          <Link href="//news"   className={isNews  ? "text-sky-700 font-semibold" : "text-slate-700 hover:text-sky-700"}>お知らせ</Link>
           <Link href="/me"        className={isMe    ? "text-sky-700 font-semibold" : "text-slate-700 hover:text-sky-700"}>マイページ</Link>
         </nav>
         <button aria-label="メニュー" onClick={()=>setOpen(v=>!v)} className="md:hidden p-2 rounded hover:bg-slate-100">
@@ -33,16 +33,16 @@ export default function SiteHeader() {
         </button>
         <div className="flex items-center gap-2">
           <Link href="/sign-in" className="px-3 py-1.5 text-sm border rounded hover:bg-slate-50">ログイン</Link>
-          <Link href="/v2/needs/new" className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700">ニーズを投稿</Link>
+          <Link href="//needs/new" className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700">ニーズを投稿</Link>
         </div>
       </div>
       {open && (
         <div className="md:hidden border-t border-slate-200 bg-white">
           <nav className="container-page py-2 grid gap-1 text-sm">
-            <Link onClick={()=>setOpen(false)} href="/v2"       className="px-2 py-2 rounded hover:bg-slate-50">ホーム</Link>
-            <Link onClick={()=>setOpen(false)} href="/v2/needs" className="px-2 py-2 rounded hover:bg-slate-50">ニーズ一覧</Link>
-            <Link onClick={()=>setOpen(false)} href="/v2/guide" className="px-2 py-2 rounded hover:bg-sky-50">ガイド</Link>
-            <Link onClick={()=>setOpen(false)} href="/v2/news"  className="px-2 py-2 rounded hover:bg-slate-50">お知らせ</Link>
+            <Link onClick={()=>setOpen(false)} href="/"       className="px-2 py-2 rounded hover:bg-slate-50">ホーム</Link>
+            <Link onClick={()=>setOpen(false)} href="//needs" className="px-2 py-2 rounded hover:bg-slate-50">ニーズ一覧</Link>
+            <Link onClick={()=>setOpen(false)} href="//guide" className="px-2 py-2 rounded hover:bg-sky-50">ガイド</Link>
+            <Link onClick={()=>setOpen(false)} href="//news"  className="px-2 py-2 rounded hover:bg-slate-50">お知らせ</Link>
             <Link onClick={()=>setOpen(false)} href="/me"       className="px-2 py-2 rounded hover:bg-slate-50">マイページ</Link>
           </nav>
         </div>
