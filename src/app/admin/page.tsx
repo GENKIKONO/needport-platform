@@ -1,31 +1,27 @@
-"use client";
-import { useState, useEffect } from "react";
-import { KpiCards } from "@/components/admin/KpiCards";
-import { type AdminStats } from "@/lib/admin/types";
-import { yen, timeAgo } from "@/lib/admin/format";
-import TrustBadge from "@/components/admin/TrustBadge";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
-export default function AdminHome() {
-  return (
-    <main className="container py-10">
-      <h1 className="text-2xl font-bold">管理ダッシュボード</h1>
-      <p className="mt-2 text-neutral-600">骨組みOK。今後KPI/一覧/操作を載せます。</p>
-      
-      {/* Trustバッジ凡例 */}
-      <div className="mt-4 text-sm text-neutral-600 flex items-center gap-4">
-        <span className="inline-flex items-center gap-2">
-          <TrustBadge userId="demo_high" />
-          <span>High ≥ 70</span>
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <TrustBadge userId="demo_mid" />
-          <span>Mid 40–69</span>
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <TrustBadge userId="demo_low" />
-          <span>Low &lt; 40</span>
-        </span>
+export default async function AdminDashboard(){
+  const { userId } = auth();
+  if(!userId){
+    redirect("/sign-in");
+  }
+  
+  return <div className="mx-auto max-w-6xl p-6 space-y-6">
+    <h1 className="text-2xl font-bold">管理ダッシュボード</h1>
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="border rounded p-4">
+        <h3 className="font-semibold">ニーズ管理</h3>
+        <p className="text-sm text-slate-600">投稿されたニーズの管理</p>
       </div>
-    </main>
-  );
+      <div className="border rounded p-4">
+        <h3 className="font-semibold">事業者管理</h3>
+        <p className="text-sm text-slate-600">登録事業者の管理</p>
+      </div>
+      <div className="border rounded p-4">
+        <h3 className="font-semibold">ユーザー管理</h3>
+        <p className="text-sm text-slate-600">ユーザーアカウントの管理</p>
+      </div>
+    </div>
+  </div>;
 }
