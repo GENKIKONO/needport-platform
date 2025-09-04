@@ -31,6 +31,13 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        {/* === SEO & perf minimal === */}
+        <link rel="canonical" href="https://needport.jp/" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <meta name="font-display" content="swap" />
+        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+        <link rel="dns-prefetch" href="//fonts.googleapis.com"/>
+        <meta httpEquiv="x-dns-prefetch-control" content="on" />
       </head>
       <body className="min-h-screen bg-gray-50 text-gray-900">
         <ClerkProvider>

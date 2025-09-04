@@ -810,3 +810,5 @@ section[data-defer="true"]{ content-visibility: auto; contain-intrinsic-size: 60
 .cv-section{content-visibility:auto;contain-intrinsic-size:700px 1000px}
 .section { @apply py-10 sm:py-14; }
 .card { @apply bg-white rounded-md shadow-card border border-slate-100; }
+
+@font-face{font-display:swap;}
