@@ -47,7 +47,7 @@ export default function Header() {
               </button>
             </div>
             <div className="pt-3">
-              <LeftDock mode="mobile" onNavigate={() => setOpen(false)} />
+              <LeftDock />
             </div>
           </div>
         </div>
