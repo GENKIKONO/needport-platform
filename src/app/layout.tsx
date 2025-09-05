@@ -1,6 +1,8 @@
+// src/app/layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
 import AppShell from '@/components/layout/AppShell';
+import { ClerkProvider } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
   title: 'NeedPort',
@@ -9,8 +11,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja">
-      <body><AppShell>{children}</AppShell></body>
-    </html>
+    <ClerkProvider>
+      <html lang="ja">
+        <body>
+          <AppShell>{children}</AppShell>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

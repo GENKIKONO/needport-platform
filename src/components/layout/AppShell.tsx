@@ -1,4 +1,6 @@
+// src/components/layout/AppShell.tsx
 'use client';
+
 import React from 'react';
 import Header from '@/components/chrome/Header';
 import LeftDock from '@/components/nav/LeftDock';
@@ -6,13 +8,17 @@ import LeftDock from '@/components/nav/LeftDock';
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* 薄いトップヘッダー（常時表示） */}
       <Header />
+
+      {/* コンテンツ幅は中央 7xl、PCは左にサイドナビ */}
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
         <div className="flex gap-6 pt-4">
-          {/* PCでは左ナビ表示。デバッグで常時表示したい時は block に変更 */}
+          {/* PCだけ表示 */}
           <aside className="hidden lg:block w-64 shrink-0 border-r border-slate-200 bg-white rounded-md">
             <LeftDock />
           </aside>
+
           <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
