@@ -1,6 +1,3 @@
-// src/app/(public)/layout.tsx
-import AppShell from '@/components/layout/AppShell';
-
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+export default function GroupLayout({ children }: { children: React.ReactNode }) {
+  return children;
 }
