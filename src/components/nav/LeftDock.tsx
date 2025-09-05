@@ -1,50 +1,95 @@
-import Link from 'next/link';
+// src/components/nav/LeftDock.tsx
+"use client";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+import Link from "next/link";
+
+const sections: Array<{ title: string; items: Array<{ href: string; label: string }> }> = [
+  {
+    title: "みんなの『欲しい』",
+    items: [
+      { href: "/needs", label: "ニーズ一覧" },
+      { href: "/needs/new", label: "ニーズを投稿" },
+    ],
+  },
+  {
+    title: "企業の『できる』",
+    items: [
+      { href: "/vendors/register", label: "事業者登録" },
+      { href: "/me/vendor/guide", label: "提案ガイド" }, // ガイドは事業者側に統合
+      { href: "/sea", label: "海中（ニーズ保管庫）" },   // 追加
+    ],
+  },
+  {
+    title: "ガイド",
+    items: [
+      { href: "/roadmap", label: "サービス航海図" },
+      { href: "/faq", label: "よくある質問" },
+    ],
+  },
+  {
+    title: "サイト情報",
+    items: [
+      { href: "/news", label: "お知らせ" },
+      { href: "/info", label: "このサイトについて" },
+    ],
+  },
+];
+
+function NavList() {
   return (
-    <section className="px-4 py-3">
-      <div className="mb-2 text-xs font-semibold tracking-wide text-slate-500">{title}</div>
-      <nav className="space-y-2">{children}</nav>
-    </section>
+    <nav className="p-3">
+      {sections.map((s) => (
+        <div key={s.title} className="mb-6">
+          <div className="px-2 text-xs font-semibold text-slate-500 mb-2">{s.title}</div>
+          <ul className="space-y-1">
+            {s.items.map((it) => (
+              <li key={it.href}>
+                <Link
+                  href={it.href}
+                  className="block rounded px-2 py-1.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                >
+                  {it.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
   );
 }
 
-function NavItem({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="block rounded px-3 py-2 text-sky-700 hover:bg-sky-50 hover:underline"
-    >
-      {children}
-    </Link>
-  );
-}
-
-/** 左サイドに固定表示するナビ（モバイルでは Header 内のドロワーで流用） */
 export default function LeftDock() {
   return (
-    <div className="h-[calc(100vh-56px)] w-64 overflow-y-auto bg-white">
-      <Section title="みんなの『欲しい』">
-        <NavItem href="/needs">ニーズ一覧</NavItem>
-        <NavItem href="/needs/new">ニーズを投稿</NavItem>
-      </Section>
+    <aside className="hidden lg:block w-64 shrink-0 border-r border-slate-200 bg-white">
+      <NavList />
+    </aside>
+  );
+}
 
-      <Section title="企業の『できる』">
-        <NavItem href="/vendor/register">事業者登録</NavItem>
-        <NavItem href="/me/vendor/guide">提案ガイド</NavItem>
-        <NavItem href="/sea">海中（ニーズ保管庫）</NavItem>
-      </Section>
-
-      <Section title="ガイド">
-        {/* 航海図は消さない（あなたのアイデンティティ） */}
-        <NavItem href="/roadmap">サービス航海図</NavItem>
-        <NavItem href="/faq">よくある質問</NavItem>
-      </Section>
-
-      <Section title="サイト情報">
-        <NavItem href="/news">お知らせ</NavItem>
-        <NavItem href="/info">このサイトについて</NavItem>
-      </Section>
+// モバイルドロワー（AppShellから呼ぶ）
+export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <div className={`lg:hidden fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}>
+      <div
+        className={`absolute inset-0 bg-slate-900/30 transition-opacity ${open ? "opacity-100" : "opacity-0"}`}
+        onClick={onClose}
+      />
+      <div
+        className={`absolute left-0 top-0 h-full w-[78%] max-w-[320px] bg-white border-r border-slate-200 transform transition-transform ${open ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <div className="h-14 flex items-center px-3 border-b">
+          <span className="font-semibold">メニュー</span>
+          <button className="ml-auto p-2 rounded hover:bg-slate-100" onClick={onClose} aria-label="閉じる">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
+              <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div className="overflow-y-auto h-[calc(100%-56px)]">
+          <NavList />
+        </div>
+      </div>
     </div>
   );
 }
