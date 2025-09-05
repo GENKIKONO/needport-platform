@@ -1,6 +1,6 @@
-import "@/styles/tokens.css";
+// src/app/(public)/layout.tsx
+import AppShell from '@/components/layout/AppShell';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  // NOTE: 公開側はサイドナビを出さない（重複防止）
-  return <main className="min-h-dvh">{children}</main>;
+  return <AppShell>{children}</AppShell>;
 }
