@@ -1,32 +1,26 @@
 'use client';
 
 import React from 'react';
-import Header from './Header';
-import LeftDock from '@/components/nav/LeftDock';
+import Header from '@/components/chrome/Header';
+import LeftDock from '../nav/LeftDock';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      {/* スキップリンク */}
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 rounded bg-sky-600 px-3 py-2 text-white"
-      >
-        本文へスキップ
-      </a>
-
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* 共通ヘッダー（1本） */}
       <Header />
 
-      <div className="mx-auto flex w-full max-w-7xl">
-        {/* PC：左サイドナビ（lg以上で表示） */}
-        <aside className="hidden shrink-0 border-r border-slate-200 lg:block lg:w-64">
-          <LeftDock />
-        </aside>
+      {/* 本文レイアウト：PCは左ドック＋コンテンツ / SPは1カラム */}
+      <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
+        <div className="flex gap-6 pt-4">
+          {/* 左ドック：lg以上のみ表示 */}
+          <aside className="hidden lg:block w-64 shrink-0 border-r border-slate-200 bg-white rounded-md">
+            <LeftDock />
+          </aside>
 
-        {/* メイン領域 */}
-        <main id="main" className="flex-1 overflow-x-hidden">
-          {children}
-        </main>
+          {/* メイン */}
+          <main className="flex-1 min-w-0">{children}</main>
+        </div>
       </div>
     </div>
   );
