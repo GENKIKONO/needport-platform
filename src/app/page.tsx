@@ -9,7 +9,6 @@ export const metadata = {
 export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-sky-50 to-white">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b">
         <nav className="mx-auto max-w-7xl flex items-center justify-between px-4 py-3">
           <Link href="/" className="text-sky-600 font-bold text-lg">NeedPort</Link>
