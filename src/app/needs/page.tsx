@@ -230,6 +230,11 @@ export default async function NeedsIndex({ searchParams }: { searchParams: { [k:
         <div className="text-sm text-slate-600">全 {data.total} 件</div>
         <Pagination page={data.page} pageSize={data.pageSize} total={data.total} baseQuery={baseQuery}/>
       </section>
+      
+      <div className="mt-3 text-right">
+        <a className="text-sky-600 hover:underline" href="/sea">海中（ニーズ保管庫）を見る</a>
+        <span className="ml-2 text-xs text-slate-500">(検索・絞り込み対象に含む／成約で浮上)</span>
+      </div>
     </div>
   );
 }

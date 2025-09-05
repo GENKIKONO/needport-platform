@@ -13,8 +13,8 @@ export default function HeaderV2(){
       <div className="max-w-6xl mx-auto h-14 px-3 flex items-center justify-between">
         <Link href="/v2" className="font-semibold tracking-tight">NeedPort</Link>
         <nav className="hidden md:flex items-center gap-4 text-sm">
-          <Link href="/v2/needs" className="hover:underline">ニーズ</Link>
-          <Link href="/v2/vendors" className="hover:underline">事業者リスト</Link>
+          <Link href="/needs" className="hover:underline">ニーズ</Link>
+          <Link href="/vendors" className="hover:underline">事業者リスト</Link>
           <Link href="/me" className="hover:underline">マイページ</Link>
         </nav>
         <button className="md:hidden p-2" aria-label="メニュー" onClick={()=>setOpen(true)}>
@@ -35,8 +35,8 @@ export default function HeaderV2(){
             </div>
             <div className="grid gap-3 text-sm">
               <Link href="/v2" onClick={()=>setOpen(false)}>ホーム</Link>
-              <Link href="/v2/needs" onClick={()=>setOpen(false)}>ニーズ</Link>
-              <Link href="/v2/vendors" onClick={()=>setOpen(false)}>事業者リスト</Link>
+              <Link href="/needs" onClick={()=>setOpen(false)}>ニーズ</Link>
+              <Link href="/vendors" onClick={()=>setOpen(false)}>事業者リスト</Link>
               <Link href="/me" onClick={()=>setOpen(false)}>マイページ</Link>
             </div>
           </div>

@@ -17,7 +17,7 @@ export default async function NeedDetailV2({ params }: { params: { id: string } 
     return (
       <main className="max-w-4xl mx-auto px-4 py-10">
         <div className="text-slate-600">ニーズが見つかりませんでした。</div>
-        <Link className="text-sky-700 underline mt-3 inline-block" href="/v2/needs">一覧に戻る</Link>
+        <Link className="text-sky-700 underline mt-3 inline-block" href="/needs">一覧に戻る</Link>
       </main>
     );
   }
@@ -54,7 +54,7 @@ export default async function NeedDetailV2({ params }: { params: { id: string } 
           <Link href={`/proposals/${need.id}/chat`} className="rounded-md bg-slate-900 text-white px-4 py-2 text-sm hover:bg-slate-800">
             条件をすり合わせる（チャット）
           </Link>
-          <Link href="/v2/needs" className="rounded-md border px-4 py-2 text-sm hover:bg-slate-50">
+          <Link href="/needs" className="rounded-md border px-4 py-2 text-sm hover:bg-slate-50">
             一覧に戻る
           </Link>
         </div>

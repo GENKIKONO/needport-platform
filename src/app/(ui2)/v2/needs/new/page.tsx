@@ -102,7 +102,7 @@ export default function NeedsNewCareTaxiPage() {
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <a href="/v2/needs" className="px-3 py-2 rounded border">戻る</a>
+          <a href="/needs" className="px-3 py-2 rounded border">戻る</a>
           <button type="submit" disabled={pending} className="px-3 py-2 rounded bg-sky-600 text-white disabled:opacity-50">
             {pending ? "送信中..." : "投稿する"}
           </button>

@@ -35,7 +35,7 @@ export default async function VendorsV2({ searchParams }: { searchParams: { slug
       </header>
 
       <div className="flex flex-wrap gap-2 mb-5">
-        <Link href="/v2/vendors" className={`px-3 py-1.5 rounded border ${!searchParams?.slug ? "bg-slate-900 text-white border-slate-900" : "bg-white hover:bg-slate-50"}`}>すべて</Link>
+        <Link href="/vendors" className={`px-3 py-1.5 rounded border ${!searchParams?.slug ? "bg-slate-900 text-white border-slate-900" : "bg-white hover:bg-slate-50"}`}>すべて</Link>
         {inds.map((i:any)=>(
           <Link key={i.id} href={`/v2/vendors?slug=${i.slug}`} className={`px-3 py-1.5 rounded border ${searchParams?.slug===i.slug ? "bg-slate-900 text-white border-slate-900" : "bg-white hover:bg-slate-50"}`}>
             {i.name}{i.fee_applicable ? "" : "（成果報酬対象外）"}

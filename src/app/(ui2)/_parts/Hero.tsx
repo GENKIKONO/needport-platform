@@ -16,10 +16,10 @@ export default function Hero() {
             小さな声を束ね、事業者の提案とつないで、実現まで伴走します。
           </p>
           <div className="mt-6 flex gap-3">
-            <Link href="/v2/needs" className="inline-flex items-center rounded-md bg-slate-900 text-white px-4 py-2 text-sm md:text-base hover:bg-slate-800">
+            <Link href="/needs" className="inline-flex items-center rounded-md bg-slate-900 text-white px-4 py-2 text-sm md:text-base hover:bg-slate-800">
               ニーズを探す
             </Link>
-            <Link href="/v2/needs/new" className="inline-flex items-center rounded-md bg-white border px-4 py-2 text-sm md:text-base hover:bg-slate-50">
+            <Link href="/needs/new" className="inline-flex items-center rounded-md bg-white border px-4 py-2 text-sm md:text-base hover:bg-slate-50">
               ニーズを投稿する
             </Link>
           </div>

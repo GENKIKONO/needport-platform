@@ -8,7 +8,7 @@ export default function Error({ error, reset }:{ error: Error & { digest?: strin
       </div>
       <div className="mt-3 flex gap-3">
         <button onClick={reset} className="px-3 py-1.5 rounded bg-slate-900 text-white text-sm">再読み込み</button>
-        <a href="/v2/needs" className="text-sky-700 underline text-sm">一覧に戻る</a>
+        <a href="/needs" className="text-sky-700 underline text-sm">一覧に戻る</a>
       </div>
       <div className="mt-2 text-xs text-slate-500">code: {error?.digest || "unknown"}</div>
     </div>

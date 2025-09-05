@@ -35,7 +35,7 @@ export default function NeedDetailV2Page() {
           詳細の読み込みに失敗しました。時間をおいて再度お試しください。
         </div>
         <div className="mt-3">
-          <Link href="/v2/needs" className="text-sky-700 underline">一覧に戻る</Link>
+          <Link href="/needs" className="text-sky-700 underline">一覧に戻る</Link>
         </div>
       </div>
     );
@@ -47,7 +47,7 @@ export default function NeedDetailV2Page() {
       <div className="max-w-3xl mx-auto p-4">
         <div className="rounded border bg-white p-3">このニーズは見つかりませんでした。</div>
         <div className="mt-3">
-          <Link href="/v2/needs" className="text-sky-700 underline">一覧に戻る</Link>
+          <Link href="/needs" className="text-sky-700 underline">一覧に戻る</Link>
         </div>
       </div>
     );
@@ -91,7 +91,7 @@ export default function NeedDetailV2Page() {
           <Link href={`/proposals/${need.id}/chat`} className="rounded-md bg-slate-900 text-white px-4 py-2 text-sm hover:bg-slate-800">
             条件をすり合わせる（チャット）
           </Link>
-          <Link href="/v2/needs" className="rounded-md border px-4 py-2 text-sm hover:bg-slate-50">
+          <Link href="/needs" className="rounded-md border px-4 py-2 text-sm hover:bg-slate-50">
             一覧に戻る
           </Link>
         </div>

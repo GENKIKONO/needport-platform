@@ -35,9 +35,9 @@ export default function Page(){
         <h2 className="font-medium mb-2">基本</h2>
         <ul className="space-y-2">
           <Item ok={true} label="/v2 ホームのコピー・導線" href="/v2" />
-          <Item ok={okNeeds} label="/v2/needs 一覧（スケルトン/エラー表示）" href="/v2/needs" />
+          <Item ok={okNeeds} label="/needs 一覧（スケルトン/エラー表示）" href="/needs" />
           <Item ok={true} label="/v2/needs/[id] 5W1H/フロー/関連/CTA" />
-          <Item ok={okVendors} label="/v2/vendors 検索/カテゴリ" href="/v2/vendors" />
+          <Item ok={okVendors} label="/vendors 検索/カテゴリ" href="/vendors" />
           <Item ok={okReady} label="/api/ready の seo/analytics/notify メタ" href="/api/ready" />
         </ul>
       </section>
