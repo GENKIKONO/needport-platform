@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@/components/ui/use-toast";
 
 type FeatureFlags = {
   userEditEnabled: boolean;
