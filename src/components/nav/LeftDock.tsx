@@ -1,123 +1,50 @@
-'use client';
+import Link from 'next/link';
 
-import Link from "next/link";
-import Logo from "@/components/brand/Logo";
-import { 
-  ListBulletIcon, 
-  PlusIcon, 
-  BuildingOffice2Icon, 
-  BookOpenIcon, 
-  AcademicCapIcon,
-  MapIcon,
-  QuestionMarkCircleIcon,
-  MegaphoneIcon,
-  InformationCircleIcon,
-  DocumentTextIcon
-} from "@/components/icons";
-import { events } from "@/lib/events";
-import { getMenuData } from "./menuData";
-import { useEffect, useState } from "react";
-
-export default function LeftDock() {
-  const [menu, setMenu] = useState<any[]>([]);
-  const [hasCms, setHasCms] = useState(false);
-
-  useEffect(() => {
-    // クッキーがあるときのみCMSリンクを出す
-    const cmsCookie = process.env.NEXT_PUBLIC_CMS_COOKIE ?? 'cms_auth';
-    const hasCmsAuth = typeof document !== 'undefined' && document.cookie.includes(cmsCookie + '=1');
-    setHasCms(hasCmsAuth);
-
-    // Load menu data
-    getMenuData().then(setMenu);
-  }, []);
-
-  // 安全ガード：メニューが空の場合はデフォルトアイテムを表示
-  const items = menu.length > 0 ? menu : [
-    { title: 'メニュー', items: [
-      { href: '/needs', label: 'ニーズ一覧' },
-      { href: '/guide', label: 'ガイド' },
-      { href: '/news', label: 'お知らせ' },
-      { href: '/me', label: 'マイページ' },
-    ]}
-  ];
-
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <aside
-      className="flex flex-col overflow-hidden w-64 h-screen bg-gray-50 border-r"
-      aria-label="サイドナビゲーション"
-    >
-      {/* ロゴ（船）/サイト名 */}
-      <div className="flex items-center gap-2 p-4 border-b">
-        <Logo className="w-7 h-7" />
-        <span className="font-semibold text-[var(--ink-900)]">NeedPort</span>
-      </div>
-      
-      {/* メニュー（アイコン+テキスト） */}
-      <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto overflow-x-hidden">
-        {items.map(g => (
-          <div key={g.title}>
-            <div className="px-2 text-xs font-semibold text-[var(--ink-500)] mb-2">{g.title}</div>
-            <ul className="space-y-1">
-              {g.items.map(i => (
-                <li key={i.href}>
-                  <Link 
-                    className="flex items-center gap-2.5 rounded-md px-3 py-2.5 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" 
-                    href={i.href}
-                  >
-                    <span className="font-medium text-[15px]">{i.label}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-        
-        {/* CMS（管理）リンク - 認証後のみ表示 */}
-        {hasCms && (
-          <>
-            <div className="px-2 text-xs font-semibold text-[var(--ink-500)] mb-2">管理</div>
-            <ul className="space-y-1">
-              <li>
-                <Link 
-                  className="flex items-center gap-2.5 rounded-md px-3 py-2.5 hover:bg-[var(--blue-100)] hover:text-[var(--blue-700)] transition-colors" 
-                  href="/cms"
-                >
-                  <span className="font-medium text-[15px]">CMS（管理）</span>
-                </Link>
-              </li>
-            </ul>
-          </>
-        )}
-      </nav>
-      
-      {/* 二つのボタン（横並び）：一般ログイン / 事業者ログイン */}
-      <div className="p-4 border-t space-y-3">
-        <Link href="/signup" className="block w-full bg-gradient-to-r from-[var(--blue-600)] to-[var(--blue-700)] text-white text-center py-3 rounded-xl font-semibold shadow-[var(--elev-1)] hover:opacity-95 transition-all">
-          一般ログイン
-        </Link>
-        <Link href="/vendor/register" className="block w-full border-2 border-[var(--blue-600)] text-[var(--blue-700)] bg-white text-center py-3 rounded-xl font-semibold hover:bg-[var(--blue-100)] transition-all">
-          事業者ログイン
-        </Link>
-      </div>
-    </aside>
+    <section className="px-4 py-3">
+      <div className="mb-2 text-xs font-semibold tracking-wide text-slate-500">{title}</div>
+      <nav className="space-y-2">{children}</nav>
+    </section>
   );
 }
 
-function getIcon(icon: string) {
-  switch (icon) {
-    case 'list': return <ListBulletIcon />;
-    case 'plus': return <PlusIcon />;
-    case 'building': return <BuildingOffice2Icon />;
-    case 'book': return <BookOpenIcon />;
-    case 'guide': return <AcademicCapIcon />;
-    case 'route': return <MapIcon />;
-    case 'question': return <QuestionMarkCircleIcon />;
-    case 'megaphone': return <MegaphoneIcon />;
-    case 'info': return <InformationCircleIcon />;
-    case 'document': return <DocumentTextIcon />;
-    default: return <ListBulletIcon />;
-  }
+function NavItem({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="block rounded px-3 py-2 text-sky-700 hover:bg-sky-50 hover:underline"
+    >
+      {children}
+    </Link>
+  );
 }
 
+/** 左サイドに固定表示するナビ（モバイルでは Header 内のドロワーで流用） */
+export default function LeftDock() {
+  return (
+    <div className="h-[calc(100vh-56px)] w-64 overflow-y-auto bg-white">
+      <Section title="みんなの『欲しい』">
+        <NavItem href="/needs">ニーズ一覧</NavItem>
+        <NavItem href="/needs/new">ニーズを投稿</NavItem>
+      </Section>
 
+      <Section title="企業の『できる』">
+        <NavItem href="/vendor/register">事業者登録</NavItem>
+        <NavItem href="/me/vendor/guide">提案ガイド</NavItem>
+        <NavItem href="/sea">海中（ニーズ保管庫）</NavItem>
+      </Section>
+
+      <Section title="ガイド">
+        {/* 航海図は消さない（あなたのアイデンティティ） */}
+        <NavItem href="/roadmap">サービス航海図</NavItem>
+        <NavItem href="/faq">よくある質問</NavItem>
+      </Section>
+
+      <Section title="サイト情報">
+        <NavItem href="/news">お知らせ</NavItem>
+        <NavItem href="/info">このサイトについて</NavItem>
+      </Section>
+    </div>
+  );
+}

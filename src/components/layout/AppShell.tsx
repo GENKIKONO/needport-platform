@@ -1,20 +1,33 @@
-'use client'
-import Header from "./Header"
-import LeftDock from "@/components/nav/LeftDock"
+'use client';
+
+import React from 'react';
+import Header from './Header';
+import LeftDock from '@/components/nav/LeftDock';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* 左サイドナビ (PC時のみ) */}
-      <aside className="hidden lg:flex">
-        <LeftDock />
-      </aside>
+    <div className="min-h-screen bg-white text-slate-900">
+      {/* スキップリンク */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 rounded bg-sky-600 px-3 py-2 text-white"
+      >
+        本文へスキップ
+      </a>
 
-      {/* メイン領域 */}
-      <div className="flex-1 flex flex-col overflow-auto">
-        <Header />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+      <Header />
+
+      <div className="mx-auto flex w-full max-w-7xl">
+        {/* PC：左サイドナビ（lg以上で表示） */}
+        <aside className="hidden shrink-0 border-r border-slate-200 lg:block lg:w-64">
+          <LeftDock />
+        </aside>
+
+        {/* メイン領域 */}
+        <main id="main" className="flex-1 overflow-x-hidden">
+          {children}
+        </main>
       </div>
     </div>
-  )
+  );
 }
