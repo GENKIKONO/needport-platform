@@ -1,4 +1,3 @@
-import MktHeader from "@/mkt/components/MktHeader";
 import MktFooter from "@/mkt/components/MktFooter";
 import CTAbar from "@/mkt/components/CTAbar";
 import { Anchor, Compass } from "lucide-react";
@@ -11,7 +10,6 @@ export const metadata = {
 export default function HowItWorksPage() {
   return (
     <>
-      <MktHeader />
       <main className="section space-y-8 bg-white pb-20">
         <div className="text-center">
           <div className="inline-flex items-center gap-2 text-sm font-medium text-sky-700 mb-4">
