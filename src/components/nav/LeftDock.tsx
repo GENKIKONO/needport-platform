@@ -30,6 +30,7 @@ const groups: { title: string; items: Item[] }[] = [
     items: [
       { href: '/me', label: 'マイページ' },
       { href: '/login', label: 'ログイン' },
+      { href: '/vendors/login', label: '事業者ログイン' },
     ],
   },
 ];
