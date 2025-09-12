@@ -1,36 +1,70 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/authz";
 import { audit } from "@/lib/audit";
+import { createAdminClient } from "@/lib/supabase/server";
 
 type NeedCreateInput = {
   title: string;
+  summary?: string;
+  body?: string;
   category?: string;
   region?: string;
-  description?: string;
-  budgetHint?: string;
+  pii_email?: string;
+  pii_phone?: string;
+  pii_address?: string;
 };
-
-const mem:any[] = []; // STEP1: 擬似保存。STEP2でDB化
 
 export async function POST(req: Request) {
   const { userId } = await requireUser();
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const body = (await req.json()) as NeedCreateInput;
-  if (!body?.title || body.title.length < 2) {
+  const input = (await req.json()) as NeedCreateInput;
+  if (!input?.title || input.title.length < 2) {
     return NextResponse.json({ error: "title required" }, { status: 400 });
   }
 
-  const now = new Date().toISOString();
-  const row = {
-    id: `np-${Date.now()}`,
-    userId, status: "active",
-    updatedAt: now, createdAt: now,
-    ...body,
-  };
-  mem.push(row);
+  const supabase = createAdminClient();
+  
+  const { data, error } = await supabase
+    .from("needs")
+    .insert({
+      title: input.title,
+      summary: input.summary || input.title,
+      body: input.body || input.summary || "",
+      category: input.category,
+      region: input.region,
+      pii_email: input.pii_email,
+      pii_phone: input.pii_phone,
+      pii_address: input.pii_address,
+      creator_id: userId,
+      status: "published"
+    })
+    .select()
+    .single();
 
-  await audit("need.create", { userId, id: row.id, title: row.title });
+  if (error) {
+    console.error("Error creating need:", error);
+    return NextResponse.json({ error: "failed to create need" }, { status: 500 });
+  }
 
-  return NextResponse.json({ ok: true, id: row.id }, { status: 201 });
+  await audit("need.create", { userId, id: data.id, title: data.title });
+
+  return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
+}
+
+export async function GET() {
+  const supabase = createAdminClient();
+  
+  const { data, error } = await supabase
+    .from("needs_public")
+    .select("*")
+    .eq("status", "published")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching needs:", error);
+    return NextResponse.json({ error: "failed to fetch needs" }, { status: 500 });
+  }
+
+  return NextResponse.json({ needs: data });
 }

@@ -37,16 +37,16 @@ const groups: { title: string; items: Item[] }[] = [
 
 export default function LeftDock() {
   return (
-    <nav className="text-sm space-y-5 p-3">
+    <nav className="text-sm space-y-6 p-6">
       {groups.map((g) => (
         <section key={g.title}>
-          <div className="px-2 pb-1 text-xs text-slate-500">{g.title}</div>
+          <div className="px-3 pb-2 text-xs font-medium text-blue-600/80 uppercase tracking-wide">{g.title}</div>
           <ul className="space-y-1">
             {g.items.map((it) => (
               <li key={it.href}>
                 <Link
                   href={it.href}
-                  className="block px-2 py-1 rounded hover:bg-slate-50 text-slate-700"
+                  className="block px-3 py-2 rounded-xl hover:bg-blue-50/50 text-slate-700 hover:text-blue-600/80 transition-all duration-200 font-medium"
                 >
                   {it.label}
                 </Link>
