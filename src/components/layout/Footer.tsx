@@ -17,7 +17,7 @@ export default function Footer() {
                 <span className="text-xl font-bold">NeedPort</span>
               </div>
               <p className="text-slate-300 leading-relaxed text-base">
-                高知県民のためのニーズマッチングプラットフォーム
+                ニーズと解決者をつなぐマッチングプラットフォーム
               </p>
             </div>
 
@@ -111,7 +111,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-slate-400 text-base">
-                  高知県発のコミュニティプラットフォーム
+                  ニーズ起点のマッチングプラットフォーム
                 </div>
               </div>
             </div>

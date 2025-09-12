@@ -6,7 +6,7 @@ export default function Page() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-slate-800 mb-2">NeedPortにログイン</h1>
-          <p className="text-slate-600 mb-4">高知県民のためのニーズマッチングプラットフォーム</p>
+          <p className="text-slate-600 mb-4">ニーズと解決者をつなぐマッチングプラットフォーム</p>
           <p className="text-sm text-slate-500">アカウントにログインして、ニーズや提案を管理しましょう</p>
         </div>
         <SignIn 
