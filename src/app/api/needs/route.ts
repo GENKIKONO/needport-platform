@@ -1,89 +1,36 @@
-import { NextRequest, NextResponse } from "next/server";
-import { NeedCreateSchema } from '@/schemas/need';
-import { verifyTurnstile } from '@/lib/turnstile';
-import { supabaseAdmin } from '@/lib/supabase-server';
-import { insertAudit } from '@/lib/audit';
-import { rateLimitOr400 } from '@/lib/rate-limit';
-import { getAuth } from '@clerk/nextjs/server';
+import { NextResponse } from "next/server";
+import { requireUser } from "@/lib/authz";
+import { audit } from "@/lib/audit";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+type NeedCreateInput = {
+  title: string;
+  category?: string;
+  region?: string;
+  description?: string;
+  budgetHint?: string;
+};
 
-// GET /api/needs → 公開ニーズの一覧
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const page = Math.max(Number(searchParams.get("page") ?? "1"), 1);
-  const pageSize = Math.min(Math.max(Number(searchParams.get("pageSize") ?? "10"), 1), 50);
-  const q = searchParams.get("q") ?? undefined;
+const mem:any[] = []; // STEP1: 擬似保存。STEP2でDB化
 
-  try {
-    // TODO: Supabase クライアントで実装
-    // const supabase = createAdminClient();
-    // let query = supabase.from('needs').select('*').order('created_at', { ascending: false });
-    // if (q) query = query.or(`title.ilike.%${q}%,summary.ilike.%${q}%`);
-    // const { data: items, error } = await query.range((page - 1) * pageSize, page * pageSize - 1);
-    
-    return NextResponse.json({ 
-      items: [], 
-      total: 0, 
-      page, 
-      pageSize 
-    });
-  } catch (error) {
-    console.error('Error in GET /api/needs:', error);
-    return NextResponse.json({ items: [], total: 0, page, pageSize }, { 
-      status: 200,
-      headers: { 'cache-control': 'no-store' }
-    });
-  }
-}
+export async function POST(req: Request) {
+  const { userId } = await requireUser();
+  if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-// POST /api/needs → ニーズ投稿
-export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
-  const tokenHeader = req.headers.get('x-turnstile-token');
-
-  const v = await verifyTurnstile(tokenHeader, ip);
-  if (!v.ok) {
-    return NextResponse.json({ error: 'turnstile_failed', detail: v.reason }, { status: 400 });
+  const body = (await req.json()) as NeedCreateInput;
+  if (!body?.title || body.title.length < 2) {
+    return NextResponse.json({ error: "title required" }, { status: 400 });
   }
 
-  const body = await req.json().catch(() => null);
-  const parsed = NeedCreateSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: 'invalid_input', detail: parsed.error.flatten() }, { status: 400 });
-  }
+  const now = new Date().toISOString();
+  const row = {
+    id: `np-${Date.now()}`,
+    userId, status: "active",
+    updatedAt: now, createdAt: now,
+    ...body,
+  };
+  mem.push(row);
 
-  // レート制限チェック
-  if (!rateLimitOr400(ip)) {
-    return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
-  }
+  await audit("need.create", { userId, id: row.id, title: row.title });
 
-  // 常に review 固定（published で来ても無視）
-  const payload = { ...parsed.data, status: 'review' as const };
-  
-  const s = supabaseAdmin();
-  const { data, error } = await s.from('needs').insert({
-    title: payload.title,
-    description: payload.description,
-    category: payload.category,
-    area: payload.area,
-    status: 'review'
-  } as any).select('id').single();
-  
-  if (error) {
-    console.error('[needs:insert_error]', error);
-    return NextResponse.json({ error: 'db_error' }, { status: 500 });
-  }
-  
-  const { userId } = getAuth(req as any);
-  await insertAudit({ 
-    actorType: userId ? 'user' : 'system',
-    action: 'need.create', 
-    targetType: 'need', 
-    targetId: data.id,
-    actorId: userId ?? null,
-  });
-  
-  return NextResponse.json({ ok: true, id: data.id, status: 'review' });
+  return NextResponse.json({ ok: true, id: row.id }, { status: 201 });
 }
