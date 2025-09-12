@@ -12,7 +12,7 @@ export default function Header() {
     <>
       {/* シンプルで柔らかいトップバー */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-blue-100/50">
-        <div className="mx-auto max-w-7xl h-16 px-3 sm:px-4 lg:px-6 flex items-center justify-between">
+        <div className="w-full h-16 px-3 sm:px-4 lg:px-6 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-3 font-bold text-slate-800 hover:text-blue-600/80 transition-colors">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500/90 to-blue-600/90 rounded-lg flex items-center justify-center shadow-sm">
@@ -38,11 +38,11 @@ export default function Header() {
             </nav>
             <button
               type="button"
-              className="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-md border border-slate-300"
+              className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-md border border-slate-300 hover:bg-slate-100 transition-colors"
               aria-label="メニューを開く"
               onClick={() => setOpen(true)}
             >
-              <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden>
+              <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden>
                 <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </button>
@@ -54,7 +54,7 @@ export default function Header() {
       {open && (
         <div className="fixed inset-0 z-50 sm:hidden">
           <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-white shadow-xl p-4">
+          <div className="absolute inset-y-0 right-0 w-80 max-w-[85vw] bg-white shadow-xl p-4 transform transition-transform duration-300 ease-in-out">
             <div className="flex items-center justify-between pb-2 border-b">
               <div className="font-semibold">メニュー</div>
               <button

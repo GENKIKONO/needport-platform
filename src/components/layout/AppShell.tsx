@@ -4,6 +4,7 @@
 import React from 'react';
 import Header from '@/components/chrome/Header';
 import LeftDock from '@/components/nav/LeftDock';
+import Footer from './Footer';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -12,7 +13,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Header />
 
       {/* コンテンツ幅は中央 7xl、PCは左にサイドナビ */}
-      <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
+      <div className="w-full px-3 sm:px-4 lg:px-6">
         <div className="flex gap-6 pt-4">
           {/* PCだけ表示 */}
           <aside className="hidden lg:block w-64 shrink-0 border border-blue-100/50 bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm">
@@ -22,6 +23,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
