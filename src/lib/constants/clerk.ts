@@ -8,5 +8,11 @@ export const CLERK_CONFIG = {
       headerSubtitle: 'text-slate-600'
     }
   },
-  redirectUrl: '/me'
+  redirectUrl: '/me',
+  // セッション持続設定
+  sessionOptions: {
+    sessionTokenTemplate: 'supabase',
+    // 30日間セッションを保持
+    maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
+  }
 } as const;

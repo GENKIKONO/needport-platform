@@ -25,16 +25,21 @@ export default function Header() {
 
           {/* 右側：PCは簡易リンク / SPはハンバーガー */}
           <div className="flex items-center gap-3">
-            <nav className="hidden sm:flex items-center gap-6 text-sm font-medium">
+            <nav className="hidden sm:flex items-center gap-4 text-sm font-medium">
               <Link href="/needs" className="text-slate-600 hover:text-blue-600/80 transition-colors px-3 py-2 rounded-lg hover:bg-blue-50/50">
                 ニーズ一覧
               </Link>
               <Link href="/me" className="text-slate-600 hover:text-blue-600/80 transition-colors px-3 py-2 rounded-lg hover:bg-blue-50/50">
                 マイページ
               </Link>
-              <Link href="/login" className="bg-blue-500/90 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-600/90 transition-all shadow-sm">
-                ログイン
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/sign-in" className="bg-blue-500/90 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600/90 transition-all shadow-sm">
+                  一般ログイン
+                </Link>
+                <Link href="/vendors/login" className="bg-green-500/90 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-600/90 transition-all shadow-sm">
+                  事業者ログイン
+                </Link>
+              </div>
             </nav>
             <button
               type="button"

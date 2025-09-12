@@ -98,7 +98,7 @@ export default async function MePage(){
           {/* メインコンテンツ */}
           <div className="lg:col-span-3">
             {/* ダッシュボード概要 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -129,7 +129,10 @@ export default async function MePage(){
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-base font-medium text-gray-500 truncate">投稿したニーズ</dt>
-                      <dd className="text-2xl font-bold text-gray-900">5</dd>
+                      <dd className="text-2xl font-bold text-gray-900">
+                        <span className="text-sm text-green-600">アクティブ: 2</span>
+                        <span className="block text-sm text-gray-500">完了: 3</span>
+                      </dd>
                     </dl>
                   </div>
                 </div>
@@ -152,10 +155,31 @@ export default async function MePage(){
                   </div>
                 </div>
               </div>
+
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 2h11l4 4v5.5" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-base font-medium text-gray-500 truncate">応募案件</dt>
+                      <dd className="text-2xl font-bold text-gray-900">
+                        <span className="text-sm text-blue-600">対応中: 1</span>
+                        <span className="block text-sm text-gray-500">成約済: 4</span>
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* 最近の活動 */}
-            <div className="bg-white rounded-lg shadow-sm">
+            <div className="bg-white rounded-lg shadow-sm mb-8">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-xl font-semibold text-gray-900 mb-6">最近の活動</h3>
                 <div className="space-y-4">
@@ -206,6 +230,68 @@ export default async function MePage(){
                   >
                     すべての取引を表示 →
                   </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* クイックアクション */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-sm p-6 text-white">
+                <h3 className="text-lg font-semibold mb-3">新しいニーズを投稿</h3>
+                <p className="text-blue-100 mb-4 text-base">あなたの「こんなものが欲しい」を投稿してみましょう</p>
+                <Link 
+                  href="/needs/new" 
+                  className="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors text-base"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  ニーズを投稿
+                </Link>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm p-6 text-white">
+                <h3 className="text-lg font-semibold mb-3">ニーズを探す</h3>
+                <p className="text-green-100 mb-4 text-base">他の人のニーズに提案してマッチングしませんか？</p>
+                <Link 
+                  href="/needs" 
+                  className="inline-flex items-center px-4 py-2 bg-white text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-colors text-base"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  ニーズを探す
+                </Link>
+              </div>
+            </div>
+
+            {/* お知らせ・サポート */}
+            <div className="bg-yellow-50 rounded-lg shadow-sm p-6 border border-yellow-200">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <h3 className="text-lg font-medium text-yellow-800">ご利用ガイド</h3>
+                  <p className="text-base text-yellow-700 mt-1">
+                    NeedPortの使い方がわからない場合は、ガイドをご確認ください。
+                  </p>
+                  <div className="mt-4 flex space-x-4">
+                    <Link 
+                      href="/guide" 
+                      className="text-base font-medium text-yellow-800 hover:text-yellow-900 underline"
+                    >
+                      サービス航海図を見る
+                    </Link>
+                    <Link 
+                      href="/faq" 
+                      className="text-base font-medium text-yellow-800 hover:text-yellow-900 underline"
+                    >
+                      よくある質問
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
