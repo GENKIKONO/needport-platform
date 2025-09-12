@@ -74,7 +74,7 @@ export default clerkMiddleware((auth, request) => {
       // Redirect to sign-in page
       const url = request.nextUrl.clone();
       url.pathname = "/sign-in";
-      url.searchParams.set("redirect_url", request.url);
+      url.searchParams.set("fallback_redirect_url", request.url);
       return NextResponse.redirect(url);
     }
   }
