@@ -7,10 +7,11 @@ const NeedInput = z.object({
   title: z.string().min(1),
   body: z.string().min(1),
   summary: z.string().optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  // ⚠️ 注意: area / region 等は今回**無視**。payloadに入れない。
+  region: z.string().optional(),
+  category: z.string().optional(),
+  pii_email: z.string().email().optional(),
+  pii_phone: z.string().optional(),
+  pii_address: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -38,11 +39,12 @@ export async function POST(req: Request) {
       summary: (input.summary && input.summary.trim()) || input.title,
       body: input.body,
       created_by: userId,
-      // ❌ area/region は入れない（今回の確実ホットフィックス）
-      // 追加の任意列（存在が確実なら）: email/phone/address など
-      ...(input.email ? { email: input.email } : {}),
-      ...(input.phone ? { phone: input.phone } : {}),
-      ...(input.address ? { address: input.address } : {}),
+      // area は schema fix 後に利用可能
+      ...(input.region ? { area: input.region } : {}),
+      // PII fields (if they exist in schema)
+      ...(input.pii_email ? { pii_email: input.pii_email } : {}),
+      ...(input.pii_phone ? { pii_phone: input.pii_phone } : {}),
+      ...(input.pii_address ? { pii_address: input.pii_address } : {}),
     };
 
     const supabase = createClient();
