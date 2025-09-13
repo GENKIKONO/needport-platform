@@ -14,7 +14,10 @@
       "Bash(git merge:*)",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "Bash(./scripts/smoke.sh:*)"
+      "Bash(./scripts/smoke.sh:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run lint)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []

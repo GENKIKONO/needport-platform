@@ -17,6 +17,8 @@ import { demoIds } from '@/lib/admin/demo-data';
 import { getStatus, getCategory, isPubliclyVisible, getEndorseCount } from '@/lib/admin/mod-overlay';
 import ProposalCompare from './ProposalCompare';
 import ProposalForm from './ProposalForm';
+import { NeedEngagementButtons } from './needs/NeedEngagementButtons';
+import { NeedEngagementBar } from './needs/NeedEngagementBar';
 
 interface NeedCardProps {
   need: Need;
@@ -300,7 +302,16 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
         )}
       </div>
 
-      {/* 進捗バー（条件確定時） */}
+      {/* Engagement Bar - 集合的需要の可視化 */}
+      <div className="mb-4">
+        <NeedEngagementBar 
+          needId={need.id} 
+          threshold={need.threshold_pledge || 5}
+          className="mb-3"
+        />
+      </div>
+
+      {/* 従来の進捗バー（条件確定時） */}
       {adoptedOffer && (
         <div className="mb-4">
           <div className="flex items-center justify-between">
@@ -317,18 +328,6 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
           </div>
           <div className="text-sm text-blue-600 font-medium mt-1">
             {formatRemainingPeople(remaining)}
-          </div>
-        </div>
-      )}
-
-      {/* 賛同数表示（条件未確定時） */}
-      {!adoptedOffer && (
-        <div className="mb-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">{label('Supporter')}</span>
-            <span className="text-sm font-medium text-blue-600">
-              {need.prejoin_count}名
-            </span>
           </div>
         </div>
       )}
@@ -361,15 +360,15 @@ export default function NeedCard({ need, adoptedOffer, membership, className = '
         </span>
       </div>
 
-      {/* CTAボタン */}
+      {/* Engagement Buttons - 集合的需要の可視化 */}
+      <div className="mb-4">
+        <NeedEngagementButtons 
+          needId={need.id}
+        />
+      </div>
+
+      {/* CTAボタン（従来）*/}
       <div className="flex gap-3 mb-4">
-        <button
-          onClick={handleEndorse}
-          disabled={isPending}
-          className="btn btn-ghost flex-1"
-        >
-          {isPending ? '処理中...' : `共感 ${endorseCount}`}
-        </button>
         {shouldShowPayments() && STRIPE_ENABLED && prejoinStatus?.hasPrejoined ? (
           <button
             onClick={handleCancelPrejoin}
