@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 
 const NeedInput = z.object({
   title: z.string().min(1),
-  body: z.string().min(1),
+  body: z.string().optional(),
   summary: z.string().optional(),
   region: z.string().optional(),
   category: z.string().optional(),
@@ -33,19 +33,24 @@ export async function POST(req: Request) {
 
     const input = parsed.data;
 
-    // 必須列に確実に値を用意（DBに存在が確定している列のみ）
+    // 段階的にフィールドを追加してテスト
     const payload: any = {
       title: input.title,
       summary: (input.summary && input.summary.trim()) || input.title,
-      body: input.body,
-      created_by: userId,
-      // area は schema fix 後に利用可能
-      ...(input.region ? { area: input.region } : {}),
-      // PII fields (if they exist in schema)
-      ...(input.pii_email ? { pii_email: input.pii_email } : {}),
-      ...(input.pii_phone ? { pii_phone: input.pii_phone } : {}),
-      ...(input.pii_address ? { pii_address: input.pii_address } : {}),
+      body: input.body || (input.summary && input.summary.trim()) || input.title
     };
+
+    // created_by フィールドが存在するかテスト
+    if (userId) {
+      payload.created_by = userId;
+    }
+
+    console.log('[NEEDS_POST_DEBUG]', { 
+      userId,
+      inputKeys: Object.keys(input), 
+      payloadKeys: Object.keys(payload),
+      payload: JSON.stringify(payload)
+    });
 
     const supabase = createClient();
     const { data, error } = await supabase.from('needs').insert(payload).select('id').limit(1);
