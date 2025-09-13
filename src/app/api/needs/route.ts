@@ -7,97 +7,73 @@ const NeedInput = z.object({
   title: z.string().min(1),
   body: z.string().optional(),
   summary: z.string().optional(),
-  region: z.string().optional(),
-  category: z.string().optional(),
-  pii_email: z.string().email().optional(),
-  pii_phone: z.string().optional(),
-  pii_address: z.string().optional(),
+  area: z.string().optional().nullable(),
 });
 
 export async function POST(req: Request) {
   const startedAt = Date.now();
   try {
-    console.log('[NEEDS_POST_START]', { timestamp: new Date().toISOString() });
-    
     const { userId } = await auth();
-    console.log('[NEEDS_POST_AUTH]', { userId, hasUserId: !!userId });
-    
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const json = await req.json().catch((e) => {
-      console.error('[NEEDS_POST_JSON_ERROR]', e);
-      return {};
-    });
-    console.log('[NEEDS_POST_JSON]', { json });
-
+    const json = await req.json().catch(() => ({}));
     const parsed = NeedInput.safeParse(json);
     if (!parsed.success) {
-      console.error('[NEEDS_POST_VALIDATION_ERROR]', { error: parsed.error.flatten() });
       return NextResponse.json(
-        { error: 'Invalid payload', details: parsed.error.flatten() },
+        { error: 'VALIDATION_ERROR', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
 
     const input = parsed.data;
-    console.log('[NEEDS_POST_INPUT]', { inputKeys: Object.keys(input) });
+    
+    // Hardened payload - only these 4 fields, never created_by
+    const title = input.title;
+    const summary = input.summary ?? input.title;
+    const body = input.body ?? input.summary ?? input.title;
+    const area = input.area ?? null;
 
-    // Remove created_by to avoid UUID format issues with Clerk user IDs
-    const payload = {
-      title: input.title || 'Default Title',
-      summary: input.summary || input.title || 'Default Summary',
-      body: input.body || input.summary || input.title || 'Default Body',
-      area: input.region || null
-    };
-
-    console.log('[NEEDS_POST_PAYLOAD]', { payloadKeys: Object.keys(payload) });
+    console.log('[NEEDS_POST_PAYLOAD]', { 
+      keys: ['title', 'summary', 'body', 'area'],
+      processingTimeMs: Date.now() - startedAt
+    });
 
     const supabase = createClient();
-    console.log('[NEEDS_POST_SUPABASE_CLIENT]', { hasSupabase: !!supabase });
     
-    const { data, error } = await supabase.from('needs').insert(payload).select('id').limit(1);
-
-    console.log('[NEEDS_POST_DB_RESULT]', { 
-      success: !error,
-      hasData: !!data,
-      error: error ? {
-        message: error.message,
-        code: error.code
-      } : null
-    });
+    // Explicit column-based insert to prevent field injection
+    const { data, error } = await supabase
+      .from('needs')
+      .insert([{ title, summary, body, area }])
+      .select('id')
+      .single();
 
     if (error) {
       console.error('[NEEDS_INSERT_ERROR]', { 
-        payloadKeys: Object.keys(payload),
-        errorMessage: error.message,
-        errorCode: error.code
+        keys: Object.keys({ title, summary, body, area }), 
+        err: error, 
+        supabaseError: error?.message 
       });
       return NextResponse.json({ 
-        error: error.message,
-        code: error.code 
+        error: 'DB_ERROR', 
+        detail: error?.message ?? String(error) 
       }, { status: 500 });
     }
 
-    return NextResponse.json({ id: data?.[0]?.id }, { status: 201 });
+    return NextResponse.json({ id: data.id }, { status: 201 });
   } catch (e: any) {
     console.error('[NEEDS_POST_FATAL]', { 
       message: e?.message, 
-      stack: e?.stack,
-      name: e?.name,
-      cause: e?.cause
+      type: e?.name 
     });
     return NextResponse.json({ 
-      error: 'Internal Error',
-      message: e?.message,
-      type: e?.name 
+      error: 'INTERNAL_ERROR',
+      detail: e?.message ?? String(e)
     }, { status: 500 });
   } finally {
-    const processingTime = Date.now() - startedAt;
     console.info('[NEEDS_POST_FINISH]', { 
-      processingTimeMs: processingTime,
-      userId: userId ? 'present' : 'missing'
+      processingTimeMs: Date.now() - startedAt
     });
   }
 }

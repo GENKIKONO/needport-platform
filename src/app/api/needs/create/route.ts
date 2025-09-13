@@ -48,11 +48,10 @@ export async function POST(req: Request) {
 
   const sadmin = supabaseAdmin();
   
-  // care_taxi の場合の設定を強制
+  // care_taxi の場合の設定を強制 - creator_id removed to avoid UUID issues
   const insertData = {
     ...parsed.data,
-    status: 'review',            // 作成時は review へ
-    creator_id: userId
+    status: 'review'            // 作成時は review へ
   };
   
   if (parsed.data.kind === 'care_taxi') {
@@ -80,7 +79,10 @@ export async function POST(req: Request) {
     .select('id,status')
     .single();
 
-  if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
+  if (error) {
+    console.error('[NEEDS_CREATE_ERROR]', { error: error.message, code: error.code });
+    return NextResponse.json({ error: 'DB_ERROR', detail: error.message }, { status: 500 });
+  }
 
   // 監査
   await sadmin.from('audit_logs').insert({
