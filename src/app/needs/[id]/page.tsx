@@ -214,6 +214,14 @@ export default async function NeedDetailPage({ params }: { params: { id: string 
             閲覧解放（詳細を表示）
           </Link>
 
+          {/* チャット機能（Lv1: 依頼者↔事業者） */}
+          <Link
+            href={`/chat/${detail.id}`}
+            className="block w-full text-center px-4 py-2 rounded border border-green-300 bg-green-50 text-green-800 hover:bg-green-100"
+          >
+            💬 チャットを開く (Lv1)
+          </Link>
+
           {/* シェア（サーバーコンポーネント対応） */}
           <div className="rounded border bg-white p-4 space-y-2">
             <div className="font-semibold">シェア</div>
