@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { stripe } from '@/lib/stripe/client';
+import { emailService } from '@/lib/notifications/email';
 
 /**
  * Admin Payment Release API (Lv1: Manual operator-led)
@@ -114,6 +115,38 @@ export async function POST(request: NextRequest) {
 
     if (auditError) {
       console.error('Error creating audit log:', auditError);
+    }
+
+    // Send email notification for payment release completion (Lv1)
+    try {
+      // Get vendor email for notification
+      const { data: vendorProfile } = await sadmin
+        .from('profiles')
+        .select('email, first_name, last_name, business_name')
+        .eq('id', transaction.vendor_id)
+        .single();
+
+      if (vendorProfile?.email) {
+        const vendorName = vendorProfile.business_name || 
+                          (vendorProfile.first_name && vendorProfile.last_name ? 
+                           `${vendorProfile.first_name} ${vendorProfile.last_name}` : 'Unknown Vendor');
+
+        await emailService.sendPaymentReleaseNotification(vendorProfile.email, {
+          needTitle: transaction.needs?.title || 'Unknown Need',
+          amount: transaction.deposit_amount,
+          vendorName,
+          releaseDate: new Date().toLocaleString('ja-JP', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        });
+      }
+    } catch (emailError) {
+      // Don't fail the release if email fails
+      console.error('Failed to send payment release email notification:', emailError);
     }
 
     return NextResponse.json({

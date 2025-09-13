@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { emailService } from '@/lib/notifications/email';
 
 /**
  * Chat Send Message API (Lv1: Text only)
@@ -130,6 +131,56 @@ export async function POST(
         message_type: 'text'
       }
     });
+
+    // Send email notification to other participants (Lv1: Basic implementation)
+    try {
+      // Get room participants and sender info
+      const otherParticipants = room.participants?.filter(id => id !== userId) || [];
+      
+      if (otherParticipants.length > 0) {
+        // Get sender and need info for email
+        const { data: senderProfile } = await sadmin
+          .from('profiles')
+          .select('first_name, last_name, business_name, email')
+          .eq('id', userId)
+          .single();
+
+        const { data: needInfo } = await sadmin
+          .from('needs')
+          .select('title')
+          .eq('id', roomId)
+          .single();
+
+        if (senderProfile && needInfo) {
+          const senderName = senderProfile.business_name || 
+                            (senderProfile.first_name && senderProfile.last_name ? 
+                             `${senderProfile.first_name} ${senderProfile.last_name}` : 'Unknown User');
+          
+          // Get recipient emails
+          const { data: recipientProfiles } = await sadmin
+            .from('profiles')
+            .select('email')
+            .in('id', otherParticipants);
+
+          // Send notifications to all recipients
+          for (const recipient of recipientProfiles || []) {
+            if (recipient.email) {
+              await emailService.sendMessageNotification(recipient.email, {
+                senderName,
+                needTitle: needInfo.title,
+                messagePreview: trimmedContent.length > 100 ? 
+                              `${trimmedContent.substring(0, 100)}...` : 
+                              trimmedContent,
+                roomId
+              });
+            }
+          }
+        }
+      }
+    } catch (emailError) {
+      // Don't fail the message send if email fails
+      console.error('Failed to send email notification:', emailError);
+    }
 
     return NextResponse.json({
       message_id: messageId,
