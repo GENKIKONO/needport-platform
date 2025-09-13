@@ -109,16 +109,7 @@ export default function Header() {
           <div className="absolute inset-y-0 right-0 w-80 max-w-[85vw] bg-white shadow-xl p-4 transform transition-transform duration-300 ease-in-out">
             <div className="flex items-center justify-between pb-2 border-b">
               <div className="font-semibold">メニュー</div>
-              <button
-                type="button"
-                aria-label="閉じる"
-                onClick={() => setOpen(false)}
-                className="inline-flex w-9 h-9 items-center justify-center rounded-md border border-slate-300"
-              >
-                <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden>
-                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
+              {/* 元の×ボタンは削除 */}
             </div>
 
             <div className="pt-3">
@@ -126,6 +117,21 @@ export default function Header() {
               <LeftDock onItemClick={() => setOpen(false)} />
             </div>
           </div>
+          
+          {/* メニュー展開時も同じ位置にハンバーガーボタンを配置 */}
+          <button
+            type="button"
+            className="fixed bottom-6 right-6 z-60 w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 flex items-center justify-center border-4 border-white"
+            aria-label="メニューを閉じる"
+            onClick={() => setOpen(false)}
+            style={{
+              boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15)'
+            }}
+          >
+            <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden="true">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+            </svg>
+          </button>
         </div>
       )}
     </>
