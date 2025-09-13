@@ -1,6 +1,7 @@
 // src/app/needs/[id]/page.tsx
 import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
+import NeedOfferSection from '@/components/NeedOfferSection';
 
 // identity（存在すれば使う）
 let IDENTITY: { SEA_PATH: string };
@@ -243,6 +244,9 @@ export default async function NeedDetailPage({ params }: { params: { id: string 
           </div>
         </aside>
       </section>
+
+      {/* 事業者提案セクション */}
+      <NeedOfferSection needId={detail.id} />
     </div>
   );
 }
