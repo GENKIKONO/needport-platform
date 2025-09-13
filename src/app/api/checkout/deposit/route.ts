@@ -4,6 +4,14 @@ import { z } from "zod";
 import { stripe } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
+/**
+ * Deposit Checkout API (Lv1: Operator-led refunds only)
+ * 
+ * Creates Stripe Checkout for 10% deposit of estimated amount
+ * Lv1 Policy: Manual refund processing by operators
+ * Lv2+ Policy: Stripe webhook automation planned
+ */
+
 const schema = z.object({
   proposalId: z.string().uuid(),
   returnUrl: z.string().url().optional()
@@ -12,6 +20,14 @@ const schema = z.object({
 export async function POST(req: Request) {
   const { userId } = auth();
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
+  // Check if payments are enabled (Lv1 feature flag)
+  if (process.env.PAYMENTS_ENABLED !== 'true') {
+    return NextResponse.json({ 
+      error: "payments_disabled",
+      message: "決済機能は現在無効化されています"
+    }, { status: 503 });
+  }
 
   if (!stripe) {
     return NextResponse.json({ error: "stripe_not_configured" }, { status: 500 });
@@ -57,9 +73,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "need_not_active" }, { status: 400 });
   }
 
-  // Calculate 10% deposit amount
+  // Calculate 10% deposit amount (Lv1 policy)
+  const depositRate = parseFloat(process.env.NP_DEPOSIT_RATE || '0.10');
   const estimatePrice = proposal.estimate_price || 100000; // Default 100,000 yen if no estimate
-  const depositAmount = Math.round(estimatePrice * 0.1);
+  const depositAmount = Math.round(estimatePrice * depositRate);
 
   if (depositAmount < 100) { // Minimum 100 yen
     return NextResponse.json({ error: "deposit_too_small" }, { status: 400 });
@@ -90,7 +107,9 @@ export async function POST(req: Request) {
         vendor_id: userId,
         need_id: proposal.needs.id,
         estimate_price: estimatePrice.toString(),
-        deposit_amount: depositAmount.toString()
+        deposit_amount: depositAmount.toString(),
+        deposit_rate: depositRate.toString(),
+        lv1_policy: "operator_led_refund_only"
       }
     });
 

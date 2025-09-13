@@ -3,10 +3,13 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import LeftDock from '../nav/LeftDock';
+import { UnreadBadge } from '../chat/UnreadBadge';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const { isSignedIn, user } = useUser();
 
   return (
     <>
@@ -24,36 +27,80 @@ export default function Header() {
           </Link>
 
           {/* 右側：PCは簡易リンク / SPはハンバーガー */}
-          <div className="flex items-center gap-3">
-            <nav className="hidden sm:flex items-center gap-4 text-sm font-medium">
-              <Link href="/needs" className="text-slate-600 hover:text-blue-600/80 transition-colors px-3 py-2 rounded-lg hover:bg-blue-50/50">
-                ニーズ一覧
+          <div className="flex items-center gap-4">
+            <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold">
+              <Link href="/needs" className="flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors px-4 py-2.5 rounded-xl hover:bg-blue-50 border border-transparent hover:border-blue-100">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                ニーズを探す
               </Link>
-              <Link href="/me" className="text-slate-600 hover:text-blue-600/80 transition-colors px-3 py-2 rounded-lg hover:bg-blue-50/50">
-                マイページ
+              <Link href="/needs/new" className="flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors px-4 py-2.5 rounded-xl hover:bg-blue-50 border border-transparent hover:border-blue-100">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                ニーズを投稿
               </Link>
-              <div className="flex items-center gap-2">
-                <Link href="/sign-in" className="bg-blue-500/90 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600/90 transition-all shadow-sm">
-                  一般ログイン
+              {isSignedIn && (
+                <Link href="/me/messages" className="relative flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors px-4 py-2.5 rounded-xl hover:bg-blue-50 border border-transparent hover:border-blue-100">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  チャット
+                  <div className="absolute -top-1 -right-1">
+                    <UnreadBadge />
+                  </div>
                 </Link>
-                <Link href="/vendors/login" className="bg-green-500/90 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-600/90 transition-all shadow-sm">
-                  事業者ログイン
-                </Link>
-              </div>
+              )}
             </nav>
-            <button
-              type="button"
-              className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-md border border-slate-300 hover:bg-slate-100 transition-colors"
-              aria-label="メニューを開く"
-              onClick={() => setOpen(true)}
-            >
-              <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden>
-                <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
+            <div className="flex items-center gap-2 sm:gap-3">
+              {isSignedIn ? (
+                <Link href="/me" className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
+                  {user?.imageUrl ? (
+                    <img 
+                      src={user.imageUrl} 
+                      alt="プロフィール写真" 
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                  )}
+                  <span className="hidden sm:inline">マイページ</span>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/sign-in" className="bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
+                    一般ログイン
+                  </Link>
+                  <Link href="/vendors/login" className="bg-slate-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-700 transition-colors">
+                    事業者ログイン
+                  </Link>
+                </>
+              )}
+            </div>
+{/* スマホ用ハンバーガーメニューをヘッダーから削除 */}
           </div>
         </div>
       </header>
+
+      {/* スマホ画面：右下固定ハンバーガーメニュー */}
+      <button
+        type="button"
+        className="lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 flex items-center justify-center border-4 border-white"
+        aria-label="メニューを開く"
+        onClick={() => setOpen(true)}
+        style={{
+          boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15)'
+        }}
+      >
+        <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden="true">
+          <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+        </svg>
+      </button>
 
       {/* モバイルドロワー（LeftDock を流用） */}
       {open && (
@@ -76,7 +123,7 @@ export default function Header() {
 
             <div className="pt-3">
               {/* LeftDock は ul/li/Link の集合想定。モバイルでもそのまま描画 */}
-              <LeftDock />
+              <LeftDock onItemClick={() => setOpen(false)} />
             </div>
           </div>
         </div>
