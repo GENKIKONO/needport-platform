@@ -5,12 +5,13 @@ import { z } from "zod";
 
 const NeedInput = z.object({
   title: z.string().min(1),
-  body: z.string().min(1),
-  summary: z.string().optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  // region/area は受け取っても無視
+  summary: z.string().optional(), 
+  body: z.string().optional(),
+  category: z.string().optional(),
+  region: z.string().optional(),
+  pii_email: z.string().email().optional(),
+  pii_phone: z.string().optional(),
+  pii_address: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -27,13 +28,13 @@ export async function POST(req: Request) {
     const input = parse.data;
     const supabase = createClient();
 
-    // DB の実スキーマに合わせて必要最低限のカラムのみ
+    // 実際のスキーマに完全対応
     const payload = {
       title: input.title,
-      summary: input.summary || input.title,
-      body: input.body || input.summary || "",
+      summary: input.summary || input.title, // summary は必須
+      body: input.body || input.summary || "", // body は必須
+      area: input.region || null, // area カラムは存在する
       created_by: userId
-      // ❌ area: 入れない（DB列が存在しないため）
     };
 
     const { data, error } = await supabase.from('needs').insert(payload).select('id').limit(1);
