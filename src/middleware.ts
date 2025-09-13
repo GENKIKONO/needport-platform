@@ -27,8 +27,8 @@ const isAdminRoute = createRouteMatcher([
   '/api/admin(.*)'
 ]);
 
-export default clerkMiddleware((auth, request) => {
-  const { userId } = auth();
+export default clerkMiddleware(async (auth, request) => {
+  const { userId } = await auth();
   const { pathname, hostname } = request.nextUrl;
   
   // Canonical host redirect for production
