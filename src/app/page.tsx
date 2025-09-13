@@ -301,28 +301,96 @@ export default function Home(){
         </div>
       </section>
 
-      {/* 数字で見るNeedPort - 実績と信頼 */}
+      {/* こんな方におすすめ */}
       <section className="mx-auto max-w-5xl px-4">
         <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">みんなで紡ぐ物語</h2>
-          <p className="text-slate-600">
-            小さな一歩が、大きな変化を生み出しています
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="w-6 h-6 rounded-full bg-blue-100/60 flex items-center justify-center">
+              <svg className="w-4 h-4 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800">こんな方におすすめ</h2>
+          </div>
+          <p className="text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            さまざまな想いを持つ方々が、NeedPortで新しい出会いと解決を見つけています
           </p>
         </div>
         
-        <div className="grid sm:grid-cols-4 gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { number: "127", label: "投稿されたニーズ", desc: "困りごとから夢まで" },
-            { number: "89", label: "マッチング成立", desc: "新しい出会いが生まれた数" },
-            { number: "23", label: "参加地域", desc: "東京を中心に広がる輪" },
-            { number: "156", label: "登録事業者", desc: "想いある事業者さんたち" }
-          ].map((stat, i) => (
-            <div key={i} className="text-center space-y-3">
-              <div className="text-4xl font-bold text-blue-600/80">{stat.number}</div>
-              <div className="text-lg font-semibold text-slate-800">{stat.label}</div>
-              <div className="text-sm text-slate-600 leading-relaxed">{stat.desc}</div>
+            {
+              icon: (
+                <svg className="w-6 h-6 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              ),
+              title: "暮らしを豊かにしたい方",
+              desc: "住まいのこと、日常の困りごと、「こうだったらいいな」を形にしたい",
+              examples: "リフォーム・家事代行・ペットケア"
+            },
+            {
+              icon: (
+                <svg className="w-6 h-6 text-slate-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6" />
+                </svg>
+              ),
+              title: "事業を成長させたい方",
+              desc: "地域のニーズを知り、新しいサービスや顧客開拓のヒントを得たい",
+              examples: "新規事業・顧客開拓・地域貢献"
+            },
+            {
+              icon: (
+                <svg className="w-6 h-6 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              ),
+              title: "地域とつながりたい方",
+              desc: "近所の困りごとを解決したり、地域コミュニティに貢献したい",
+              examples: "地域活動・相互扶助・社会貢献"
+            },
+            {
+              icon: (
+                <svg className="w-6 h-6 text-slate-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              ),
+              title: "新しいことを始めたい方",
+              desc: "アイデアはあるけれど実現方法がわからない、背中を押してほしい",
+              examples: "起業・副業・趣味活動"
+            }
+          ].map((item, i) => (
+            <div key={i} className="bg-white/90 rounded-2xl p-6 border border-blue-50/50 hover:shadow-md hover:border-blue-100/60 transition-all duration-300 space-y-4">
+              <div className="w-12 h-12 bg-blue-50/60 rounded-xl flex items-center justify-center">
+                {item.icon}
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-slate-800 leading-snug">{item.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
+                <div className="pt-2">
+                  <div className="text-xs text-blue-600/70 font-medium bg-blue-50/50 px-3 py-2 rounded-lg border border-blue-100/40">
+                    例：{item.examples}
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
+        </div>
+        
+        <div className="text-center mt-12 p-8 bg-gradient-to-r from-blue-50/40 to-slate-50/60 rounded-2xl border border-blue-100/30">
+          <p className="text-base text-slate-700 leading-relaxed mb-4">
+            どんな小さな想いでも大歓迎。<br />
+            まずは気軽に投稿してみませんか？
+          </p>
+          <Link 
+            href="/needs/new" 
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500/90 text-white font-semibold rounded-full hover:bg-blue-600/90 transition-all duration-300 shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+            </svg>
+            投稿してみる
+          </Link>
         </div>
       </section>
 
