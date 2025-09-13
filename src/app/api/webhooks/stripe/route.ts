@@ -45,8 +45,8 @@ export async function POST(req: Request) {
       case "checkout.session.completed": {
         const session = event.data.object;
         
-        // Check if this is a PII unlock deposit
-        if (session.metadata?.type === "pii_unlock_deposit") {
+        // Check if this is a PII unlock deposit (proposal-based or need-based)
+        if (session.metadata?.type === "pii_unlock_deposit" || session.metadata?.type === "need_pii_unlock_deposit") {
           const {
             proposal_id,
             vendor_id,
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
             .insert({
               need_id,
               vendor_id,
-              proposal_id,
+              proposal_id: proposal_id || null,
               payment_intent_id: session.payment_intent as string,
               deposit_amount: parseInt(deposit_amount),
               session_id: session.id,
@@ -99,14 +99,16 @@ export async function POST(req: Request) {
             console.error("Error creating vendor access:", accessError);
           }
 
-          // Update proposal status to indicate payment received
-          await sadmin
-            .from("proposals")
-            .update({ 
-              status: "deposit_paid",
-              updated_at: new Date().toISOString()
-            })
-            .eq("id", proposal_id);
+          // Update proposal status to indicate payment received (only if proposal-based)
+          if (proposal_id) {
+            await sadmin
+              .from("proposals")
+              .update({ 
+                status: "deposit_paid",
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", proposal_id);
+          }
 
           // Enhanced audit log
           await sadmin.from("audit_logs").insert({

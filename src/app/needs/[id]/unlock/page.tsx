@@ -1,6 +1,9 @@
 // src/app/needs/[id]/unlock/page.tsx
+"use client";
+
 import type { Metadata } from "next";
 import Link from "next/link";
+import { useState } from "react";
 
 /**
  * Need Unlock (PII Access) Page - Lv1 Implementation
@@ -11,10 +14,69 @@ import Link from "next/link";
  * - No automatic refund after 30 days
  */
 
-export const metadata: Metadata = {
-  title: "連絡先解放（10%デポジット）| NeedPort",
-  description: "事業者向け連絡先情報解放ページ（Lv1: 運営主導返金）",
-};
+// Client component - cannot export metadata
+// export const metadata: Metadata = {
+//   title: "連絡先解放（10%デポジット）| NeedPort",
+//   description: "事業者向け連絡先情報解放ページ（Lv1: 運営主導返金）",
+// };
+
+// Deposit button component
+function DepositButton({ 
+  needId, 
+  estimateAmount, 
+  depositAmount 
+}: { 
+  needId: string;
+  estimateAmount: number;
+  depositAmount: number;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handlePayment = async () => {
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch('/api/checkout/need-deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          needId,
+          estimateAmount,
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        alert(`決済エラー: ${data.error || 'Unknown error'}`);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('決済処理中にエラーが発生しました。');
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <button
+      className={`w-full px-4 py-3 rounded font-semibold ${
+        isLoading 
+          ? 'bg-gray-400 cursor-not-allowed' 
+          : 'bg-sky-600 hover:bg-sky-700'
+      } text-white`}
+      onClick={handlePayment}
+      disabled={isLoading}
+    >
+      {isLoading 
+        ? '決済画面へ移動中...' 
+        : `¥${depositAmount.toLocaleString()} のデポジットを支払う`
+      }
+    </button>
+  );
+}
 
 export default function NeedUnlockPage({ params }: { params: { id: string } }) {
   const needId = params.id;
@@ -59,15 +121,11 @@ export default function NeedUnlockPage({ params }: { params: { id: string } }) {
         <p className="text-slate-700">
           デポジット決済完了後、連絡先情報が解放されます。
         </p>
-        <button
-          className="w-full px-4 py-3 rounded bg-sky-600 text-white hover:bg-sky-700 font-semibold"
-          onClick={() => {
-            // TODO: Integrate Stripe checkout
-            alert(`Stripe決済画面への遷移（実装予定）\n\nデポジット額: ¥${depositAmount.toLocaleString()}\n方式: Lv1運営主導返金`);
-          }}
-        >
-          ¥{depositAmount.toLocaleString()} のデポジットを支払う
-        </button>
+        <DepositButton 
+          needId={needId}
+          estimateAmount={mockEstimate}
+          depositAmount={depositAmount}
+        />
         <p className="text-xs text-slate-500 text-center">
           ✓ Stripeによる安全な決済処理  ✓ 運営確認後の手動返金対応
         </p>
