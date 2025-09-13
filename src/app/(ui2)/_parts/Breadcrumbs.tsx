@@ -9,7 +9,7 @@ export default function Breadcrumbs(){
   return (
     <nav aria-label="パンくず" className="text-sm text-slate-600 mb-3">
       <ol className="flex flex-wrap items-center gap-1">
-        <li><Link href="/v2" className="hover:text-sky-700">ホーム</Link></li>
+        <li><Link href="/" className="hover:text-sky-700">ホーム</Link></li>
         {chunks.map((c,i)=>{
           acc.push("/"+chunks.slice(0,i+1).join("/"));
           const href = acc[acc.length-1];

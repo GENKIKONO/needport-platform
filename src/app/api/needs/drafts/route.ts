@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { optimizedQuery } from '@/lib/db/optimizer';
-import { createAdminClient } from '@/lib/supabase/server';
-import { cache } from '@/lib/cache/manager';
-import { CACHE_NAMESPACES } from '@/lib/cache/types';
+import { createClient } from '@/lib/supabase/server';
 
 interface NeedDraft {
   id?: string;
@@ -33,23 +30,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const cacheKey = `drafts:${userId}`;
-    
-    const drafts = await optimizedQuery.execute(
-      cacheKey,
-      async () => {
-        const supabase = createAdminClient();
-        const { data, error } = await supabase
-          .from('need_drafts')
-          .select('*')
-          .eq('user_id', userId)
-          .order('updated_at', { ascending: false });
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('need_drafts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false });
 
-        if (error) throw error;
-        return data || [];
-      },
-      { enableCaching: true, cacheTTL: 300, cacheNamespace: CACHE_NAMESPACES.DATABASE_QUERIES }
-    );
+    if (error) throw error;
+    const drafts = data || [];
 
     return NextResponse.json({
       ok: true,
@@ -95,7 +84,7 @@ export async function POST(request: NextRequest) {
     let result;
     if (id) {
       // Update existing draft
-      const supabase = createAdminClient();
+      const supabase = createClient();
       const { data, error } = await supabase
         .from('need_drafts')
         .update({
@@ -112,7 +101,7 @@ export async function POST(request: NextRequest) {
       result = data;
     } else {
       // Create new draft
-      const supabase = createAdminClient();
+      const supabase = createClient();
       const { data, error } = await supabase
         .from('need_drafts')
         .insert({
@@ -128,8 +117,7 @@ export async function POST(request: NextRequest) {
       result = data;
     }
 
-    // Clear cache for user's drafts
-    await cache.delete(`drafts:${draftData.user_id}`, CACHE_NAMESPACES.DATABASE_QUERIES);
+    // Cache clearing removed for simplicity
 
     return NextResponse.json({
       ok: true,
@@ -164,7 +152,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = createAdminClient();
+    const supabase = createClient();
     const { error } = await supabase
       .from('need_drafts')
       .delete()
@@ -173,8 +161,7 @@ export async function DELETE(request: NextRequest) {
 
     if (error) throw error;
 
-    // Clear cache for user's drafts
-    await cache.delete(`drafts:${userId}`, CACHE_NAMESPACES.DATABASE_QUERIES);
+    // Cache clearing removed for simplicity
 
     return NextResponse.json({
       ok: true,
@@ -216,7 +203,7 @@ export async function PATCH(request: NextRequest) {
           );
         }
 
-        const supabaseDelete = createAdminClient();
+        const supabaseDelete = createClient();
         const { error: deleteError } = await supabaseDelete
           .from('need_drafts')
           .delete()
@@ -225,7 +212,7 @@ export async function PATCH(request: NextRequest) {
 
         if (deleteError) throw deleteError;
 
-        await cache.delete(`drafts:${userId}`, CACHE_NAMESPACES.DATABASE_QUERIES);
+        // Cache clearing removed for simplicity
 
         return NextResponse.json({
           ok: true,
@@ -237,7 +224,7 @@ export async function PATCH(request: NextRequest) {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const supabaseCleanup = createAdminClient();
+        const supabaseCleanup = createClient();
         const { error: cleanupError } = await supabaseCleanup
           .from('need_drafts')
           .delete()
@@ -247,7 +234,7 @@ export async function PATCH(request: NextRequest) {
 
         if (cleanupError) throw cleanupError;
 
-        await cache.delete(`drafts:${userId}`, CACHE_NAMESPACES.DATABASE_QUERIES);
+        // Cache clearing removed for simplicity
 
         return NextResponse.json({
           ok: true,

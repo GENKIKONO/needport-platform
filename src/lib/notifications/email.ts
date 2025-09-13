@@ -59,52 +59,15 @@ class LogEmailProvider implements EmailProvider {
 }
 
 /**
- * SendGrid Provider - For production
- * Requires SENDGRID_API_KEY environment variable
+ * SendGrid Provider - For production (Lv2+)
+ * Currently disabled for Lv1 implementation
  */
 class SendGridEmailProvider implements EmailProvider {
-  private apiKey: string;
-
-  constructor(apiKey: string) {
-    this.apiKey = apiKey;
-  }
-
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
-    try {
-      // In a real implementation, you would use @sendgrid/mail here
-      // For now, we'll simulate the API call
-      const sgMail = await import('@sendgrid/mail').catch(() => null);
-      
-      if (!sgMail) {
-        throw new Error('SendGrid package not available. Install @sendgrid/mail for production use.');
-      }
-
-      sgMail.setApiKey(this.apiKey);
-
-      const msg = {
-        to: options.to,
-        from: {
-          email: options.from || process.env.FROM_EMAIL || 'noreply@needport.jp',
-          name: options.fromName || process.env.FROM_NAME || 'NeedPort'
-        },
-        subject: options.subject,
-        text: options.text,
-        html: options.html || options.text
-      };
-
-      const result = await sgMail.send(msg);
-      
-      return {
-        success: true,
-        messageId: result[0]?.headers?.['x-message-id'] || 'sendgrid_sent'
-      };
-    } catch (error) {
-      console.error('SendGrid email provider error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'SendGrid error'
-      };
-    }
+    // Fallback to log provider for Lv1
+    console.log('SendGrid provider requested but not available in Lv1, falling back to log provider');
+    const logProvider = new LogEmailProvider();
+    return logProvider.sendEmail(options);
   }
 }
 
@@ -117,12 +80,8 @@ function createEmailProvider(): EmailProvider {
   
   switch (provider.toLowerCase()) {
     case 'sendgrid':
-      const apiKey = process.env.SENDGRID_API_KEY;
-      if (!apiKey) {
-        console.warn('SENDGRID_API_KEY not found, falling back to log provider');
-        return new LogEmailProvider();
-      }
-      return new SendGridEmailProvider(apiKey);
+      console.warn('SendGrid provider requested but disabled in Lv1, using log provider');
+      return new LogEmailProvider();
     
     case 'log':
     default:

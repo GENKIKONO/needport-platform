@@ -6,7 +6,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
       <body className="max-w-3xl mx-auto p-6">
         <ErrorBox title="ページの表示に失敗しました" detail={error?.message || "時間をおいて再度お試しください。"} />
         <div className="mt-3 text-xs text-slate-500">code: {error?.digest || "unknown"}</div>
-        <a href="/v2" className="inline-block mt-4 text-sky-700 underline">ホームに戻る</a>
+        <a href="/" className="inline-block mt-4 text-sky-700 underline">ホームに戻る</a>
       </body>
     </html>
   );

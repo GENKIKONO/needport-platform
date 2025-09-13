@@ -3,7 +3,7 @@ export default function NotFound() {
     <div className="max-w-3xl mx-auto p-6">
       <div className="text-lg font-semibold">ページが見つかりませんでした</div>
       <p className="text-slate-600 mt-2">URLが正しいかご確認ください。</p>
-      <a href="/v2" className="inline-block mt-4 text-sky-700 underline">ホームに戻る</a>
+      <a href="/" className="inline-block mt-4 text-sky-700 underline">ホームに戻る</a>
     </div>
   );
 }

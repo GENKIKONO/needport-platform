@@ -24,7 +24,7 @@ export default function MobileNav() {
               <div className="font-semibold">NeedPort</div>
               <button aria-label="閉じる" className="p-2" onClick={()=>setOpen(false)}>✕</button>
             </div>
-            <Link href="/v2" onClick={()=>setOpen(false)} className="py-2 border-b">ホーム</Link>
+            <Link href="/" onClick={()=>setOpen(false)} className="py-2 border-b">ホーム</Link>
             <Link href="/needs" onClick={()=>setOpen(false)} className="py-2 border-b">ニーズ</Link>
             <Link href="/vendors" onClick={()=>setOpen(false)} className="py-2 border-b">事業者</Link>
             <Link href="/needs/new" onClick={()=>setOpen(false)} className="py-2 border-b">投稿</Link>
