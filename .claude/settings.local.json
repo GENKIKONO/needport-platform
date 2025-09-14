@@ -23,7 +23,16 @@
       "Bash(node:*)",
       "Bash(npm run e2e:*)",
       "Bash(BASE=\"http://localhost:3000\" npm run smoke:ci)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run lint)",
+      "Bash(find:*)",
+      "Bash(unset:*)",
+      "Bash(xargs:*)",
+      "Bash(while read file)",
+      "Bash(do echo \"Checking $file for missing admin declaration...\" grep -n \"const admin = createAdminClientOrNull\" \"$file\")",
+      "Bash(then echo \"File $file uses admin but doesn''''t declare it, needs manual fix\" fi done)",
+      "Bash(timeout 60 npm run build)"
     ],
     "deny": [],
     "ask": []

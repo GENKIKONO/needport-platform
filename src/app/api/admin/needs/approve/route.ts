@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { recordApproval, notifyDecision } from '@/lib/approvals/hooks';
+
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 const schema = z.object({
   needId: z.string().uuid(),
@@ -12,7 +19,7 @@ const schema = z.object({
 
 async function ensureAdmin(uid?:string){
   if(!uid) return false;
-  const { data } = await supabaseAdmin().from('user_roles').select('role').eq('user_id', uid).eq('role','admin').maybeSingle();
+  const { data } = await admin.from('user_roles').select('role').eq('user_id', uid).eq('role','admin').maybeSingle();
   return !!data;
 }
 
@@ -22,7 +29,14 @@ export async function POST(req:Request){
   const parsed = schema.safeParse(body);
   if(!parsed.success) return NextResponse.json({ error:'invalid_input' }, { status:400 });
 
-  const sadmin = supabaseAdmin();
+  const sadmin = createAdminClientOrNull();
+    
+    if (!sadmin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
   // status を 'published' に
   const { error:upErr } = await sadmin.from('needs').update({ status:'published', updated_at: new Date().toISOString() }).eq('id', parsed.data.needId);
   if(upErr) return NextResponse.json({ error:'db_error' }, { status:500 });

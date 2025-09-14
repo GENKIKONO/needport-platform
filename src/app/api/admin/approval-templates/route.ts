@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
+
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 const schema = z.object({
   id: z.string().uuid().optional(),
@@ -14,14 +21,21 @@ const schema = z.object({
 
 async function ensureAdmin(userId?:string){
   if(!userId) return false;
-  const sa = supabaseAdmin();
+  const sa = createAdminClientOrNull();
+    
+    if (!sa) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
   const { data } = await sa.from('user_roles').select('role').eq('user_id', userId).eq('role','admin').maybeSingle();
   return !!data;
 }
 
 export async function GET() {
   const { userId } = auth(); if(!await ensureAdmin(userId)) return NextResponse.json({error:'forbidden'},{status:403});
-  const { data, error } = await supabaseAdmin().from('approval_reason_templates').select('*').order('kind').order('severity').order('title');
+  const { data, error } = await admin.from('approval_reason_templates').select('*').order('kind').order('severity').order('title');
   if(error) return NextResponse.json({error:'db_error'},{status:500});
   return NextResponse.json({ rows: data ?? [] });
 }
@@ -31,7 +45,14 @@ export async function POST(req:Request){
   const body = await req.json().catch(()=>({}));
   const parsed = schema.safeParse(body);
   if(!parsed.success) return NextResponse.json({error:'invalid_input'},{status:400});
-  const sa = supabaseAdmin();
+  const sa = createAdminClientOrNull();
+    
+    if (!sa) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
   const payload = { ...parsed.data, created_by: userId };
   const q = payload.id
     ? sa.from('approval_reason_templates').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', payload.id).select('*').maybeSingle()
@@ -45,7 +66,7 @@ export async function DELETE(req:Request){
   const { userId } = auth(); if(!await ensureAdmin(userId)) return NextResponse.json({error:'forbidden'},{status:403});
   const id = new URL(req.url).searchParams.get('id') || '';
   if(!id) return NextResponse.json({error:'invalid_input'},{status:400});
-  const { error } = await supabaseAdmin().from('approval_reason_templates').delete().eq('id', id);
+  const { error } = await admin.from('approval_reason_templates').delete().eq('id', id);
   if(error) return NextResponse.json({error:'db_error'},{status:500});
   return NextResponse.json({ ok:true });
 }

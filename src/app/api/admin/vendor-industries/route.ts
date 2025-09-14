@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
+
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 async function requireAdmin() {
   // 既存のadmin判定ヘルパーを想定
@@ -13,12 +20,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid' }, { status: 400 });
   }
   // 既存を差し替え（シンプル）
-  const { error: delErr } = await supabaseAdmin()
+  const { error: delErr } = await admin
     .from('vendor_industries').delete().eq('vendor_id', body.vendorId);
   if (delErr) return NextResponse.json({ error: 'db_error' }, { status: 500 });
   const rows = body.industryIds.map((id:string)=>({ vendor_id: body.vendorId, industry_id: id }));
   if (rows.length) {
-    const { error } = await supabaseAdmin().from('vendor_industries').insert(rows);
+    const { error } = await admin.from('vendor_industries').insert(rows);
     if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
   }
   return NextResponse.json({ ok: true });

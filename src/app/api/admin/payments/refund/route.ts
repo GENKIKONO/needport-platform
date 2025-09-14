@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { stripe } from '@/lib/stripe/client';
+
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 /**
  * Admin Payment Refund API (Lv1: Manual operator-led)
@@ -22,7 +29,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sadmin = supabaseAdmin();
+    const sadmin = createAdminClientOrNull();
+    
+    if (!sadmin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
 
     // Get transaction details
     const { data: transaction, error: fetchError } = await sadmin
