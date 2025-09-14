@@ -1,59 +1,80 @@
-import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@/lib/supabase/server";
-import { HTTP_ERRORS, logAndReturnError } from "@/lib/http/error";
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@/lib/supabase/server';
 
-type NeedCreateInput = {
-  title: string;
-  summary?: string;
-  body?: string;
-  category?: string;
-  region?: string;
-  pii_email?: string;
-  pii_phone?: string;
-  pii_address?: string;
-};
+const NeedInput = z.object({
+  title: z.string().min(1),
+  body: z.string().optional(),
+  summary: z.string().optional(),
+  area: z.string().optional().nullable(),
+});
 
 export async function POST(req: Request) {
+  const startedAt = Date.now();
   try {
     const { userId } = await auth();
     if (!userId) {
-      return HTTP_ERRORS.UNAUTHORIZED();
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const input = (await req.json()) as NeedCreateInput;
-    if (!input?.title || input.title.length < 2) {
-      return HTTP_ERRORS.BAD_REQUEST("title required");
+    const json = await req.json().catch(() => ({}));
+    const parsed = NeedInput.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'VALIDATION_ERROR', details: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
+
+    const input = parsed.data;
+    
+    // Hardened payload - only these 4 fields, never created_by
+    const title = input.title;
+    const summary = input.summary ?? input.title;
+    const body = input.body ?? input.summary ?? input.title;
+    const area = input.area ?? null;
+
+    console.log('[NEEDS_POST_PAYLOAD]', { 
+      keys: ['title', 'summary', 'body', 'area'],
+      processingTimeMs: Date.now() - startedAt
+    });
 
     const supabase = createClient();
     
+    // Explicit column-based insert to prevent field injection
     const { data, error } = await supabase
-      .from("needs")
-      .insert({
-        title: input.title,
-        summary: input.summary || input.title,
-        body: input.body || input.summary || "",
-        category: input.category,
-        region: input.region,
-        pii_email: input.pii_email,
-        pii_phone: input.pii_phone,
-        pii_address: input.pii_address,
-        creator_id: userId
-      })
-      .select()
+      .from('needs')
+      .insert([{ title, summary, body, area }])
+      .select('id')
       .single();
 
     if (error) {
-      return logAndReturnError(error, 'POST /api/needs', 'Failed to create need');
+      console.error('[NEEDS_INSERT_ERROR]', { 
+        keys: Object.keys({ title, summary, body, area }), 
+        err: error, 
+        supabaseError: error?.message 
+      });
+      return NextResponse.json({ 
+        error: 'DB_ERROR', 
+        detail: error?.message ?? String(error) 
+      }, { status: 500 });
     }
 
-    // 簡易監査ログ（audit関数の代替）
-    console.log(`[AUDIT] need.create: userId=${userId}, id=${data.id}, title=${data.title}`);
-
-    return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
-  } catch (error) {
-    return logAndReturnError(error, 'POST /api/needs', 'Failed to create need');
+    return NextResponse.json({ id: data.id }, { status: 201 });
+  } catch (e: any) {
+    console.error('[NEEDS_POST_FATAL]', { 
+      message: e?.message, 
+      type: e?.name 
+    });
+    return NextResponse.json({ 
+      error: 'INTERNAL_ERROR',
+      detail: e?.message ?? String(e)
+    }, { status: 500 });
+  } finally {
+    console.info('[NEEDS_POST_FINISH]', { 
+      processingTimeMs: Date.now() - startedAt
+    });
   }
 }
 
@@ -67,11 +88,13 @@ export async function GET() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      return logAndReturnError(error, 'GET /api/needs', 'Failed to fetch needs');
+      console.error('[NEEDS_GET_ERROR]', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ needs: data || [] });
   } catch (error) {
-    return logAndReturnError(error, 'GET /api/needs', 'Failed to fetch needs');
+    console.error('[NEEDS_GET_FATAL]', error);
+    return NextResponse.json({ error: 'Failed to fetch needs' }, { status: 500 });
   }
 }

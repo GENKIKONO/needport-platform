@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   '/login',
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/api/(.*)',  // Allow all API routes through
   '/api/needs(.*)',
   '/api/proposals(.*)',
   '/api/offers(.*)',

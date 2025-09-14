@@ -1,0 +1,210 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "NeedPort":
+    - /url: /
+    - img
+    - text: NeedPort
+  - navigation:
+    - link "ニーズを探す":
+      - /url: /needs
+      - img
+      - text: ニーズを探す
+    - link "ニーズを投稿":
+      - /url: /needs/new
+      - img
+      - text: ニーズを投稿
+  - link "一般ログイン":
+    - /url: /sign-in
+  - link "事業者ログイン":
+    - /url: /vendors/login
+- complementary:
+  - navigation:
+    - text: みんなの『欲しい』
+    - list:
+      - listitem:
+        - link "ニーズ一覧":
+          - /url: /needs
+      - listitem:
+        - link "ニーズを投稿":
+          - /url: /needs/new
+    - text: 企業の『できる』
+    - list:
+      - listitem:
+        - link "事業者登録":
+          - /url: /vendors/register
+      - listitem:
+        - link "提案ガイド":
+          - /url: /me/vendor/guide
+      - listitem:
+        - link "海中（保管庫）":
+          - /url: /sea
+    - text: ガイド
+    - list:
+      - listitem:
+        - link "サービス航海図":
+          - /url: /roadmap
+      - listitem:
+        - link "お知らせ":
+          - /url: /news
+    - text: アカウント
+    - list:
+      - listitem:
+        - link "マイページ":
+          - /url: /me
+      - listitem:
+        - link "ログイン":
+          - /url: /login
+      - listitem:
+        - link "事業者ログイン":
+          - /url: /vendors/login
+- main:
+  - text: みんなの想いをつなぐ場所
+  - heading "埋もれた声を、 つなぐ。 形にする。" [level=1]
+  - paragraph: 困りごとを温かく受け止めて、地域の事業者さんと 安心・透明につながる、新しい出会いの場です。
+  - link "ニーズを投稿する":
+    - /url: /needs/new
+    - img
+    - text: ニーズを投稿する
+  - link "ニーズを探す":
+    - /url: /needs
+    - img
+    - text: ニーズを探す
+  - heading "誰かの「困った」が 誰かの「喜び」になる場所" [level=2]
+  - paragraph: 街の小さな困りごとから、大きな夢まで。 みんなで支え合いながら、温かい未来を紡いでいく。
+  - img
+  - heading "想いを大切に" [level=3]
+  - paragraph: 一人ひとりの声に耳を傾け、小さなニーズも見逃さない
+  - img
+  - heading "地域とつながる" [level=3]
+  - paragraph: 地域の事業者と住民が自然に出会える温かい関係づくり
+  - img
+  - heading "未来を創る" [level=3]
+  - paragraph: 今日の小さなアクションが、明日の豊かな暮らしの種になる
+  - paragraph: "\"必要なものが、必要な人に、自然と届く世界\""
+  - img
+  - heading "注目のニーズ" [level=2]
+  - link "すべて見る":
+    - /url: /needs
+    - text: すべて見る
+    - img
+  - link "自宅サウナを設置したい":
+    - /url: /needs/np-101
+  - text: 浮上中
+  - img
+  - text: 港区
+  - img
+  - text: リフォーム
+  - img
+  - text: 4件の提案
+  - link "詳細":
+    - /url: /needs/np-101
+  - link "提案する":
+    - /url: /needs/np-101#cta
+  - link "地下室の防音改修":
+    - /url: /needs/np-104
+  - img
+  - text: 大田区
+  - img
+  - text: リフォーム
+  - img
+  - text: 7件の提案
+  - link "詳細":
+    - /url: /needs/np-104
+  - link "提案する":
+    - /url: /needs/np-104#cta
+  - link "空き家の片付け・買取相談":
+    - /url: /needs/np-106
+  - img
+  - text: 成約済み
+  - img
+  - text: 足立区
+  - img
+  - text: 不動産
+  - img
+  - text: 3件の提案
+  - link "詳細":
+    - /url: /needs/np-106
+  - link "提案する":
+    - /url: /needs/np-106#cta
+  - img
+  - heading "はじめかた" [level=2]
+  - paragraph: 簡単3ステップで、あなたの困りごとが温かい解決につながります
+  - text: "1"
+  - img
+  - heading "困りごとを投稿" [level=3]
+  - paragraph: 匿名で安心して、あなたの「こんなのあったらいいな」を投稿してみてください。
+  - text: "2"
+  - img
+  - heading "事業者が提案" [level=3]
+  - paragraph: 地域の事業者さんから、温かい提案やアイデアが届きます。
+  - text: "3"
+  - img
+  - heading "成約・実現" [level=3]
+  - paragraph: 安心・透明な形で成約し、必要な情報だけを共有して実現へ。
+  - link "今すぐはじめてみる":
+    - /url: /needs/new
+    - img
+    - text: 今すぐはじめてみる
+  - heading "みんなで紡ぐ物語" [level=2]
+  - paragraph: 小さな一歩が、大きな変化を生み出しています
+  - text: 127 投稿されたニーズ 困りごとから夢まで 89 マッチング成立 新しい出会いが生まれた数 23 参加地域 東京を中心に広がる輪 156 登録事業者 想いある事業者さんたち
+  - blockquote: 「一人では解決できないことも、 誰かと一緒なら、きっと道は見つかる」
+  - paragraph: NeedPortは、技術やサービスを超えた、人と人をつなぐ架け橋です。 あなたの小さな一歩が、誰かの大きな喜びになる瞬間を、 一緒に作っていきませんか。
+  - link "あなたの物語を始める":
+    - /url: /needs/new
+    - img
+    - text: あなたの物語を始める
+  - img
+  - paragraph: 今日という日が、誰かの明日を輝かせる
+  - paragraph: NeedPort - 必要が港で出会う場所
+- contentinfo:
+  - img
+  - text: NeedPort
+  - paragraph: ニーズと解決者をつなぐマッチングプラットフォーム
+  - heading "サービス" [level=3]
+  - list:
+    - listitem:
+      - link "ニーズ一覧":
+        - /url: /needs
+    - listitem:
+      - link "マイページ":
+        - /url: /me
+    - listitem:
+      - link "事業者向け":
+        - /url: /me/vendor
+    - listitem:
+      - link "サービスについて":
+        - /url: /about
+  - heading "サポート" [level=3]
+  - list:
+    - listitem:
+      - link "ヘルプ・よくある質問":
+        - /url: /help
+    - listitem:
+      - link "お問い合わせ":
+        - /url: /contact
+    - listitem:
+      - link "ご利用ガイド":
+        - /url: /guide
+    - listitem:
+      - link "安全・安心への取り組み":
+        - /url: /safety
+  - heading "法的情報" [level=3]
+  - list:
+    - listitem:
+      - link "利用規約":
+        - /url: /(public)/legal/terms
+    - listitem:
+      - link "プライバシーポリシー":
+        - /url: /(public)/legal/privacy
+    - listitem:
+      - link "特定商取引法に基づく表記":
+        - /url: /(public)/legal/tokushoho
+    - listitem:
+      - link "運営会社":
+        - /url: /company
+  - text: © 2024 NeedPort. All rights reserved. ニーズ起点のマッチングプラットフォーム
+- alert
+```

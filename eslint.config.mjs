@@ -36,14 +36,29 @@ export default [
           message: 'body背景は変更しないでください'
         }
       ],
-      // 禁止: 旧ヘッダーの直接使用
+      // 禁止: 旧ヘッダーの直接使用 + 環境変数とSupabaseクライアントの直接使用
       'no-restricted-imports': ['error', {
         paths: [
           { name: "@/components/Header", message: "ヘッダーは AppHeader を使用してください。" },
           { name: "@/components/layout/Header", message: "ヘッダーは AppHeader を使用してください。" },
           { name: "@/mkt/components/MktHeader", message: "ヘッダーは AppHeader を使用してください。" },
+          { name: "@supabase/supabase-js", message: "Supabase クライアントは /src/lib/supabase/ 経由で作成してください。" }
+        ],
+        patterns: [
+          {
+            group: ["**/supabase-js"],
+            message: "Supabase クライアントは /src/lib/supabase/ 経由で作成してください。"
+          }
         ]
-      }]
+      }],
+      // 禁止: process.env の直接使用（config モジュール外）
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'process',
+          message: '環境変数は /src/lib/config/ モジュール経由でアクセスしてください。直接 process.env.* を使用しないでください。'
+        }
+      ]
     }
   }
 ];
