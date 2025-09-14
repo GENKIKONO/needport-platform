@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { withRateLimit, RATE_LIMITS } from "@/lib/rateLimit";
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
 
 function createUTF8BOM(): Buffer {
   return Buffer.from([0xEF, 0xBB, 0xBF]);
@@ -31,7 +34,14 @@ function arrayToCSV(data: any[]): string {
 
 async function exportNeedsHandler(req: NextRequest): Promise<Response> {
   try {
-    const supabase = createAdminClient();
+    const supabase = createAdminClientOrNull();
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Admin database not configured" },
+        { status: 503 }
+      );
+    }
     
     // Fetch published needs with basic information
     const { data: needs, error } = await supabase
