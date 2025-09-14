@@ -17,7 +17,8 @@
       "Bash(./scripts/smoke.sh:*)",
       "Bash(npm run typecheck:*)",
       "Bash(npm run lint)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import LeftDock from '../nav/LeftDock';
+import { NavQuickLinks } from '../global/NavQuickLinks';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -41,6 +42,7 @@ export default function Header() {
                 ニーズを投稿
               </Link>
             </nav>
+            <NavQuickLinks className="hidden sm:flex" />
             <div className="flex items-center gap-2 sm:gap-3">
               {isSignedIn ? (
                 <Link href="/me" className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">

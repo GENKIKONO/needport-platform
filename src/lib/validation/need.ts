@@ -49,6 +49,16 @@ export const NeedStep4Schema = NeedSchema.pick({
 // Legacy compatibility
 export const NeedInput = NeedSchema;
 
+// Simple need input for new minimal flow
+export const SimpleNeedInput = z.object({
+  title: z.string().min(1, 'タイトルは必須です').max(200, 'タイトルは200文字以内で入力してください'),
+  summary: z.string().optional(),
+  body: z.string().optional(),
+  area: z.string().optional(),
+});
+
+export type SimpleNeedInputType = z.infer<typeof SimpleNeedInput>;
+
 // メール/電話番号などのPIIをサーバ側で簡易除去
 export function stripPII(s: string) {
   return s
