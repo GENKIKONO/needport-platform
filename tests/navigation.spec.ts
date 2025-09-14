@@ -10,7 +10,6 @@ test.describe('Navigation', () => {
     // Check main navigation links in header specifically (not sidebar) - updated per CLAUDE.md specs
     await expect(page.locator('header nav a[href="/needs"]')).toContainText('ニーズ一覧');
     await expect(page.locator('header nav a[href="/needs/new"]')).toContainText('ニーズを投稿する');
-    await expect(page.locator('header nav a[href="/vendors"]')).toContainText('事業者一覧');
     
     // Verify prohibited links are NOT present in header
     await expect(page.locator('header nav a[href="/about"]')).not.toBeVisible();

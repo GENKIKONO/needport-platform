@@ -1322,7 +1322,6 @@ Required policies for needs table:
 **Header Navigation** (required):
 - Brand: "NeedPort" → `/`
 - ニーズ一覧 → `/needs`  
-- 事業者一覧 → `/vendors`
 - マイページ → `/me` (authenticated)
 - ログイン (unauthenticated)
 

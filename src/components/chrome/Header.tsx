@@ -35,9 +35,6 @@ export default function Header() {
               <Link href="/needs/new" className="text-slate-700 hover:text-blue-600 transition-colors">
                 ニーズを投稿する
               </Link>
-              <Link href="/vendors" className="text-slate-700 hover:text-blue-600 transition-colors">
-                事業者一覧
-              </Link>
             </nav>
 
             {/* 3. 認証エリア */}
