@@ -9,25 +9,20 @@ test.describe('Needs Posting API E2E Tests', () => {
     await page.goto('/');
   });
 
-  test('should handle /api/needs/new endpoint without authentication', async ({ page }) => {
-    // Test unauthenticated POST to /api/needs/new
+  test('should handle /api/needs endpoint without authentication', async ({ page }) => {
+    // Test unauthenticated POST to /api/needs (not /api/needs/new)
     const response = await page.evaluate(async () => {
       try {
-        const response = await fetch('/api/needs/new', {
+        const response = await fetch('/api/needs', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             title: 'Test Need',
-            category: 'other',
             area: 'test-area',
             summary: 'Test summary',
-            description: 'Test description',
-            contact: {
-              email: 'test@example.com',
-              phone: '090-1234-5678'
-            }
+            body: 'Test description'
           }),
         });
 
@@ -64,19 +59,19 @@ test.describe('Needs Posting API E2E Tests', () => {
     expect(typeof responseData.error).toBe('string');
   });
 
-  test('should handle /api/needs/new with invalid data', async ({ page }) => {
-    // Test POST to /api/needs/new with invalid data
+  test('should handle /api/needs with invalid data', async ({ page }) => {
+    // Test POST to /api/needs with invalid data
     const response = await page.evaluate(async () => {
       try {
-        const response = await fetch('/api/needs/new', {
+        const response = await fetch('/api/needs', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            // Missing required fields
+            // Missing required title field
             title: '',
-            description: ''
+            body: 'Some description'
           }),
         });
 
@@ -125,7 +120,7 @@ test.describe('Needs Posting API E2E Tests', () => {
     const contentType = response.headers['content-type'] || '';
     expect(contentType).toContain('application/json');
     
-    // Should return an array of needs
+    // Should return an object with needs array
     let responseData;
     try {
       responseData = JSON.parse(response.body);
@@ -134,7 +129,9 @@ test.describe('Needs Posting API E2E Tests', () => {
       throw e;
     }
     
-    expect(Array.isArray(responseData)).toBe(true);
+    // API returns { needs: [...] } not a direct array
+    expect(responseData).toHaveProperty('needs');
+    expect(Array.isArray(responseData.needs)).toBe(true);
   });
 });
 
@@ -146,8 +143,10 @@ test.describe('Needs Engagement API E2E Tests', () => {
     const response = await request.get('/api/needs');
     const needs = await response.json();
     
-    if (needs.length > 0) {
-      testNeedId = needs[0].id;
+    // API returns { needs: [...] }
+    const needsList = needs.needs || needs;
+    if (Array.isArray(needsList) && needsList.length > 0) {
+      testNeedId = needsList[0].id;
     } else {
       // If no needs exist, we'll skip engagement tests
       testNeedId = 'no-needs-available';
@@ -398,7 +397,6 @@ test.describe('API Response Format Validation', () => {
   test('should not return HTML error pages for API endpoints', async ({ page }) => {
     const apiEndpoints = [
       '/api/needs',
-      '/api/needs/new',
       '/api/needs/00000000-0000-0000-0000-000000000000/engagement',
       '/api/needs/00000000-0000-0000-0000-000000000000/engagement/summary'
     ];
@@ -407,7 +405,7 @@ test.describe('API Response Format Validation', () => {
       const response = await page.evaluate(async (url) => {
         try {
           const response = await fetch(url, {
-            method: url.includes('/new') || url.includes('/engagement') ? 'POST' : 'GET',
+            method: url.includes('/engagement') && !url.includes('/summary') ? 'POST' : 'GET',
             headers: {
               'Content-Type': 'application/json',
             },
