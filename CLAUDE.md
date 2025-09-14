@@ -20,6 +20,8 @@ npm test             # Run unit tests with Vitest
 npm run test:watch   # Run tests in watch mode
 npm run e2e          # Run Playwright end-to-end tests
 npm run e2e:ui       # Run E2E tests with UI
+npm run ci           # Run full CI test suite (build + unit + e2e)
+npm run rls:check    # Verify RLS policies (requires DATABASE_URL)
 ```
 
 ### Database Operations
@@ -1231,7 +1233,67 @@ docs/
 
 ---
 
+## Posting Flow Contract & Guardrails (Lv1)
+
+### API Contract Requirements
+- **POST /api/needs**: Must create drafts with `status: 'draft'` 
+- **POST /api/needs/new**: Simplified posting with fallbacks, `status: 'draft'`
+- **Authentication**: All posting endpoints require valid Clerk JWT
+- **Response Format**: JSON only, never HTML error pages
+- **RLS Compliance**: Server client passes Clerk tokens to Supabase
+
+### RLS Policies Canonical Set
+Required policies for needs table:
+- `public read needs`: SELECT with `status = 'published'` restriction
+- `needs_insert_draft`: INSERT for authenticated users with `status = 'draft'` check
+- Engagement tables (`need_engagements`, `need_anonymous_interest`): Similar authenticated access
+
+### Navigation & UI Drift Prevention
+**Header Navigation** (required):
+- Brand: "NeedPort" → `/`
+- ニーズ一覧 → `/needs`  
+- 事業者一覧 → `/vendors`
+- マイページ → `/me` (authenticated)
+- ログイン (unauthenticated)
+
+**Hero Copy Requirements**:
+- Primary: "欲しい暮らし、10人で叶える"
+- Secondary: "「欲しい」と「できる」の橋渡し"
+- Maritime theme throughout
+
+**My Page Structure**:
+- 4-column status cards (航海中の取引, 投稿したニーズ, 港からの信号, 提案した案件)
+- Sidebar: ニーズ管理, 取引管理, 決済・領収書, チャット履歴, プロフィール, 設定
+- Quick actions: 新規投稿, ニーズ検索
+
+### ESLint Guardrails
+Enforced rules:
+- No direct `process.env.*` usage outside `/src/lib/config/`
+- No direct Supabase client creation outside `/src/lib/supabase/`  
+- No require() in app/ (ESM imports only)
+- Header component restrictions (use AppHeader)
+
+### Test Coverage Requirements
+- **Unit Tests**: API routes, auth integration, validation
+- **E2E Tests**: Posting flow, authentication, error handling
+- **RLS Tests**: Policy verification, access control
+- **UI Drift Tests**: Navigation, hero copy, component structure
+
+### Health Monitoring
+- `/api/health`: Returns version, git SHA, environment checks
+- CI pipeline: Build → Test → E2E → Deploy
+- RLS verification: `npm run rls:check`
+
+---
+
 ## 変更履歴
+
+### 2025-09-14 テスト・品質管理インフラ追加
+- **追加内容**: API契約テスト、RLS検証、E2Eテスト、UIドリフト防止テスト
+- **新ファイル**: tests/api/, tests/rls/, tests/e2e/, tests/ui/, scripts/sql/
+- **CI強化**: GitHub Actions ワークフロー、ESLintルール追加
+- **ヘルスチェック**: /api/health エンドポイント追加
+- **npm scripts**: ci, rls:check コマンド追加
 
 ### 2025-09-13 決済・返金仕様統一
 - **変更内容**: Lv1を運営主導返金に統一、自動返金表現を将来対応に移動

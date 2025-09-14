@@ -14,7 +14,10 @@
       "Bash(git merge:*)",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "Bash(./scripts/smoke.sh:*)"
+      "Bash(./scripts/smoke.sh:*)",
+      "Bash(npm run test:*)",
+      "Bash(sed:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

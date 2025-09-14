@@ -31,7 +31,9 @@
     "postvercel-build": "node scripts/guard-next-manifests.mjs",
     "smoke:prod": "bash ./scripts/smoke-prod.sh",
     "routes:check": "node ./scripts/check-routes.js",
-    "env:check": "node ./scripts/check-env.js"
+    "env:check": "node ./scripts/check-env.js",
+    "ci": "npm run build && npm run test && npm run test:e2e",
+    "rls:check": "psql \"$DATABASE_URL\" -f scripts/sql/rls-needs-check.sql || echo 'Run this in Supabase SQL Editor if psql missing'"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.6",
@@ -72,6 +74,7 @@
     "@next/bundle-analyzer": "^15.5.2",
     "@playwright/test": "^1.40.1",
     "@tailwindcss/postcss": "^4",
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^20.10.6",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
@@ -79,6 +82,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
+    "jsdom": "^27.0.0",
     "kill-port": "^2.0.1",
     "lighthouse": "^12.8.2",
     "lighthouse-ci": "^1.13.1",
