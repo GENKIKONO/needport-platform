@@ -30,6 +30,7 @@
     "vercel-build": "next build",
     "postvercel-build": "node scripts/guard-next-manifests.mjs",
     "smoke:prod": "bash ./scripts/smoke-prod.sh",
+    "smoke:ci": "bash ./scripts/smoke.sh ${BASE:-http://localhost:3000}",
     "routes:check": "node ./scripts/check-routes.js",
     "env:check": "node ./scripts/check-env.js",
     "ci": "npm run build && npm run test && npm run test:e2e",
