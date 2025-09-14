@@ -19,7 +19,7 @@ const schema = z.object({
 
 async function ensureAdmin(uid?:string){
   if(!uid) return false;
-  const { data } = await supabaseAdmin().from('user_roles').select('role').eq('user_id', uid).eq('role','admin').maybeSingle();
+  const { data } = await admin.from('user_roles').select('role').eq('user_id', uid).eq('role','admin').maybeSingle();
   return !!data;
 }
 

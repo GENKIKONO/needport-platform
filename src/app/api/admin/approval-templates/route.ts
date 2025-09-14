@@ -35,7 +35,7 @@ async function ensureAdmin(userId?:string){
 
 export async function GET() {
   const { userId } = auth(); if(!await ensureAdmin(userId)) return NextResponse.json({error:'forbidden'},{status:403});
-  const { data, error } = await supabaseAdmin().from('approval_reason_templates').select('*').order('kind').order('severity').order('title');
+  const { data, error } = await admin.from('approval_reason_templates').select('*').order('kind').order('severity').order('title');
   if(error) return NextResponse.json({error:'db_error'},{status:500});
   return NextResponse.json({ rows: data ?? [] });
 }
@@ -66,7 +66,7 @@ export async function DELETE(req:Request){
   const { userId } = auth(); if(!await ensureAdmin(userId)) return NextResponse.json({error:'forbidden'},{status:403});
   const id = new URL(req.url).searchParams.get('id') || '';
   if(!id) return NextResponse.json({error:'invalid_input'},{status:400});
-  const { error } = await supabaseAdmin().from('approval_reason_templates').delete().eq('id', id);
+  const { error } = await admin.from('approval_reason_templates').delete().eq('id', id);
   if(error) return NextResponse.json({error:'db_error'},{status:500});
   return NextResponse.json({ ok:true });
 }

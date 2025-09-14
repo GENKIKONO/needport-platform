@@ -20,12 +20,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid' }, { status: 400 });
   }
   // 既存を差し替え（シンプル）
-  const { error: delErr } = await supabaseAdmin()
+  const { error: delErr } = await admin
     .from('vendor_industries').delete().eq('vendor_id', body.vendorId);
   if (delErr) return NextResponse.json({ error: 'db_error' }, { status: 500 });
   const rows = body.industryIds.map((id:string)=>({ vendor_id: body.vendorId, industry_id: id }));
   if (rows.length) {
-    const { error } = await supabaseAdmin().from('vendor_industries').insert(rows);
+    const { error } = await admin.from('vendor_industries').insert(rows);
     if (error) return NextResponse.json({ error: 'db_error' }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
