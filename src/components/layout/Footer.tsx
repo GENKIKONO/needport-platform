@@ -81,12 +81,12 @@ export default function Footer() {
               <h3 className="text-lg font-semibold mb-4">法的情報</h3>
               <ul className="space-y-3">
                 <li>
-                  <Link href="/(public)/legal/terms" className="text-slate-300 hover:text-blue-400 transition-colors text-base">
+                  <Link href="/terms" className="text-slate-300 hover:text-blue-400 transition-colors text-base">
                     利用規約
                   </Link>
                 </li>
                 <li>
-                  <Link href="/(public)/legal/privacy" className="text-slate-300 hover:text-blue-400 transition-colors text-base">
+                  <Link href="/privacy" className="text-slate-300 hover:text-blue-400 transition-colors text-base">
                     プライバシーポリシー
                   </Link>
                 </li>

@@ -7,9 +7,10 @@ test.describe('Navigation', () => {
     // Check logo links to home
     await expect(page.locator('header a[href="/"]')).toBeVisible();
     
-    // Check main navigation links in header specifically (not sidebar)
-    await expect(page.locator('header nav a[href="/needs"]')).toContainText('ニーズを探す');
+    // Check main navigation links in header specifically (not sidebar) - updated per CLAUDE.md specs
+    await expect(page.locator('header nav a[href="/needs"]')).toContainText('ニーズ一覧');
     await expect(page.locator('header nav a[href="/needs/new"]')).toContainText('ニーズを投稿する');
+    await expect(page.locator('header nav a[href="/vendors"]')).toContainText('事業者一覧');
     
     // Verify prohibited links are NOT present in header
     await expect(page.locator('header nav a[href="/about"]')).not.toBeVisible();
@@ -55,14 +56,17 @@ test.describe('Navigation', () => {
     // Use more specific selectors within the mobile menu drawer
     await page.waitForSelector('text=メニュー', { state: 'visible' });
     
-    // Check links within the mobile drawer specifically
-    await expect(page.locator('.fixed .space-y-6 >> text=ニーズを探す')).toBeVisible();
-    await expect(page.locator('.fixed .space-y-6 >> text=ニーズを投稿する')).toBeVisible();
-    await expect(page.locator('.fixed .space-y-6 >> text=マイページ')).toBeVisible();
+    // Check links within the mobile drawer specifically - updated per CLAUDE.md specs  
+    await expect(page.locator('.fixed nav >> text=ニーズ一覧')).toBeVisible();
+    await expect(page.locator('.fixed nav >> text=ニーズを投稿する')).toBeVisible();
     
-    // Verify prohibited links are NOT present in mobile menu
-    await expect(page.locator('.fixed .space-y-6 >> text=サービスについて')).not.toBeVisible();
-    await expect(page.locator('.fixed .space-y-6 >> text=利用規約')).not.toBeVisible();
-    await expect(page.locator('.fixed .space-y-6 >> text=プライバシー')).not.toBeVisible();
+    // Check authentication links (should show login buttons when not authenticated)
+    await expect(page.locator('.fixed nav >> text=一般ログイン')).toBeVisible();
+    await expect(page.locator('.fixed nav >> text=事業者ログイン')).toBeVisible();
+    
+    // Check additional navigation links per CLAUDE.md specs
+    await expect(page.locator('.fixed nav >> text=サービスについて')).toBeVisible();
+    await expect(page.locator('.fixed nav >> text=利用規約')).toBeVisible();
+    await expect(page.locator('.fixed nav >> text=プライバシーポリシー')).toBeVisible();
   });
 });

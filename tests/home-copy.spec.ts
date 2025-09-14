@@ -14,32 +14,34 @@ test.describe('Home Page Copy', () => {
     await expect(page.locator('text=ニーズマッチングプラットフォーム')).toBeVisible();
   });
 
-  test('こんな方におすすめ section is visible', async ({ page }) => {
+  test('brand story section is visible', async ({ page }) => {
     await page.goto('/');
     
-    // Check "こんな方におすすめ" section exists
-    await expect(page.locator('h2:has-text("こんな方におすすめ")')).toBeVisible();
+    // Check that brand story section exists (CMS editable)
+    await expect(page.locator('h2:has-text("NeedPortについて")')).toBeVisible();
     
-    // Check the three recommendation cards
-    await expect(page.locator('text=同じニーズを持つ人が何人いるか知りたい')).toBeVisible();
-    await expect(page.locator('text=ニーズが集まったら事業化を検討したい')).toBeVisible();
-    await expect(page.locator('text=まずは匿名で「気になる」だけ押したい')).toBeVisible();
+    // Check basic brand story content (CMS editable placeholders)
+    await expect(page.locator('text=地域のニーズと事業者をつなぐプラットフォームです。')).toBeVisible();
+    await expect(page.locator('text=匿名性と安全性を確保しながら、あなたの「欲しい」を実現へと導きます。')).toBeVisible();
   });
 
-  test('collective demand meter explanation is present', async ({ page }) => {
+  test('service mechanism section is visible', async ({ page }) => {
     await page.goto('/');
     
-    // Check that collective demand meter explanation is visible
-    await expect(page.locator('text=集合的需要メーターで、ニーズの実現可能性を見える化')).toBeVisible();
-    await expect(page.locator('text=購入したい・興味あり・気になる（匿名）のメーターで需要量を確認')).toBeVisible();
+    // Check that service mechanism section exists (CMS editable)
+    await expect(page.locator('h2:has-text("サービスの仕組み")')).toBeVisible();
+    
+    // Check basic mechanism content (CMS editable placeholders)
+    await expect(page.locator('text=地域のニーズと事業者をマッチングするプラットフォームです。')).toBeVisible();
+    await expect(page.locator('text=安全で透明性の高い取引を実現します。')).toBeVisible();
   });
 
   test('CTA buttons are correctly labeled', async ({ page }) => {
     await page.goto('/');
     
-    // Check CTA buttons with more flexible text matching
-    await expect(page.locator('a[href="/needs/new"]')).toContainText('ニーズを投稿');
-    await expect(page.locator('a[href="/needs"]')).toContainText('ニーズを探す');
+    // Check hero section CTA buttons specifically using the hero gradient background selector
+    await expect(page.locator('.bg-gradient-to-br.from-blue-50\\/30 a[href="/needs/new"]')).toContainText('ニーズを投稿');
+    await expect(page.locator('.bg-gradient-to-br.from-blue-50\\/30 a[href="/needs"]')).toContainText('ニーズを探す');
   });
 
   test('prohibited copy is not present', async ({ page }) => {

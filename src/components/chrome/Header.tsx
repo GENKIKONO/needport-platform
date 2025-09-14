@@ -12,10 +12,10 @@ export default function Header() {
 
   return (
     <>
-      {/* シンプルで柔らかいトップバー */}
+      {/* ヘッダー：白背景・16個のアイテム高さ */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-blue-100/50">
         <div className="w-full h-16 px-3 sm:px-4 lg:px-6 flex items-center justify-between">
-          {/* Logo */}
+          {/* 1. ブランドロゴ・NeedPort */}
           <Link href="/" className="inline-flex items-center gap-3 font-bold text-slate-800 hover:text-blue-600/80 transition-colors">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500/90 to-blue-600/90 rounded-lg flex items-center justify-center shadow-sm">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,16 +25,22 @@ export default function Header() {
             <span className="text-xl">NeedPort</span>
           </Link>
 
-          {/* 中央：主要ナビゲーション */}
+          {/* 2. 中央＆右端ナビゲーション */}
           <div className="flex items-center gap-4">
+            {/* PC表示ナビゲーション */}
             <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold">
               <Link href="/needs" className="text-slate-700 hover:text-blue-600 transition-colors">
-                ニーズを探す
+                ニーズ一覧
               </Link>
               <Link href="/needs/new" className="text-slate-700 hover:text-blue-600 transition-colors">
                 ニーズを投稿する
               </Link>
+              <Link href="/vendors" className="text-slate-700 hover:text-blue-600 transition-colors">
+                事業者一覧
+              </Link>
             </nav>
+
+            {/* 3. 認証エリア */}
             <div className="flex items-center gap-2 sm:gap-3">
               {isSignedIn ? (
                 <Link href="/me" className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
@@ -52,19 +58,24 @@ export default function Header() {
                     </div>
                   )}
                   <span className="hidden sm:inline">マイページ</span>
+                  <span className="hidden lg:inline">（{user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'ユーザー'}）</span>
                 </Link>
               ) : (
-                <Link href="/sign-in" className="bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
-                  ログイン
-                </Link>
+                <>
+                  <Link href="/sign-in" className="bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
+                    一般ログイン
+                  </Link>
+                  <Link href="/vendors/login" className="bg-slate-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-700 transition-colors">
+                    事業者ログイン
+                  </Link>
+                </>
               )}
             </div>
-{/* スマホ用ハンバーガーメニューをヘッダーから削除 */}
           </div>
         </div>
       </header>
 
-      {/* スマホ画面：右下固定ハンバーガーメニュー */}
+      {/* モバイル：右下固定ハンバーガーメニュー */}
       <button
         type="button"
         className="lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 flex items-center justify-center border-4 border-white"
@@ -79,23 +90,21 @@ export default function Header() {
         </svg>
       </button>
 
-      {/* モバイルドロワー（LeftDock を流用） */}
+      {/* モバイルドロワー */}
       {open && (
         <div className="fixed inset-0 z-50 sm:hidden">
           <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 right-0 w-80 max-w-[85vw] bg-white shadow-xl p-4 transform transition-transform duration-300 ease-in-out">
             <div className="flex items-center justify-between pb-2 border-b">
               <div className="font-semibold">メニュー</div>
-              {/* 元の×ボタンは削除 */}
             </div>
 
             <div className="pt-3">
-              {/* LeftDock は ul/li/Link の集合想定。モバイルでもそのまま描画 */}
               <LeftDock onItemClick={() => setOpen(false)} />
             </div>
           </div>
           
-          {/* メニュー展開時も同じ位置にハンバーガーボタンを配置 */}
+          {/* メニュー展開時のハンバーガーボタン（閉じる用） */}
           <button
             type="button"
             className="fixed bottom-6 right-6 z-60 w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 flex items-center justify-center border-4 border-white"
@@ -106,7 +115,7 @@ export default function Header() {
             }}
           >
             <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden="true">
-              <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
         </div>
