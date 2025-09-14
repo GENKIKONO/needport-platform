@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
+
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 const schema = z.object({
   id: z.string().uuid().optional(),
@@ -14,7 +21,14 @@ const schema = z.object({
 
 async function ensureAdmin(userId?:string){
   if(!userId) return false;
-  const sa = supabaseAdmin();
+  const sa = createAdminClientOrNull();
+    
+    if (!sa) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
   const { data } = await sa.from('user_roles').select('role').eq('user_id', userId).eq('role','admin').maybeSingle();
   return !!data;
 }
@@ -31,7 +45,14 @@ export async function POST(req:Request){
   const body = await req.json().catch(()=>({}));
   const parsed = schema.safeParse(body);
   if(!parsed.success) return NextResponse.json({error:'invalid_input'},{status:400});
-  const sa = supabaseAdmin();
+  const sa = createAdminClientOrNull();
+    
+    if (!sa) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
   const payload = { ...parsed.data, created_by: userId };
   const q = payload.id
     ? sa.from('approval_reason_templates').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', payload.id).select('*').maybeSingle()

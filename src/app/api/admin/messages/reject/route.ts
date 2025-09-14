@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { recordApproval, notifyDecision } from '@/lib/approvals/hooks';
+
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 const schema = z.object({
   messageId: z.string().uuid(),
@@ -22,7 +29,14 @@ export async function POST(req:Request){
   const parsed = schema.safeParse(body);
   if(!parsed.success) return NextResponse.json({ error:'invalid_input' }, { status:400 });
 
-  const sadmin = supabaseAdmin();
+  const sadmin = createAdminClientOrNull();
+    
+    if (!sadmin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
   // 不承認：visible=false のまま（既定）、必要なら body を mask したコピーを保存するなど運用で対応
   await recordApproval('message', parsed.data.messageId, 'reject', parsed.data.reasonText, parsed.data.templateId, userId!);
   await notifyDecision('message', parsed.data.messageId, 'reject');

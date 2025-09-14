@@ -9,8 +9,6 @@ export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 export const runtime = 'nodejs';
 
-export const runtime = "nodejs";
-
 export async function POST(_req: Request) {
   try {
     const admin = createAdminClientOrNull();

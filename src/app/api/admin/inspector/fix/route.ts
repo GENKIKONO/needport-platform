@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { assertAdmin, recordAudit } from "@/lib/admin/inspector";
 
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(()=> ({}));
   const { action, proposalId, messageIds=[], reason, confirm=false, uid } = body || {};
@@ -9,7 +16,14 @@ export async function POST(req: NextRequest) {
 
   if (!confirm) return NextResponse.json({ error:"confirm_required" }, { status: 400 });
 
-  const sadmin = supabaseAdmin();
+  const sadmin = createAdminClientOrNull();
+    
+    if (!sadmin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
 
   if (action === "approve_messages") {
     if (!Array.isArray(messageIds) || messageIds.length === 0)
