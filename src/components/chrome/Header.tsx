@@ -25,20 +25,14 @@ export default function Header() {
             <span className="text-xl">NeedPort</span>
           </Link>
 
-          {/* 右側：PCは簡易リンク / SPはハンバーガー */}
+          {/* 中央：主要ナビゲーション */}
           <div className="flex items-center gap-4">
             <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold">
-              <Link href="/needs" className="flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors px-4 py-2.5 rounded-xl hover:bg-blue-50 border border-transparent hover:border-blue-100">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+              <Link href="/needs" className="text-slate-700 hover:text-blue-600 transition-colors">
                 ニーズを探す
               </Link>
-              <Link href="/needs/new" className="flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors px-4 py-2.5 rounded-xl hover:bg-blue-50 border border-transparent hover:border-blue-100">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                ニーズを投稿
+              <Link href="/needs/new" className="text-slate-700 hover:text-blue-600 transition-colors">
+                ニーズを投稿する
               </Link>
             </nav>
             <div className="flex items-center gap-2 sm:gap-3">
@@ -60,14 +54,9 @@ export default function Header() {
                   <span className="hidden sm:inline">マイページ</span>
                 </Link>
               ) : (
-                <>
-                  <Link href="/sign-in" className="bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
-                    ログイン
-                  </Link>
-                  <Link href="/vendors/login" className="bg-slate-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-700 transition-colors">
-                    事業者ログイン
-                  </Link>
-                </>
+                <Link href="/sign-in" className="bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
+                  ログイン
+                </Link>
               )}
             </div>
 {/* スマホ用ハンバーガーメニューをヘッダーから削除 */}

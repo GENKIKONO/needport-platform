@@ -4,38 +4,25 @@ import Link from 'next/link';
 type Item = { href: string; label: string };
 const groups: { title: string; items: Item[] }[] = [
   {
-    title: "みんなの『欲しい』",
+    title: "基本機能",
     items: [
-      { href: '/needs', label: 'ニーズ一覧' },
-      { href: '/needs/new', label: 'ニーズを投稿' },
-    ],
-  },
-  {
-    title: "企業の『できる』",
-    items: [
-      { href: '/vendors/register', label: '事業者登録' },
-      { href: '/me/vendor/guide', label: '提案ガイド' },
-      { href: '/sea', label: '海中（保管庫）' },
-    ],
-  },
-  {
-    title: 'ガイド',
-    items: [
-      { href: '/roadmap', label: 'サービス航海図' },
-      { href: '/news', label: 'お知らせ' },
+      { href: '/needs', label: 'ニーズを探す' },
+      { href: '/needs/new', label: 'ニーズを投稿する' },
     ],
   },
   {
     title: 'アカウント',
     items: [
       { href: '/me', label: 'マイページ' },
-      { href: '/login', label: 'ログイン' },
-      { href: '/vendors/login', label: '事業者ログイン' },
     ],
   },
 ];
 
-export default function LeftDock() {
+interface LeftDockProps {
+  onItemClick?: () => void;
+}
+
+export default function LeftDock({ onItemClick }: LeftDockProps) {
   return (
     <nav className="text-sm space-y-6 p-6">
       {groups.map((g) => (
@@ -47,6 +34,7 @@ export default function LeftDock() {
                 <Link
                   href={it.href}
                   className="block px-3 py-2 rounded-xl hover:bg-blue-50/50 text-slate-700 hover:text-blue-600/80 transition-all duration-200 font-medium"
+                  onClick={onItemClick}
                 >
                   {it.label}
                 </Link>

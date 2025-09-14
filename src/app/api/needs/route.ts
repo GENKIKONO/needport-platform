@@ -39,22 +39,23 @@ export async function POST(req: NextRequest) {
     const area = input.area ?? null;
 
     logWithRequestId(requestId, 'info', '[NEEDS_POST_PAYLOAD]', { 
-      keys: ['title', 'summary', 'body', 'area'],
+      keys: ['title', 'summary', 'body', 'area', 'status'],
       processingTimeMs: Date.now() - startedAt
     });
 
     const supabase = createClient();
     
     // Explicit column-based insert to prevent field injection
+    // Always create with status: 'draft' for RLS policy compliance
     const { data, error } = await supabase
       .from('needs')
-      .insert([{ title, summary, body, area }])
+      .insert([{ title, summary, body, area, status: 'draft' }])
       .select('id')
       .single();
 
     if (error) {
       logWithRequestId(requestId, 'error', '[NEEDS_INSERT_ERROR]', { 
-        keys: Object.keys({ title, summary, body, area }), 
+        keys: Object.keys({ title, summary, body, area, status: 'draft' }), 
         err: error, 
         supabaseError: error?.message 
       });
