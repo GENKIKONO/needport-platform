@@ -1289,6 +1289,29 @@ docs/
 - **Response Format**: JSON only, never HTML error pages
 - **RLS Compliance**: Server client passes Clerk tokens to Supabase
 
+### Minimal Posting Flow Contract (Non-Destructive)
+**Environment Flag**: `NEXT_PUBLIC_MINIMAL_POST_FLOW=true` enables minimal UI
+
+**Schema Contract (needs table)**:
+- Required columns: `id` (uuid PK), `title` (text), `body` (text), `status` (text default 'draft'), `published` (boolean default false), `owner_id` (uuid), `created_at` (timestamptz default now())
+- Publication logic: `published = true` OR `status = 'published'` for public visibility
+- Owner assignment: DB trigger auto-sets `owner_id = auth.uid()` on INSERT
+
+**API Contract**:
+- **POST /api/needs**: Accept minimal `{title, body}` → create draft → return `{id, title, created_at}`
+- **GET /api/me/needs**: List owner's needs (draft+published) → `[{id, title, status, published, created_at}]`
+- Backward compatible: existing fields accepted but not required
+
+**RLS Policies**:
+- Public read: `published = true OR status = 'published'`
+- Owner read: `owner_id = auth.uid()` (includes drafts)
+- Owner mutations: INSERT/UPDATE/DELETE with `owner_id = auth.uid()` check
+
+**UI Contract**:
+- Flag ON: `/needs/new` shows title+body form only
+- Flag OFF: Full form (backward compatible)
+- Success flow: POST → toast → redirect to `/me`
+
 ### RLS Policies Canonical Set
 Required policies for needs table:
 - `public read needs`: SELECT with `status = 'published'` restriction

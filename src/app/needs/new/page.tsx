@@ -2,8 +2,29 @@
 import { useState } from "react";
 import Link from "next/link";
 
+const MINIMAL_POST_FLOW = process.env.NEXT_PUBLIC_MINIMAL_POST_FLOW === 'true';
+
+type MinimalFormData = {
+  title: string;
+  body: string;
+};
+
+type FullFormData = {
+  title: string;
+  category: string;
+  region: string;
+  summary: string;
+  body: string;
+  pii_email: string;
+  pii_phone: string;
+  pii_address: string;
+};
+
 export default function NewNeedPage(){
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MinimalFormData | FullFormData>(MINIMAL_POST_FLOW ? {
+    title: "",
+    body: ""
+  } : {
     title: "",
     category: "",
     region: "",
@@ -19,7 +40,10 @@ export default function NewNeedPage(){
   async function handleSubmit(formData: FormData){
     setIsSubmitting(true);
     try {
-      const payload = {
+      const payload = MINIMAL_POST_FLOW ? {
+        title: String(formData.get('title')||'').trim(),
+        body: String(formData.get('body')||'').trim(),
+      } : {
         title: String(formData.get('title')||'').trim(),
         category: String(formData.get('category')||'').trim(),
         region: String(formData.get('region')||'').trim(),
@@ -79,37 +103,79 @@ export default function NewNeedPage(){
 
         {/* フォーム */}
         <form onSubmit={handleFormSubmit} className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 border border-blue-100/50 shadow-sm space-y-6">
-          {/* 基本情報 */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              <svg className="w-5 h-5 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h2 className="text-lg font-semibold text-slate-800">基本情報</h2>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">タイトル</label>
-                <input 
-                  type="text" 
-                  name="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all"
-                  placeholder="例: 自宅サウナを設置したい"
-                  required
-                />
-                <p className="text-xs text-slate-500 mt-1">あなたの困りごとや希望を簡潔に書いてください</p>
+          {MINIMAL_POST_FLOW ? (
+            // Minimal posting form - title and body only
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 mb-4">
+                <svg className="w-5 h-5 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h2 className="text-lg font-semibold text-slate-800">ニーズ投稿（簡単モード）</h2>
               </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">タイトル</label>
+                  <input 
+                    type="text" 
+                    name="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value} as typeof formData)}
+                    className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all"
+                    placeholder="例: 自宅サウナを設置したい"
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-1">あなたの困りごとや希望を簡潔に書いてください</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">詳細説明</label>
+                  <textarea 
+                    name="body"
+                    value={formData.body}
+                    onChange={(e) => setFormData({...formData, body: e.target.value} as typeof formData)}
+                    className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl h-32 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all resize-none"
+                    placeholder="詳しい状況や希望をお聞かせください..."
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-1">具体的な状況や希望条件をお書きください</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Full posting form - original implementation
+            <>
+              {/* 基本情報 */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <svg className="w-5 h-5 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h2 className="text-lg font-semibold text-slate-800">基本情報</h2>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">タイトル</label>
+                    <input 
+                      type="text" 
+                      name="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({...formData, title: e.target.value} as typeof formData)}
+                      className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all"
+                      placeholder="例: 自宅サウナを設置したい"
+                      required
+                    />
+                    <p className="text-xs text-slate-500 mt-1">あなたの困りごとや希望を簡潔に書いてください</p>
+                  </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">カテゴリ</label>
                   <select 
                     name="category"
-                    value={formData.category}
-                    onChange={(e) => setFormData({...formData, category: e.target.value})}
+                    value={!MINIMAL_POST_FLOW ? (formData as FullFormData).category : ""}
+                    onChange={(e) => setFormData({...formData, category: e.target.value} as FullFormData)}
                     className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all"
                     required
                   >
@@ -127,8 +193,8 @@ export default function NewNeedPage(){
                   <input 
                     type="text" 
                     name="region"
-                    value={formData.region}
-                    onChange={(e) => setFormData({...formData, region: e.target.value})}
+                    value={!MINIMAL_POST_FLOW ? (formData as FullFormData).region : ""}
+                    onChange={(e) => setFormData({...formData, region: e.target.value} as FullFormData)}
                     className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all"
                     placeholder="例: 港区"
                     required
@@ -141,8 +207,8 @@ export default function NewNeedPage(){
                 <input 
                   type="text" 
                   name="summary"
-                  value={formData.summary}
-                  onChange={(e) => setFormData({...formData, summary: e.target.value})}
+                  value={!MINIMAL_POST_FLOW ? (formData as FullFormData).summary : ""}
+                  onChange={(e) => setFormData({...formData, summary: e.target.value} as FullFormData)}
                   className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all"
                   placeholder="例: 自宅にサウナを設置したく、工事業者を探しています"
                 />
@@ -180,8 +246,8 @@ export default function NewNeedPage(){
                 <input 
                   type="email" 
                   name="pii_email"
-                  value={formData.pii_email}
-                  onChange={(e) => setFormData({...formData, pii_email: e.target.value})}
+                  value={!MINIMAL_POST_FLOW ? (formData as FullFormData).pii_email : ""}
+                  onChange={(e) => setFormData({...formData, pii_email: e.target.value} as FullFormData)}
                   className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all"
                   placeholder="example@email.com"
                 />
@@ -193,8 +259,8 @@ export default function NewNeedPage(){
                   <input 
                     type="tel" 
                     name="pii_phone"
-                    value={formData.pii_phone}
-                    onChange={(e) => setFormData({...formData, pii_phone: e.target.value})}
+                    value={!MINIMAL_POST_FLOW ? (formData as FullFormData).pii_phone : ""}
+                    onChange={(e) => setFormData({...formData, pii_phone: e.target.value} as FullFormData)}
                     className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all"
                     placeholder="090-1234-5678"
                   />
@@ -205,8 +271,8 @@ export default function NewNeedPage(){
                   <input 
                     type="text" 
                     name="pii_address"
-                    value={formData.pii_address}
-                    onChange={(e) => setFormData({...formData, pii_address: e.target.value})}
+                    value={!MINIMAL_POST_FLOW ? (formData as FullFormData).pii_address : ""}
+                    onChange={(e) => setFormData({...formData, pii_address: e.target.value} as FullFormData)}
                     className="w-full px-4 py-3 border border-blue-100/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300/60 transition-all"
                     placeholder="東京都港区..."
                   />
@@ -228,6 +294,8 @@ export default function NewNeedPage(){
               </div>
             </div>
           </div>
+            </>
+          )}
 
           {/* 送信ボタン */}
           <div className="flex gap-4 pt-6">

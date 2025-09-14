@@ -4,6 +4,14 @@ import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
 import { getRequestId, logWithRequestId } from '@/lib/request-id';
 
+// Minimal posting flow: only title + body required
+// Backward compatible: accepts additional fields but doesn't require them
+const MinimalNeedInput = z.object({
+  title: z.string().min(1),
+  body: z.string().min(1), // Required for minimal flow
+});
+
+// Extended input for backward compatibility
 const NeedInput = z.object({
   title: z.string().min(1),
   body: z.string().optional(),
@@ -22,15 +30,30 @@ export async function POST(req: NextRequest) {
     }
 
     const json = await req.json().catch(() => ({}));
-    const parsed = NeedInput.safeParse(json);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'VALIDATION_ERROR', details: parsed.error.flatten() },
-        { status: 400 }
-      );
+    
+    // Try minimal validation first, then fall back to extended
+    let input: any;
+    const minimalParsed = MinimalNeedInput.safeParse(json);
+    if (minimalParsed.success) {
+      input = minimalParsed.data;
+      logWithRequestId(requestId, 'info', '[NEEDS_POST_MINIMAL]', { 
+        flow: 'minimal', 
+        fields: Object.keys(input) 
+      });
+    } else {
+      const extendedParsed = NeedInput.safeParse(json);
+      if (!extendedParsed.success) {
+        return NextResponse.json(
+          { error: 'VALIDATION_ERROR', details: extendedParsed.error.flatten() },
+          { status: 400 }
+        );
+      }
+      input = extendedParsed.data;
+      logWithRequestId(requestId, 'info', '[NEEDS_POST_EXTENDED]', { 
+        flow: 'extended', 
+        fields: Object.keys(input) 
+      });
     }
-
-    const input = parsed.data;
     
     // Hardened payload - only these 4 fields, never created_by
     const title = input.title;
@@ -50,7 +73,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabase
       .from('needs')
       .insert([{ title, summary, body, area, status: 'draft' }])
-      .select('id')
+      .select('id, title, created_at')
       .single();
 
     if (error) {
@@ -65,7 +88,11 @@ export async function POST(req: NextRequest) {
       }, { status: 500, headers: { 'X-Request-ID': requestId } });
     }
 
-    return NextResponse.json({ id: data.id }, { 
+    return NextResponse.json({ 
+      id: data.id, 
+      title: data.title, 
+      created_at: data.created_at 
+    }, { 
       status: 201,
       headers: { 'X-Request-ID': requestId }
     });
