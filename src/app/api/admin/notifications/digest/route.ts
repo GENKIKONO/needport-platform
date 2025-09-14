@@ -1,15 +1,29 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { jsonOk, jsonError } from "@/lib/api";
 import { sendMail } from "@/lib/mailer";
 import { digestMail } from "@/emails/digest";
+
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
     const date = body.date || new Date().toISOString().split('T')[0];
     
-    const admin = createAdminClient();
+    const admin = createAdminClientOrNull();
+    
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
     
     // Get stats for the date
     const startOfDay = new Date(date);

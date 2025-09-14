@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 
 export const dynamic = 'force-dynamic'; // 静的化しない
 export const runtime = 'nodejs';        // EdgeではなくNodeで実行
@@ -17,7 +17,14 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    const supabase = createAdminClient();
+    const supabase = createAdminClientOrNull();
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
     
     // Create a signed URL for the file
     const { data, error } = await supabase.storage

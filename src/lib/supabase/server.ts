@@ -13,11 +13,19 @@ export function createClient() {
 }
 
 // Service role client for admin operations
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
 export function createAdminClient() {
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseServiceRoleKey) {
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
+  }
+  return createSupabaseClient<Database>(supabaseUrl!, supabaseServiceRoleKey);
+}
+
+// Safe factory that returns null instead of throwing when env vars are missing
+export function createAdminClientOrNull() {
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
+    return null;
   }
   return createSupabaseClient<Database>(supabaseUrl!, supabaseServiceRoleKey);
 }

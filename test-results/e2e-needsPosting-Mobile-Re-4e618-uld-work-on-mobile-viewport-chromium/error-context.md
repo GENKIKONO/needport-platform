@@ -1,0 +1,100 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "NeedPort":
+    - /url: /
+    - img
+    - text: NeedPort
+  - link "一般ログイン":
+    - /url: /sign-in
+  - link "事業者ログイン":
+    - /url: /vendors/login
+- button "メニューを開く"
+- main:
+  - link "← 一覧へ":
+    - /url: /needs
+  - text: / リフォーム / 港区
+  - heading "自宅サウナを設置したい" [level=1]
+  - text: 更新：9/14/2025, 1:57:44 PM
+  - article:
+    - heading "概要" [level=2]
+    - paragraph: マンション内のユニットバスを改修し、1人用サウナの導入を検討。防水・電源容量・管理規約面を含めた提案が欲しい。
+    - paragraph: 目安：〜150万円目安
+    - group: 連絡先（成約時のみ最小限開示）
+    - heading "関連ニーズ" [level=3]
+    - list:
+      - listitem:
+        - link "地下室の防音改修":
+          - /url: /needs/np-104
+      - listitem:
+        - link "学童の送迎シェア":
+          - /url: /needs/np-105
+      - listitem:
+        - link "空き家の片付け・買取相談":
+          - /url: /needs/np-106
+  - complementary:
+    - link "提案する":
+      - /url: /needs/np-101/propose
+    - link "閲覧解放（詳細を表示）":
+      - /url: /needs/np-101/unlock
+    - link "💬 チャットを開く (Lv1)":
+      - /url: /chat/np-101
+    - text: シェア このニーズを紹介して賛同を集めましょう。
+    - link "X で共有":
+      - /url: https://twitter.com/intent/tweet?text=%E8%87%AA%E5%AE%85%E3%82%B5%E3%82%A6%E3%83%8A%E3%82%92%E8%A8%AD%E7%BD%AE%E3%81%97%E3%81%9F%E3%81%84&url=https%3A%2F%2Fneedport.jp%2Fneeds%2Fnp-101
+    - text: "URL:"
+    - textbox "このページのURL": https://needport.jp/needs/np-101
+    - text: 未成約が続くニーズは
+    - link "「海中」":
+      - /url: /sea
+    - text: に移ります。 海中でも検索・提案・成約が可能で、成約・浮上時は通常一覧の上部に表示されます。
+- contentinfo:
+  - img
+  - text: NeedPort
+  - paragraph: ニーズと解決者をつなぐマッチングプラットフォーム
+  - heading "サービス" [level=3]
+  - list:
+    - listitem:
+      - link "ニーズ一覧":
+        - /url: /needs
+    - listitem:
+      - link "マイページ":
+        - /url: /me
+    - listitem:
+      - link "事業者向け":
+        - /url: /me/vendor
+    - listitem:
+      - link "サービスについて":
+        - /url: /about
+  - heading "サポート" [level=3]
+  - list:
+    - listitem:
+      - link "ヘルプ・よくある質問":
+        - /url: /help
+    - listitem:
+      - link "お問い合わせ":
+        - /url: /contact
+    - listitem:
+      - link "ご利用ガイド":
+        - /url: /guide
+    - listitem:
+      - link "安全・安心への取り組み":
+        - /url: /safety
+  - heading "法的情報" [level=3]
+  - list:
+    - listitem:
+      - link "利用規約":
+        - /url: /(public)/legal/terms
+    - listitem:
+      - link "プライバシーポリシー":
+        - /url: /(public)/legal/privacy
+    - listitem:
+      - link "特定商取引法に基づく表記":
+        - /url: /(public)/legal/tokushoho
+    - listitem:
+      - link "運営会社":
+        - /url: /company
+  - text: © 2024 NeedPort. All rights reserved. ニーズ起点のマッチングプラットフォーム
+- alert
+```
