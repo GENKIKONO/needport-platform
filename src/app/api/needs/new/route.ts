@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       summary: input.summary?.trim() || input.title.trim(),
       body: input.body?.trim() || input.summary?.trim() || input.title.trim(),
       area: input.area?.trim() || null,
-      published: false, // Draft by default
+      status: 'draft', // Draft by default (修正: published -> status)
     };
 
     console.info('[NEEDS_NEW] Inserting need', { 
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Database insertion using existing supabase client
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from('needs')
       .insert([dbPayload])

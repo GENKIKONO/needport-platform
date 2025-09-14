@@ -51,7 +51,7 @@ export async function POST(req: Request) {
   // care_taxi の場合の設定を強制 - creator_id removed to avoid UUID issues
   const insertData = {
     ...parsed.data,
-    status: 'review'            // 作成時は review へ
+    status: 'pending'            // 作成時は pending へ（review は無効な値のため pending に変更）
   };
   
   if (parsed.data.kind === 'care_taxi') {

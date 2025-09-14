@@ -40,12 +40,12 @@ export async function POST(req: Request) {
       processingTimeMs: Date.now() - startedAt
     });
 
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Explicit column-based insert to prevent field injection
     const { data, error } = await supabase
       .from('needs')
-      .insert([{ title, summary, body, area }])
+      .insert([{ title, summary, body, area, status: 'draft' }])
       .select('id')
       .single();
 
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     
     const { data, error } = await supabase
       .from("needs")
