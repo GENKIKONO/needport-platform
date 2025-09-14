@@ -36,6 +36,18 @@ test.describe('Home Page Copy', () => {
     await expect(page.locator('text=安全で透明性の高い取引を実現します。')).toBeVisible();
   });
 
+  test('recommendation section is visible', async ({ page }) => {
+    await page.goto('/');
+    
+    // Check that recommendation section exists (CMS editable)
+    await expect(page.locator('h2:has-text("こんな方におすすめ")')).toBeVisible();
+    
+    // Check recommendation cards (CMS editable content)
+    await expect(page.locator('text=ニーズの需要を確認したい方')).toBeVisible();
+    await expect(page.locator('text=事業化を検討している方')).toBeVisible();
+    await expect(page.locator('text=まずは匿名で参加したい方')).toBeVisible();
+  });
+
   test('CTA buttons are correctly labeled', async ({ page }) => {
     await page.goto('/');
     

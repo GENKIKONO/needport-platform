@@ -75,7 +75,7 @@ export default function Home(){
         </div>
       </section>
 
-      {/* 注目のニーズ - シンプルで柔らかいカード */}
+      {/* ニーズ一覧プレビュー */}
       <section className="mx-auto max-w-5xl px-4">
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export default function Home(){
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">注目のニーズ</h2>
+            <h2 className="text-2xl font-bold text-slate-800">最新のニーズ</h2>
           </div>
           <Link href="/needs" className="text-blue-600/80 hover:text-blue-700 font-medium text-sm flex items-center gap-1 transition-colors">
             すべて見る 
@@ -194,6 +194,65 @@ export default function Home(){
             </svg>
             ニーズを投稿する
           </Link>
+        </div>
+      </section>
+
+      {/* こんな方におすすめ（CMS編集可） */}
+      <section className="mx-auto max-w-6xl px-4">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 border border-blue-100/30 p-12 sm:p-16">
+          <div className="relative text-center space-y-8">
+            <div className="space-y-4">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 leading-tight">
+                {/* CMS編集可: おすすめタイトル */}
+                こんな方におすすめ
+              </h2>
+              <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                {/* CMS編集可: おすすめ説明文 */}
+                あなたの「欲しい」に合わせた活用方法をご提案します
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-8 mt-12">
+              {/* CMS編集可: おすすめカード1 */}
+              <div className="space-y-4 text-center">
+                <div className="w-16 h-16 mx-auto bg-white/70 rounded-2xl flex items-center justify-center shadow-sm">
+                  <svg className="w-8 h-8 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800">ニーズの需要を確認したい方</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  同じニーズを持つ人がどれくらいいるか、事前に把握できます
+                </p>
+              </div>
+
+              {/* CMS編集可: おすすめカード2 */}
+              <div className="space-y-4 text-center">
+                <div className="w-16 h-16 mx-auto bg-white/70 rounded-2xl flex items-center justify-center shadow-sm">
+                  <svg className="w-8 h-8 text-slate-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800">事業化を検討している方</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  需要が集まったタイミングで、新しいサービスの検討ができます
+                </p>
+              </div>
+
+              {/* CMS編集可: おすすめカード3 */}
+              <div className="space-y-4 text-center">
+                <div className="w-16 h-16 mx-auto bg-white/70 rounded-2xl flex items-center justify-center shadow-sm">
+                  <svg className="w-8 h-8 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800">まずは匿名で参加したい方</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  ログイン不要で「気になる」を押して、気軽に参加できます
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
