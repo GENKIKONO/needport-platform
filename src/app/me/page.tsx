@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { UnreadBadge } from "../../components/chat/UnreadBadge";
+import { SignOutButton } from "@clerk/nextjs";
 
 export default async function MePage(){
   const { userId } = auth();
@@ -61,11 +63,14 @@ export default async function MePage(){
                 </svg>
                 決済・領収書
               </Link>
-              <Link href="/me/messages" className="flex items-center gap-3 px-4 py-3 text-base text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+              <Link href="/me/messages" className="relative flex items-center gap-3 px-4 py-3 text-base text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 チャット履歴
+                <div className="absolute -top-1 right-2">
+                  <UnreadBadge />
+                </div>
               </Link>
               <Link href="/me/posts" className="flex items-center gap-3 px-4 py-3 text-base text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,6 +97,15 @@ export default async function MePage(){
                 </svg>
                 設定
               </Link>
+              <div className="border-t my-2"></div>
+              <SignOutButton>
+                <button className="flex items-center gap-3 px-4 py-3 text-base text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors w-full text-left">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  ログアウト
+                </button>
+              </SignOutButton>
             </nav>
           </div>
 

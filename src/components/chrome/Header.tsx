@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import LeftDock from '../nav/LeftDock';
-import { UnreadBadge } from '../chat/UnreadBadge';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -41,17 +40,6 @@ export default function Header() {
                 </svg>
                 ニーズを投稿
               </Link>
-              {isSignedIn && (
-                <Link href="/me/messages" className="relative flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors px-4 py-2.5 rounded-xl hover:bg-blue-50 border border-transparent hover:border-blue-100">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                  </svg>
-                  チャット
-                  <div className="absolute -top-1 -right-1">
-                    <UnreadBadge />
-                  </div>
-                </Link>
-              )}
             </nav>
             <div className="flex items-center gap-2 sm:gap-3">
               {isSignedIn ? (
@@ -74,7 +62,7 @@ export default function Header() {
               ) : (
                 <>
                   <Link href="/sign-in" className="bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
-                    一般ログイン
+                    ログイン
                   </Link>
                   <Link href="/vendors/login" className="bg-slate-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-700 transition-colors">
                     事業者ログイン

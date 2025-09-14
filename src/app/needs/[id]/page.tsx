@@ -1,6 +1,7 @@
 // src/app/needs/[id]/page.tsx
 import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
+import EngagementButtons from "@/components/EngagementButtons";
 
 // identity（存在すれば使う）
 let IDENTITY: { SEA_PATH: string };
@@ -197,7 +198,12 @@ export default async function NeedDetailPage({ params }: { params: { id: string 
         </article>
 
         {/* 右カラム：CTA */}
-        <aside id="cta" className="space-y-3">
+        <aside id="cta" className="space-y-4">
+          {/* Engagement Buttons */}
+          <div className="bg-white rounded-lg border p-4">
+            <EngagementButtons needId={detail.id} />
+          </div>
+
           {/* 提案ボタン（事業者） */}
           <Link
             href={`/needs/${detail.id}/propose`}
@@ -212,14 +218,6 @@ export default async function NeedDetailPage({ params }: { params: { id: string 
             className="block w-full text-center px-4 py-2 rounded border hover:bg-slate-50"
           >
             閲覧解放（詳細を表示）
-          </Link>
-
-          {/* チャット機能（Lv1: 依頼者↔事業者） */}
-          <Link
-            href={`/chat/${detail.id}`}
-            className="block w-full text-center px-4 py-2 rounded border border-green-300 bg-green-50 text-green-800 hover:bg-green-100"
-          >
-            💬 チャットを開く (Lv1)
           </Link>
 
           {/* シェア（サーバーコンポーネント対応） */}

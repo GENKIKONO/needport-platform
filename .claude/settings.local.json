@@ -23,7 +23,8 @@
       "Bash(node:*)",
       "Bash(npm run e2e:*)",
       "Bash(BASE=\"http://localhost:3000\" npm run smoke:ci)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(gh pr list:*)"
     ],
     "deny": [],
     "ask": []
