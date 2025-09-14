@@ -17,7 +17,8 @@
       "Bash(./scripts/smoke.sh:*)",
       "Bash(npm run test:*)",
       "Bash(sed:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []

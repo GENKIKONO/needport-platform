@@ -302,6 +302,7 @@ if (config.GUEST_VIEW) { /* ... */ }
 - 管理画面（ユーザー審査・通報処理・アカウント凍結・監査ログ・返金管理）
 - メール通知システム
 - 自動バックアップ
+- 集合的需要可視化（"購入したい/興味あり/匿名気になる"のメーターと人数表示、重複抑止込み）
 
 **AI機能**
 - 下書き補助（要約・テンプレート提案文生成）
@@ -1248,6 +1249,29 @@ Required policies for needs table:
 - `needs_insert_draft`: INSERT for authenticated users with `status = 'draft'` check
 - Engagement tables (`need_engagements`, `need_anonymous_interest`): Similar authenticated access
 
+### Collective Demand (Interest/Pledge/Anonymous)
+
+**API**
+- `POST /api/needs/[id]/engagement { kind: 'interest'|'pledge' }`
+  - 未ログイン：kind='interest' を匿名テーブルへ（IP+UA+saltのハッシュで日単位重複抑止、ユニーク衝突は200の冪等扱い）
+  - ログイン済み：need_engagements へ upsert（unique(need_id,user_id,kind)、トグル可）
+- `GET /api/needs/[id]/engagement/summary → { interest_users, pledge_users, anon_interest_today, anon_interest_total }`
+
+**UI**
+- NeedCard / NeedDetail に二重バー（pledge=濃色、interest=淡色、anon=点線）、右側に人数表示
+- 未ログインは「気になる」のみ（押下後にログイン導線トースト）
+- SWRで15sポーリング or 楽観更新
+
+**RLS（要件のみ。実SQLは別ファイルに）**
+- need_engagements：INSERT/SELECT authenticated、unique(need_id,user_id,kind)
+- need_anonymous_interest：INSERT/SELECT anon,authenticated、unique(need_id,anon_key,day)
+
+**受入れ基準（Lv1）**
+- 未ログイン「気になる」→200でsummaryが増える
+- ログイン「興味あり/購入したい」→重複不可/トグル可
+- カード/詳細でメーターと人数が見える（SWR更新）
+- RLSで匿名は登録可・user行は漏洩なし
+
 ### Navigation & UI Drift Prevention
 **Header Navigation** (required):
 - Brand: "NeedPort" → `/`
@@ -1263,8 +1287,13 @@ Required policies for needs table:
 
 **My Page Structure**:
 - 4-column status cards (航海中の取引, 投稿したニーズ, 港からの信号, 提案した案件)
-- Sidebar: ニーズ管理, 取引管理, 決済・領収書, チャット履歴, プロフィール, 設定
+- Sidebar: ニーズ管理, 取引管理, 決済・領収書, チャット履歴, プロフィール, 設定, ログアウト
 - Quick actions: 新規投稿, ニーズ検索
+
+**Header/Auth Rules**:
+- 未ログイン: 「ログイン」表示（一般ログイン/事業者ログインは統合）
+- ログイン時: 「マイページ」表示に切替
+- チャット、ログアウトはヘッダーから除外、マイページ内に集約
 
 ### ESLint Guardrails
 Enforced rules:
