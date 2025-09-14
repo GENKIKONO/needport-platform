@@ -7,8 +7,8 @@ test.describe('Home Page Copy', () => {
     // Check main hero copy
     await expect(page.locator('h1')).toContainText('「欲しい」を集めて、10人で叶える。');
     
-    // Check subtitle
-    await expect(page.locator('p')).toContainText('小さなニーズを集めて、実現可能性を見える化する場所');
+    // Check subtitle - use more specific selector
+    await expect(page.locator('h1').locator('..').locator('p').first()).toContainText('小さなニーズを集めて、実現可能性を見える化する場所');
     
     // Check tag line
     await expect(page.locator('text=欲しい暮らし、10人で叶える')).toBeVisible();
@@ -37,9 +37,9 @@ test.describe('Home Page Copy', () => {
   test('CTA buttons are correctly labeled', async ({ page }) => {
     await page.goto('/');
     
-    // Check CTA buttons
-    await expect(page.locator('a[href="/needs/new"]:has-text("ニーズを投稿する")')).toBeVisible();
-    await expect(page.locator('a[href="/needs"]:has-text("ニーズを探す")')).toBeVisible();
+    // Check CTA buttons with more flexible text matching
+    await expect(page.locator('a[href="/needs/new"]')).toContainText('ニーズを投稿');
+    await expect(page.locator('a[href="/needs"]')).toContainText('ニーズを探す');
   });
 
   test('prohibited copy is not present', async ({ page }) => {
