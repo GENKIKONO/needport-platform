@@ -6,6 +6,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { getRequestId, logWithRequestId } from '@/lib/request-id';
 
 // Engagement kind validation
 const EngagementSchema = z.object({
@@ -43,6 +44,8 @@ export async function POST(
   request: NextRequest,
   { params }: RouteParams
 ) {
+  const requestId = getRequestId(request);
+  
   try {
     const needId = params.id;
     
@@ -193,18 +196,18 @@ export async function POST(
     }
 
   } catch (error: any) {
-    console.error('Error in engagement POST:', error);
+    logWithRequestId(requestId, 'error', 'Error in engagement POST:', error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request body', details: error.errors },
-        { status: 400 }
+        { status: 400, headers: { 'X-Request-ID': requestId } }
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: { 'X-Request-ID': requestId } }
     );
   }
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { FLAGS } from '@/config/flags';
 
 interface EngagementButtonsProps {
   needId: string;
@@ -31,6 +32,11 @@ export default function EngagementButtons({ needId, className = '' }: Engagement
   const { isSignedIn } = useUser();
   const [engagement, setEngagement] = useState<EngagementData | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Feature flag check - early return if disabled
+  if (!FLAGS.FEATURE_ENGAGEMENT) {
+    return null;
+  }
 
   // Fetch engagement data
   const fetchEngagementData = async () => {
@@ -162,14 +168,16 @@ export default function EngagementButtons({ needId, className = '' }: Engagement
             <button
               onClick={() => handleEngagement('interest')}
               disabled={loading}
-              className="flex-1 px-3 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex-1 min-h-[44px] px-3 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-white active:scale-95 touch-manipulation"
+              aria-label="このニーズに興味があることを示す"
             >
               興味あり
             </button>
             <button
               onClick={() => handleEngagement('pledge')}
               disabled={loading}
-              className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex-1 min-h-[44px] px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white active:scale-95 touch-manipulation"
+              aria-label="このニーズの商品やサービスを購入したいことを示す"
             >
               購入したい
             </button>
@@ -178,7 +186,8 @@ export default function EngagementButtons({ needId, className = '' }: Engagement
           <button
             onClick={() => handleEngagement('interest')}
             disabled={loading}
-            className="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="w-full min-h-[44px] px-3 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-white active:scale-95 touch-manipulation"
+            aria-label="このニーズが気になることを示す（ログイン後により詳しい情報を確認できます）"
           >
             気になる
           </button>

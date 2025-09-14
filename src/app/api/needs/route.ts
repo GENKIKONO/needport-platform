@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
+import { getRequestId, logWithRequestId } from '@/lib/request-id';
 
 const NeedInput = z.object({
   title: z.string().min(1),
@@ -10,8 +11,10 @@ const NeedInput = z.object({
   area: z.string().optional().nullable(),
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const startedAt = Date.now();
+  const requestId = getRequestId(req);
+  
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -35,7 +38,7 @@ export async function POST(req: Request) {
     const body = input.body ?? input.summary ?? input.title;
     const area = input.area ?? null;
 
-    console.log('[NEEDS_POST_PAYLOAD]', { 
+    logWithRequestId(requestId, 'info', '[NEEDS_POST_PAYLOAD]', { 
       keys: ['title', 'summary', 'body', 'area'],
       processingTimeMs: Date.now() - startedAt
     });
@@ -50,7 +53,7 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error('[NEEDS_INSERT_ERROR]', { 
+      logWithRequestId(requestId, 'error', '[NEEDS_INSERT_ERROR]', { 
         keys: Object.keys({ title, summary, body, area }), 
         err: error, 
         supabaseError: error?.message 
@@ -58,27 +61,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ 
         error: 'DB_ERROR', 
         detail: error?.message ?? String(error) 
-      }, { status: 500 });
+      }, { status: 500, headers: { 'X-Request-ID': requestId } });
     }
 
-    return NextResponse.json({ id: data.id }, { status: 201 });
+    return NextResponse.json({ id: data.id }, { 
+      status: 201,
+      headers: { 'X-Request-ID': requestId }
+    });
   } catch (e: any) {
-    console.error('[NEEDS_POST_FATAL]', { 
+    logWithRequestId(requestId, 'error', '[NEEDS_POST_FATAL]', { 
       message: e?.message, 
       type: e?.name 
     });
     return NextResponse.json({ 
       error: 'INTERNAL_ERROR',
       detail: e?.message ?? String(e)
-    }, { status: 500 });
+    }, { 
+      status: 500,
+      headers: { 'X-Request-ID': requestId }
+    });
   } finally {
-    console.info('[NEEDS_POST_FINISH]', { 
+    logWithRequestId(requestId, 'info', '[NEEDS_POST_FINISH]', { 
       processingTimeMs: Date.now() - startedAt
     });
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const requestId = getRequestId(req);
+  
   try {
     const supabase = createClient();
     
@@ -88,13 +99,21 @@ export async function GET() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('[NEEDS_GET_ERROR]', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      logWithRequestId(requestId, 'error', '[NEEDS_GET_ERROR]', error);
+      return NextResponse.json({ error: error.message }, { 
+        status: 500,
+        headers: { 'X-Request-ID': requestId }
+      });
     }
 
-    return NextResponse.json({ needs: data || [] });
+    return NextResponse.json({ needs: data || [] }, {
+      headers: { 'X-Request-ID': requestId }
+    });
   } catch (error) {
-    console.error('[NEEDS_GET_FATAL]', error);
-    return NextResponse.json({ error: 'Failed to fetch needs' }, { status: 500 });
+    logWithRequestId(requestId, 'error', '[NEEDS_GET_FATAL]', error);
+    return NextResponse.json({ error: 'Failed to fetch needs' }, { 
+      status: 500,
+      headers: { 'X-Request-ID': requestId }
+    });
   }
 }
