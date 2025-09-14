@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { FF_NOTIFICATIONS } from "@/lib/flags";
 import { sendMail } from "@/lib/mailer";
 import { newEntryMail } from "@/emails/new-entry";
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 export async function POST(_req: Request) {
   // Check feature flag
@@ -14,7 +20,14 @@ export async function POST(_req: Request) {
   }
 
   try {
-    const admin = createAdminClient();
+    const admin = createAdminClientOrNull();
+    
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
     
     // Get latest queued notifications (limit 10)
     const { data: notifications, error: fetchError } = await admin

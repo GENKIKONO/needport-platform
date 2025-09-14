@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { jsonOk, jsonError } from "@/lib/api";
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -22,7 +28,14 @@ export async function POST(req: Request) {
       return jsonError(`ファイルサイズは${MAX_FILE_SIZE / 1024 / 1024}MB以下にしてください`);
     }
 
-    const admin = createAdminClient();
+    const admin = createAdminClientOrNull();
+    
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
     
     // Generate unique filename
     const fileExt = file.name.split('.').pop();
@@ -80,7 +93,14 @@ export async function GET(req: Request) {
       return jsonError("needIdが必要です");
     }
 
-    const admin = createAdminClient();
+    const admin = createAdminClientOrNull();
+    
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
 
     // Get attachments for the need
     const { data: attachments, error } = await admin

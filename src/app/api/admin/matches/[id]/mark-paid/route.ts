@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { getDevSession } from '@/lib/devAuth';
 import { auditHelpers } from '@/lib/audit';
 
@@ -19,7 +19,14 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createAdminClient();
+    const supabase = createAdminClientOrNull();
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
 
     // 既存のマッチを確認
     const { data: existingMatch, error: matchError } = await supabase

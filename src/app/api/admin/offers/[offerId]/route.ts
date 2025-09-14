@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { guardDestructiveAction } from "@/lib/server/demo-guard";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,14 @@ export async function DELETE(
       return NextResponse.json({ ok: false, error: demoCheck.message }, { status: 403 });
     }
 
-    const supabase = createAdminClient();
+    const supabase = createAdminClientOrNull();
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
     const { offerId: id } = await params;
 
     if (!id) {
@@ -67,7 +74,14 @@ export async function PATCH(
       patch.amount = n;
     }
 
-    const supabase = createAdminClient();
+    const supabase = createAdminClientOrNull();
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
     const { error } = await supabase.from("offers").update(patch).eq("id", offerId);
 
     if (error) {

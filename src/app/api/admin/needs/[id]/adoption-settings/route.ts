@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 export async function PATCH(
   _req: Request,
@@ -40,7 +46,14 @@ export async function PATCH(
       }
     }
 
-    const admin = createAdminClient();
+    const admin = createAdminClientOrNull();
+    
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
     const payload: Record<string, any> = {
       updated_at: new Date().toISOString(),
     };

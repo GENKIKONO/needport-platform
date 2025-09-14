@@ -1,13 +1,26 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { generateSignedUrl } from "@/lib/server/signed-urls";
 import { sendMail } from "@/lib/mailer";
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 export const runtime = "nodejs";
 
 export async function POST(_req: Request) {
   try {
-    const admin = createAdminClient();
+    const admin = createAdminClientOrNull();
+    
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
     
     // Find needs older than 60 days without recent reminders
     const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
