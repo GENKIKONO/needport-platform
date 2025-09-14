@@ -21,17 +21,17 @@ export default function Home(){
         <div className="relative mx-auto max-w-5xl px-6 py-24 text-center space-y-8">
           <div className="inline-flex items-center gap-2 mb-6 px-5 py-3 bg-white/70 backdrop-blur-sm rounded-full border border-blue-100/60 shadow-sm">
             <div className="w-2 h-2 bg-blue-400/70 rounded-full animate-pulse"></div>
-            <span className="text-sm text-slate-600 font-medium">欲しい暮らし、10人で叶える</span>
+            <span className="text-sm text-slate-600 font-medium">ニーズマッチングプラットフォーム</span>
           </div>
           <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-slate-800 leading-tight">
-            「欲しい」を集めて、<br />
+            欲しい暮らし、<br />
             <span className="text-blue-600/80 relative">
-              10人で叶える。
+              10人で叶える
               <div className="absolute -bottom-2 left-0 w-full h-3 bg-blue-200/60 rounded-full"></div>
             </span>
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            小さなニーズを集めて、実現可能性を見える化する場所
+            「欲しい」と「できる」の橋渡し
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
             <Link 

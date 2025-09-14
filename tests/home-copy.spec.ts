@@ -4,14 +4,14 @@ test.describe('Home Page Copy', () => {
   test('hero text matches specification', async ({ page }) => {
     await page.goto('/');
     
-    // Check main hero copy
-    await expect(page.locator('h1')).toContainText('「欲しい」を集めて、10人で叶える。');
+    // Check main hero copy as per requirements specification
+    await expect(page.locator('h1')).toContainText('欲しい暮らし、10人で叶える');
     
-    // Check subtitle - use more specific selector
-    await expect(page.locator('h1').locator('..').locator('p').first()).toContainText('小さなニーズを集めて、実現可能性を見える化する場所');
+    // Check subtitle - as per requirements specification  
+    await expect(page.locator('h1').locator('..').locator('p').first()).toContainText('「欲しい」と「できる」の橋渡し');
     
     // Check tag line
-    await expect(page.locator('text=欲しい暮らし、10人で叶える')).toBeVisible();
+    await expect(page.locator('text=ニーズマッチングプラットフォーム')).toBeVisible();
   });
 
   test('こんな方におすすめ section is visible', async ({ page }) => {
