@@ -1,4 +1,6 @@
 export const metadata = { title: "ガイド – NeedPort" };
+export const dynamic = 'force-dynamic';
+
 export default function Guide(){
   return (
     <div className="container-page py-10 space-y-6">

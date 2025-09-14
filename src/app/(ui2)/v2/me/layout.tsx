@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 const items = [
   { href: "/v2/needs", label: "ニーズ一覧" },
   { href: "/v2/proposals", label: "提案一覧" },

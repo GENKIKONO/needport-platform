@@ -4,6 +4,8 @@ import { useParams } from "next/navigation";
 import fetcher from "@/app/(ui2)/_parts/useSWRFetcher";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 export default function VendorPublicProfilePage(){
   const { id } = useParams() as { id:string };
   const { data, error, isLoading } = useSWR<{ row?: any }>(`/api/vendors?id=${encodeURIComponent(id)}`, fetcher, { refreshInterval: 10000, revalidateOnFocus:false });
