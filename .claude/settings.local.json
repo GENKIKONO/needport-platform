@@ -52,7 +52,12 @@
       "WebFetch(domain:clerk.com)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:needport.jp)",
-      "Bash(BASE_URL=\"https://needport.jp\" npm run clerk:health)"
+      "Bash(BASE_URL=\"https://needport.jp\" npm run clerk:health)",
+      "Read(//Users/kounogenki/**)",
+      "Bash(git clone:*)",
+      "Bash(git pull:*)",
+      "Bash(npm ci:*)",
+      "Bash(export PROD_BASE_URL=\"https://needport.jp\")"
     ],
     "deny": [],
     "ask": []

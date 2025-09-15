@@ -1,4 +1,6 @@
-import { SignIn } from '@clerk/nextjs';
+'use client';
+
+import { SignIn, ClerkLoaded, ClerkLoading } from '@clerk/nextjs';
 import AuthPageLayout from '@/components/auth/AuthPageLayout';
 import { BRAND } from '@/lib/constants/brand';
 import { CLERK_CONFIG } from '@/lib/constants/clerk';
@@ -25,18 +27,25 @@ export default function VendorLoginPage() {
           </div>
         </div>
       </div>
-      <SignIn 
-        appearance={{
-          ...CLERK_CONFIG.appearance,
-          elements: {
-            ...CLERK_CONFIG.appearance.elements,
-            formButtonPrimary: 'bg-green-500 hover:bg-green-600 text-sm normal-case',
-          }
-        }}
-        routing="path"
-        path="/vendors/login"
-        redirectUrl="/me/vendor"
-      />
+      <ClerkLoading>
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        </div>
+      </ClerkLoading>
+      <ClerkLoaded>
+        <SignIn 
+          appearance={{
+            ...CLERK_CONFIG.appearance,
+            elements: {
+              ...CLERK_CONFIG.appearance.elements,
+              formButtonPrimary: 'bg-green-500 hover:bg-green-600 text-sm normal-case',
+            }
+          }}
+          routing="path"
+          path="/vendors/login"
+          redirectUrl="/me/vendor"
+        />
+      </ClerkLoaded>
     </AuthPageLayout>
   );
 }
