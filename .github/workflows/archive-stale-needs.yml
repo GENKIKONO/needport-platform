@@ -1,0 +1,228 @@
+name: Archive Stale Needs
+
+on:
+  schedule:
+    # Run daily at 2:00 AM JST (17:00 UTC)
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+    inputs:
+      days_threshold:
+        description: 'Days threshold for archiving (default: 60)'
+        required: false
+        default: '60'
+        type: string
+      dry_run:
+        description: 'Dry run mode (show what would be archived)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  archive-stale-needs:
+    name: 📦 Archive Stale Needs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Verify environment
+        run: |
+          echo "🔍 Checking environment variables..."
+          if [ -z "$DATABASE_URL" ]; then
+            echo "❌ DATABASE_URL not set"
+            exit 1
+          fi
+          echo "✅ Environment variables verified"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 📦 Run archive job (dry run)
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🔍 Running archive job in dry-run mode..."
+          echo "Days threshold: ${{ inputs.days_threshold || '60' }}"
+          
+          # Create a modified version for dry-run simulation
+          cat > scripts/jobs/archive-stale-needs-dry.ts << 'EOF'
+          import { archiveStaleNeeds } from './archive-stale-needs';
+          
+          async function dryRun() {
+            console.log('🔍 DRY RUN MODE - No changes will be made');
+            // This would need to be implemented to just list what would be archived
+            console.log('Would run archiveStaleNeeds with threshold:', process.env.ARCHIVE_DAYS_THRESHOLD || '60');
+          }
+          
+          dryRun();
+          EOF
+          
+          ARCHIVE_DAYS_THRESHOLD="${{ inputs.days_threshold || '60' }}" npx ts-node scripts/jobs/archive-stale-needs-dry.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+
+      - name: 📦 Run archive job
+        if: ${{ !inputs.dry_run }}
+        run: |
+          echo "📦 Running archive job..."
+          echo "Days threshold: ${{ inputs.days_threshold || '60' }}"
+          
+          npm run jobs:archive-stale-needs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          ARCHIVE_DAYS_THRESHOLD: ${{ inputs.days_threshold || '60' }}
+
+      - name: 📊 Generate archive report
+        if: ${{ !inputs.dry_run }}
+        run: |
+          echo "📊 Generating archive report..."
+          
+          cat > archive-report.md << 'EOF'
+          # 📦 Automated Archive Report
+          
+          **Date:** $(date -u)
+          **Threshold:** ${{ inputs.days_threshold || '60' }} days
+          **Workflow:** ${{ github.workflow }}
+          **Run ID:** ${{ github.run_id }}
+          
+          ## 📋 Summary
+          Archive job completed successfully.
+          
+          ## 🔍 Details
+          - **Trigger:** ${{ github.event_name }}
+          - **Repository:** ${{ github.repository }}
+          - **Commit:** ${{ github.sha }}
+          
+          ## 📈 Metrics
+          Detailed metrics are available in the workflow logs.
+          
+          ## 🔧 Manual Verification
+          To verify the archive operation:
+          1. Check the workflow logs for detailed output
+          2. Verify archived needs are no longer in public listings
+          3. Confirm archived needs appear in `/needs/archive` for authenticated users
+          
+          ---
+          *This report was generated automatically by GitHub Actions.*
+          EOF
+
+      - name: 📄 Upload archive report
+        if: ${{ !inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-report-${{ github.run_id }}
+          path: archive-report.md
+          retention-days: 30
+
+      - name: 📢 Send notification on failure
+        if: ${{ failure() && vars.SLACK_WEBHOOK_URL }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "🚨 Archive Job Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*📦 Archive Job Alert*\n\nAutomated needs archiving failed in NeedPort platform."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\n${{ github.repository }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow:*\n${{ github.workflow }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Days Threshold:*\n${{ inputs.days_threshold || '60' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Trigger:*\n${{ github.event_name }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Logs"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ vars.SLACK_WEBHOOK_URL }}
+
+      - name: 📢 Send success notification (scheduled runs only)
+        if: ${{ success() && github.event_name == 'schedule' && vars.SLACK_WEBHOOK_URL }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "✅ Daily Archive Job Completed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*📦 Daily Archive Summary*\n\nAutomated needs archiving completed successfully."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\n${{ github.repository }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Days Threshold:*\n60 days"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Time:*\n$(date -u)"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\nCompleted"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ vars.SLACK_WEBHOOK_URL }}

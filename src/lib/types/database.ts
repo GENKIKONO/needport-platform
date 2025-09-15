@@ -10,6 +10,9 @@ export interface Database {
           role: 'user' | 'pro' | 'ops' | 'mod' | 'admin';
           stripe_customer_id: string | null;
           stripe_account_id: string | null;
+          display_name: string | null;
+          is_admin: boolean;
+          anonymity_level: string;
           created_at: string;
           updated_at: string;
         };
@@ -21,6 +24,9 @@ export interface Database {
           role?: 'user' | 'pro' | 'ops' | 'mod' | 'admin';
           stripe_customer_id?: string | null;
           stripe_account_id?: string | null;
+          display_name?: string | null;
+          is_admin?: boolean;
+          anonymity_level?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -32,6 +38,9 @@ export interface Database {
           role?: 'user' | 'pro' | 'ops' | 'mod' | 'admin';
           stripe_customer_id?: string | null;
           stripe_account_id?: string | null;
+          display_name?: string | null;
+          is_admin?: boolean;
+          anonymity_level?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -48,9 +57,12 @@ export interface Database {
           adopted_offer_id: string | null;
           prejoin_count: number | null;
           published: boolean;
-          status: 'draft' | 'published' | 'closed';
+          status: 'draft' | 'published' | 'frozen' | 'archived' | 'closed';
           owner_id: string;
           created_by: string | null;
+          published_at: string | null;
+          archived_at: string | null;
+          display_title: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -65,9 +77,12 @@ export interface Database {
           adopted_offer_id?: string | null;
           prejoin_count?: number | null;
           published?: boolean;
-          status?: 'draft' | 'published' | 'closed';
+          status?: 'draft' | 'published' | 'frozen' | 'archived' | 'closed';
           owner_id: string;
           created_by?: string | null;
+          published_at?: string | null;
+          archived_at?: string | null;
+          display_title?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -82,9 +97,12 @@ export interface Database {
           adopted_offer_id?: string | null;
           prejoin_count?: number | null;
           published?: boolean;
-          status?: 'draft' | 'published' | 'closed';
+          status?: 'draft' | 'published' | 'frozen' | 'archived' | 'closed';
           owner_id?: string;
           created_by?: string | null;
+          published_at?: string | null;
+          archived_at?: string | null;
+          display_title?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -156,6 +174,73 @@ export interface Database {
           status?: 'setup' | 'confirmed' | 'failed' | 'canceled';
           setup_intent_id?: string | null;
           payment_method_id?: string | null;
+          created_at?: string;
+        };
+      };
+      need_reactions: {
+        Row: {
+          id: string;
+          need_id: string;
+          user_id: string;
+          kind: 'WANT_TO_BUY' | 'INTERESTED';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          need_id: string;
+          user_id: string;
+          kind: 'WANT_TO_BUY' | 'INTERESTED';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          need_id?: string;
+          user_id?: string;
+          kind?: 'WANT_TO_BUY' | 'INTERESTED';
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      audit_logs: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          action: string;
+          resource_type: string;
+          resource_id: string | null;
+          old_values: any | null;
+          new_values: any | null;
+          ip_address: string | null;
+          user_agent: string | null;
+          session_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          action: string;
+          resource_type: string;
+          resource_id?: string | null;
+          old_values?: any | null;
+          new_values?: any | null;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          session_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          action?: string;
+          resource_type?: string;
+          resource_id?: string | null;
+          old_values?: any | null;
+          new_values?: any | null;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          session_id?: string | null;
           created_at?: string;
         };
       };

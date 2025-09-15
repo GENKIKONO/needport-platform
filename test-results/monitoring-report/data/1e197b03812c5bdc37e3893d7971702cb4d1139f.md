@@ -1,0 +1,135 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "NeedPort":
+    - /url: /
+    - img
+    - text: NeedPort
+  - navigation:
+    - link "ニーズ一覧":
+      - /url: /needs
+    - link "ニーズを投稿する":
+      - /url: /needs/new
+  - link "一般ログイン":
+    - /url: /sign-in
+  - link "事業者ログイン":
+    - /url: /vendors/login
+- complementary:
+  - navigation:
+    - text: アカウント
+    - list:
+      - listitem:
+        - link "一般ログイン":
+          - /url: /sign-in
+      - listitem:
+        - link "事業者ログイン":
+          - /url: /vendors/login
+    - text: 基本機能
+    - list:
+      - listitem:
+        - link "ニーズを投稿する":
+          - /url: /needs/new
+      - listitem:
+        - link "ニーズ一覧":
+          - /url: /needs
+    - text: その他
+    - list:
+      - listitem:
+        - link "サービスについて":
+          - /url: /about
+      - listitem:
+        - link "利用規約":
+          - /url: /terms
+      - listitem:
+        - link "プライバシーポリシー":
+          - /url: /privacy
+- main:
+  - img
+  - heading "みんなのニーズ" [level=1]
+  - paragraph: 地域に埋もれた小さな声を大切に。 あなたの「困った」が、誰かの「できる」と出会う場所です。
+  - text: 1件のニーズ
+  - link "すべて":
+    - /url: /needs?sort=new&scope=all
+  - link "通常":
+    - /url: /needs?sort=new&scope=active
+  - link "海中":
+    - /url: /needs?sort=new&scope=archived
+  - img
+  - heading "検索・絞り込み" [level=2]
+  - textbox "キーワードを入力"
+  - 'textbox "地域（例: 港区）"'
+  - 'textbox "カテゴリ（例: リフォーム）"'
+  - combobox:
+    - option "新着順" [selected]
+    - option "人気順"
+    - option "期限順"
+  - button "この条件で検索"
+  - link "リセット":
+    - /url: /needs
+  - link "自宅サウナを設置したい":
+    - /url: /needs/np-101
+  - img
+  - text: 港区
+  - img
+  - text: "リフォーム 更新: 9/15/2025"
+  - img
+  - text: 4件の提案 個人情報は提案後に表示
+  - link "詳細を見る":
+    - /url: /needs/np-101
+  - text: 全 1 件のニーズ
+  - heading "あなたのニーズも投稿しませんか？" [level=3]
+  - paragraph: 小さな困りごとから大きな夢まで。 地域の事業者があなたをサポートします。
+  - link "ニーズを投稿する":
+    - /url: /needs/new
+    - img
+    - text: ニーズを投稿する
+- contentinfo:
+  - img
+  - text: NeedPort
+  - paragraph: ニーズと解決者をつなぐマッチングプラットフォーム
+  - heading "サービス" [level=3]
+  - list:
+    - listitem:
+      - link "ニーズ一覧":
+        - /url: /needs
+    - listitem:
+      - link "マイページ":
+        - /url: /me
+    - listitem:
+      - link "事業者向け":
+        - /url: /me/vendor
+    - listitem:
+      - link "サービスについて":
+        - /url: /about
+  - heading "サポート" [level=3]
+  - list:
+    - listitem:
+      - link "ヘルプ・よくある質問":
+        - /url: /help
+    - listitem:
+      - link "お問い合わせ":
+        - /url: /contact
+    - listitem:
+      - link "ご利用ガイド":
+        - /url: /guide
+    - listitem:
+      - link "安全・安心への取り組み":
+        - /url: /safety
+  - heading "法的情報" [level=3]
+  - list:
+    - listitem:
+      - link "利用規約":
+        - /url: /terms
+    - listitem:
+      - link "プライバシーポリシー":
+        - /url: /privacy
+    - listitem:
+      - link "特定商取引法に基づく表記":
+        - /url: /(public)/legal/tokushoho
+    - listitem:
+      - link "運営会社":
+        - /url: /company
+  - text: © 2024 NeedPort. All rights reserved. ニーズ起点のマッチングプラットフォーム
+- alert
+```

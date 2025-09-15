@@ -56,7 +56,10 @@
     "clerk:verify": "npx ts-node scripts/clerk/verify-live-config.ts",
     "clerk:sync": "npx ts-node scripts/clerk/sync-from-test-to-live.ts",
     "clerk:health": "npx ts-node scripts/diag/print-signin-health.ts",
-    "clerk:guard": "npm run clerk:verify && npm run clerk:health"
+    "clerk:guard": "npm run clerk:verify && npm run clerk:health",
+    "jobs:archive-stale-needs": "npx ts-node scripts/jobs/archive-stale-needs.ts",
+    "ci:verify-rls": "npx ts-node scripts/ci/verify-rls-snapshot.ts verify",
+    "ci:update-rls-snapshot": "npx ts-node scripts/ci/verify-rls-snapshot.ts update"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.6",

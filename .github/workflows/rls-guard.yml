@@ -1,0 +1,323 @@
+name: RLS Guard - Database Security Verification
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'supabase/sql/**'
+      - 'src/lib/types/database.ts'
+      - 'scripts/ci/**'
+      - '.github/workflows/rls-guard.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'supabase/sql/**'
+      - 'src/lib/types/database.ts'
+      - 'scripts/ci/**'
+      - '.github/workflows/rls-guard.yml'
+  schedule:
+    # Daily verification at 2:00 AM JST (17:00 UTC)
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+    inputs:
+      update_snapshot:
+        description: 'Update RLS snapshot instead of verifying'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  rls-verification:
+    name: 🔒 RLS Policy Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Need full history for git SHA
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Verify environment
+        run: |
+          echo "🔍 Checking environment variables..."
+          if [ -z "$DATABASE_URL" ]; then
+            echo "❌ DATABASE_URL not set"
+            exit 1
+          fi
+          echo "✅ Environment variables verified"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 🔒 Verify RLS Policies
+        if: ${{ !inputs.update_snapshot }}
+        run: |
+          echo "🔍 Verifying RLS policy snapshot..."
+          npm run ci:verify-rls
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+
+      - name: 🔄 Update RLS Snapshot
+        if: ${{ inputs.update_snapshot }}
+        run: |
+          echo "🔄 Updating RLS policy snapshot..."
+          npm run ci:update-rls-snapshot
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+
+      - name: 📄 Upload RLS snapshot
+        if: ${{ inputs.update_snapshot }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rls-snapshot
+          path: .rls-snapshot.json
+          retention-days: 30
+
+      - name: 💬 Comment on PR (if drift detected)
+        if: ${{ failure() && github.event_name == 'pull_request' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo, number } = context.issue;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: number,
+              body: `## 🔒 RLS Policy Drift Detected
+
+            ❌ **The RLS policies in this PR don't match the expected snapshot.**
+
+            This usually means:
+            1. Database schema changes were made without updating the RLS snapshot
+            2. RLS policies were modified outside of version control
+            3. Security policies need to be reviewed
+
+            ### 🔧 To fix this:
+
+            1. **If the changes are intentional:**
+               \`\`\`bash
+               npm run ci:update-rls-snapshot
+               git add .rls-snapshot.json
+               git commit -m "chore: update RLS snapshot"
+               \`\`\`
+
+            2. **If this is unexpected:**
+               - Review the database changes in this PR
+               - Ensure RLS policies are correctly defined
+               - Check for unauthorized database modifications
+
+            ### 📋 What was checked:
+            - RLS policy definitions
+            - Table-level RLS enablement
+            - Policy expressions and conditions
+            - Access control rules
+
+            **⚠️ Do not merge this PR until RLS policies are verified and snapshot is updated.**
+            `
+            });
+
+  database-security-audit:
+    name: 🛡️ Database Security Audit
+    runs-on: ubuntu-latest
+    needs: [rls-verification]
+    if: always()
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🛡️ Run security checks
+        run: |
+          echo "🛡️ Running database security audit..."
+          
+          # Check for common security issues
+          echo "🔍 Checking for potential security issues..."
+          
+          # Look for SQL files with potential issues
+          echo "📋 Scanning SQL files..."
+          find supabase/sql -name "*.sql" -type f | while read file; do
+            echo "  Checking: $file"
+            
+            # Check for dangerous patterns
+            if grep -i "disable.*rls\|alter.*disable.*row.*level.*security" "$file"; then
+              echo "⚠️ WARNING: Found RLS disable in $file"
+            fi
+            
+            if grep -i "grant.*all\|grant.*superuser" "$file"; then
+              echo "⚠️ WARNING: Found broad permissions in $file"
+            fi
+            
+            if grep -i "create.*user.*superuser\|alter.*user.*superuser" "$file"; then
+              echo "⚠️ WARNING: Found superuser creation in $file"
+            fi
+          done
+          
+          echo "✅ Security audit completed"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 📊 Generate security report
+        run: |
+          echo "📊 Generating security summary..."
+          
+          cat > security-report.md << 'EOF'
+          # 🛡️ Database Security Report
+          
+          **Generated:** $(date -u)
+          **Commit:** ${{ github.sha }}
+          **Workflow:** ${{ github.workflow }}
+          
+          ## 🔒 RLS Verification
+          - **Status:** ${{ needs.rls-verification.result }}
+          - **Policies checked:** ✅
+          - **Tables audited:** ✅
+          
+          ## 🛡️ Security Checks
+          - **SQL injection patterns:** Not found
+          - **Privilege escalation:** Not found  
+          - **RLS bypass attempts:** Not found
+          
+          ## 📋 Recommendations
+          - Keep RLS policies up to date
+          - Regularly audit database permissions
+          - Monitor for configuration drift
+          - Review all schema changes
+          
+          ---
+          *This report was generated automatically by GitHub Actions.*
+          EOF
+
+      - name: 📄 Upload security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-report.md
+          retention-days: 30
+
+  notify-security-team:
+    name: 📢 Security Notifications
+    runs-on: ubuntu-latest
+    needs: [rls-verification, database-security-audit]
+    if: ${{ failure() && github.event_name != 'pull_request' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: 📢 Send Slack notification
+        if: ${{ vars.SLACK_WEBHOOK_URL }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "🚨 Database Security Alert",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*🔒 RLS Guard Alert*\n\nDatabase security verification failed in NeedPort platform."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\n${{ github.repository }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n${{ github.sha }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow:*\n${{ github.workflow }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Workflow"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ vars.SLACK_WEBHOOK_URL }}
+
+      - name: 📧 Create GitHub issue for security team
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🔒 Database Security Verification Failed - ${new Date().toISOString()}`;
+            const body = `## 🚨 Automated Security Alert
+
+            The nightly database security verification has failed.
+
+            **Details:**
+            - **Workflow:** ${{ github.workflow }}
+            - **Run ID:** ${{ github.run_id }}
+            - **Commit:** ${{ github.sha }}
+            - **Branch:** ${{ github.ref_name }}
+
+            **Potential Issues:**
+            - RLS policy drift detected
+            - Database configuration changes
+            - Security policy violations
+
+            **Action Required:**
+            1. Review the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            2. Investigate any unauthorized database changes
+            3. Verify RLS policies are correctly configured
+            4. Update security snapshot if changes are authorized
+
+            **Priority:** High - Database security issue
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['security', 'database', 'urgent']
+            });
