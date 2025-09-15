@@ -60,8 +60,8 @@ test.describe('Navigation', () => {
     await expect(page.locator('.fixed nav >> text=ニーズを投稿する')).toBeVisible();
     
     // Check authentication links (should show login buttons when not authenticated)
-    await expect(page.locator('[data-testid="signin-link"]')).toBeVisible();
-    await expect(page.locator('[data-testid="vendor-signin-link"]')).toBeVisible();
+    await expect(page.locator('.fixed nav [data-testid="signin-link"]')).toBeVisible();
+    await expect(page.locator('.fixed nav [data-testid="vendor-signin-link"]')).toBeVisible();
     
     // Check additional navigation links per CLAUDE.md specs
     await expect(page.locator('.fixed nav >> text=サービスについて')).toBeVisible();

@@ -1,0 +1,171 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "NeedPort":
+    - /url: /
+    - img
+    - text: NeedPort
+  - link "一般ログイン":
+    - /url: /sign-in
+  - link "事業者ログイン":
+    - /url: /vendors/login
+- button "メニューを開く"
+- text: メニュー
+- navigation:
+  - text: アカウント
+  - list:
+    - listitem:
+      - link "一般ログイン":
+        - /url: /sign-in
+    - listitem:
+      - link "事業者ログイン":
+        - /url: /vendors/login
+  - text: 基本機能
+  - list:
+    - listitem:
+      - link "ニーズを投稿する":
+        - /url: /needs/new
+    - listitem:
+      - link "ニーズ一覧":
+        - /url: /needs
+  - text: その他
+  - list:
+    - listitem:
+      - link "サービスについて":
+        - /url: /about
+    - listitem:
+      - link "利用規約":
+        - /url: /terms
+    - listitem:
+      - link "プライバシーポリシー":
+        - /url: /privacy
+- button "メニューを閉じる"
+- main:
+  - text: ニーズマッチングプラットフォーム
+  - heading "欲しい暮らし、 10人で叶える" [level=1]
+  - paragraph: 「欲しい」と「できる」の橋渡し
+  - link "ニーズを投稿する":
+    - /url: /needs/new
+    - img
+    - text: ニーズを投稿する
+  - link "ニーズを探す":
+    - /url: /needs
+    - img
+    - text: ニーズを探す
+  - heading "NeedPortについて" [level=2]
+  - paragraph: 地域のニーズと事業者をつなぐプラットフォームです。
+  - paragraph: 匿名性と安全性を確保しながら、あなたの「欲しい」を実現へと導きます。
+  - img
+  - heading "最新のニーズ" [level=2]
+  - link "すべて見る":
+    - /url: /needs
+    - text: すべて見る
+    - img
+  - link "自宅サウナを設置したい":
+    - /url: /needs/np-101
+  - text: 浮上中
+  - img
+  - text: 港区
+  - img
+  - text: リフォーム
+  - img
+  - text: 4件の提案
+  - link "詳細":
+    - /url: /needs/np-101
+  - link "提案する":
+    - /url: /needs/np-101#cta
+  - link "地下室の防音改修":
+    - /url: /needs/np-104
+  - img
+  - text: 大田区
+  - img
+  - text: リフォーム
+  - img
+  - text: 7件の提案
+  - link "詳細":
+    - /url: /needs/np-104
+  - link "提案する":
+    - /url: /needs/np-104#cta
+  - link "空き家の片付け・買取相談":
+    - /url: /needs/np-106
+  - img
+  - text: 成約済み
+  - img
+  - text: 足立区
+  - img
+  - text: 不動産
+  - img
+  - text: 3件の提案
+  - link "詳細":
+    - /url: /needs/np-106
+  - link "提案する":
+    - /url: /needs/np-106#cta
+  - img
+  - heading "サービスの仕組み" [level=2]
+  - paragraph: 地域のニーズと事業者をマッチングするプラットフォームです。
+  - paragraph: 安全で透明性の高い取引を実現します。
+  - link "ニーズを投稿する":
+    - /url: /needs/new
+    - img
+    - text: ニーズを投稿する
+  - heading "こんな方におすすめ" [level=2]
+  - paragraph: あなたの「欲しい」に合わせた活用方法をご提案します
+  - img
+  - heading "ニーズの需要を確認したい方" [level=3]
+  - paragraph: 同じニーズを持つ人がどれくらいいるか、事前に把握できます
+  - img
+  - heading "事業化を検討している方" [level=3]
+  - paragraph: 需要が集まったタイミングで、新しいサービスの検討ができます
+  - img
+  - heading "まずは匿名で参加したい方" [level=3]
+  - paragraph: ログイン不要で「気になる」を押して、気軽に参加できます
+- contentinfo:
+  - img
+  - text: NeedPort
+  - paragraph: ニーズと解決者をつなぐマッチングプラットフォーム
+  - heading "サービス" [level=3]
+  - list:
+    - listitem:
+      - link "ニーズ一覧":
+        - /url: /needs
+    - listitem:
+      - link "マイページ":
+        - /url: /me
+    - listitem:
+      - link "事業者向け":
+        - /url: /me/vendor
+    - listitem:
+      - link "サービスについて":
+        - /url: /about
+  - heading "サポート" [level=3]
+  - list:
+    - listitem:
+      - link "ヘルプ・よくある質問":
+        - /url: /help
+    - listitem:
+      - link "お問い合わせ":
+        - /url: /contact
+    - listitem:
+      - link "ご利用ガイド":
+        - /url: /guide
+    - listitem:
+      - link "安全・安心への取り組み":
+        - /url: /safety
+  - heading "法的情報" [level=3]
+  - list:
+    - listitem:
+      - link "利用規約":
+        - /url: /terms
+    - listitem:
+      - link "プライバシーポリシー":
+        - /url: /privacy
+    - listitem:
+      - link "特定商取引法に基づく表記":
+        - /url: /(public)/legal/tokushoho
+    - listitem:
+      - link "運営会社":
+        - /url: /company
+  - text: © 2024 NeedPort. All rights reserved. ニーズ起点のマッチングプラットフォーム
+- alert
+```
