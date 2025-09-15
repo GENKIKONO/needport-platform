@@ -1,0 +1,33 @@
+## ブラウザ手動検証シミュレーション
+
+**実行時刻:** 2025-09-15T04:57
+
+### 手動検証手順:
+
+1. **サインアウト → サインイン（Live環境）**
+   - https://needport.jp でサインアウト
+   - 新規Googleアカウントまたはメール/パスワードでサインイン
+   - Live Clerk環境での新規ユーザー登録
+
+2. **`/needs/new` で投稿**
+   - タイトル: `[LIVE] Auto-provisioning Test - ${Date.now()}`
+   - 本文: `Testing live environment auto-provisioning functionality`
+   - 投稿ボタンクリック
+
+3. **期待される結果:**
+   - API: 201 Created
+   - 自動でプロファイル作成される（ensureProfile動作）
+   - owner_id が正常に設定される
+   - `/me` にリダイレクト
+
+4. **`/me` 下書き表示確認**
+   - 投稿した下書きが一覧に表示される
+   - ステータス: draft
+   - 公開: false
+
+### API認証確認結果:
+- 未認証API: ✅ 401 UNAUTHORIZED（正常な認証保護）
+- Live Clerk: ✅ 0名（新規ユーザー登録で自動プロビジョニング検証可能）
+
+### 次のステップ:
+手動ブラウザ検証により、Live環境での完全な自動プロビジョニング動作を確認

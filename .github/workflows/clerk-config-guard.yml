@@ -1,0 +1,274 @@
+name: Clerk Configuration Guard
+
+# Prevents deployment if Clerk Live environment is misconfigured
+# Runs verification scripts and blocks merge/deploy if critical issues found
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - '.github/workflows/**'
+      - 'package.json'
+      - 'next.config.js'
+  
+  push:
+    branches: [ main ]
+  
+  # Manual trigger for configuration verification
+  workflow_dispatch:
+    inputs:
+      force_verification:
+        description: 'Force full verification even if no changes detected'
+        required: false
+        default: 'false'
+        type: boolean
+
+  # Scheduled check (daily at 3:00 AM JST)
+  schedule:
+    - cron: '0 18 * * *'  # 18:00 UTC = 3:00 AM JST
+
+env:
+  NODE_VERSION: '20'
+  
+jobs:
+  clerk-config-verification:
+    name: Verify Clerk Configuration
+    runs-on: ubuntu-latest
+    
+    # Skip verification for draft PRs unless forced
+    if: github.event.pull_request.draft != true || github.event.inputs.force_verification == 'true'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install -g ts-node typescript
+
+      - name: Verify Environment Variables
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+        run: |
+          echo "🔍 Verifying required environment variables..."
+          
+          if [ -z "$CLERK_SECRET_KEY" ]; then
+            echo "❌ CLERK_SECRET_KEY is not configured in GitHub Secrets"
+            exit 1
+          fi
+          
+          if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
+            echo "❌ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not configured in GitHub Secrets"
+            exit 1
+          fi
+          
+          # Verify keys are Live environment keys
+          if [[ ! "$CLERK_SECRET_KEY" =~ ^sk_live_ ]]; then
+            echo "❌ CLERK_SECRET_KEY is not a Live environment key (should start with sk_live_)"
+            exit 1
+          fi
+          
+          if [[ ! "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" =~ ^pk_live_ ]]; then
+            echo "❌ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not a Live environment key (should start with pk_live_)"
+            exit 1
+          fi
+          
+          echo "✅ Environment variables verification passed"
+
+      - name: Run Clerk Live Configuration Verification
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+        run: |
+          echo "🚀 Running Clerk Live configuration verification..."
+          
+          # Make script executable and run
+          chmod +x scripts/clerk/verify-live-config.ts
+          ts-node scripts/clerk/verify-live-config.ts
+          
+          # Store exit code for later steps
+          echo "CLERK_VERIFICATION_EXIT_CODE=$?" >> $GITHUB_ENV
+
+      - name: Run Headless SignIn Health Check
+        env:
+          BASE_URL: 'https://needport.jp'
+        run: |
+          echo "🏥 Running headless SignIn health check..."
+          
+          # Install Playwright browsers
+          npx playwright install chromium --with-deps
+          
+          # Make script executable and run
+          chmod +x scripts/diag/print-signin-health.ts
+          ts-node scripts/diag/print-signin-health.ts || true
+          
+          # Note: Health check is informational, don't fail CI on UI issues
+
+      - name: Check for Critical Configuration Issues
+        run: |
+          echo "🔍 Evaluating verification results..."
+          
+          if [ "$CLERK_VERIFICATION_EXIT_CODE" != "0" ]; then
+            echo "❌ Critical Clerk configuration issues detected!"
+            echo ""
+            echo "🚨 DEPLOYMENT BLOCKED 🚨"
+            echo ""
+            echo "Required actions before merge/deploy:"
+            echo "1. Fix Clerk Live environment configuration"
+            echo "2. Add required OAuth applications (Google)"
+            echo "3. Configure domains and allowed origins"
+            echo "4. Re-run verification: npm run clerk:verify"
+            echo ""
+            echo "See Clerk Dashboard: https://dashboard.clerk.com/"
+            echo "Documentation: https://clerk.com/docs"
+            
+            # Create detailed failure comment for PR
+            if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+              echo "Creating PR comment with detailed instructions..."
+            fi
+            
+            exit 1
+          else
+            echo "✅ Clerk configuration verification passed"
+            echo "🚀 Safe to proceed with deployment"
+          fi
+
+      - name: Post PR Comment on Failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## 🚨 Clerk Configuration Guard - Deployment Blocked
+
+            ### Critical Issues Detected
+            The Clerk Live environment configuration is incomplete or invalid. Deployment has been blocked to prevent authentication failures.
+
+            ### Required Actions
+            1. **Configure Clerk Live Environment**
+               - Visit [Clerk Dashboard](https://dashboard.clerk.com/)
+               - Switch to **Live** environment
+               - Configure OAuth applications (Google)
+               - Add domain: \`needport.jp\`
+               - Set allowed origins: \`https://needport.jp\`, \`https://needport.jp/*\`
+
+            2. **Verify Configuration**
+               \`\`\`bash
+               # Run verification script locally
+               npm run clerk:verify
+               
+               # Or run manually
+               CLERK_SECRET_KEY="sk_live_..." ts-node scripts/clerk/verify-live-config.ts
+               \`\`\`
+
+            3. **Test SignIn Functionality**
+               - Visit https://needport.jp/sign-in
+               - Verify Google login button appears
+               - Test authentication flow
+
+            ### Auto-Sync Option
+            If you have a working Test environment configuration:
+            \`\`\`bash
+            # Sync Test → Live (requires both keys)
+            CLERK_SECRET_KEY_TEST="sk_test_..." CLERK_SECRET_KEY="sk_live_..." ts-node scripts/clerk/sync-from-test-to-live.ts
+            \`\`\`
+
+            ### Documentation
+            - [Clerk Configuration Guide](https://clerk.com/docs/deployments/environments)
+            - [OAuth Setup Guide](https://clerk.com/docs/authentication/social-connections/google)
+
+            ---
+            *This guard prevents deployment of misconfigured authentication systems. Contact DevOps if you believe this is a false positive.*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Create Monitoring Alert
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Create GitHub issue for scheduled monitoring failures
+            const title = `🚨 Clerk Configuration Drift Detected - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## Automated Monitoring Alert
+
+            The scheduled Clerk configuration verification has detected critical issues.
+
+            ### Detected Issues
+            - Clerk Live environment configuration is incomplete
+            - This may affect user authentication on https://needport.jp
+
+            ### Immediate Actions Required
+            1. Review Clerk Dashboard configuration
+            2. Run diagnostic scripts: \`npm run clerk:verify\`
+            3. Fix configuration issues
+            4. Re-run verification to confirm fixes
+
+            ### Monitoring Details
+            - **Time**: ${new Date().toISOString()}
+            - **Environment**: Production (Live)
+            - **Severity**: Critical
+
+            *This issue was created automatically by the Clerk Configuration Guard.*`;
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'critical', 'automated', 'auth']
+            });
+
+            console.log(`Created monitoring issue: ${issue.data.html_url}`);
+
+  notify-success:
+    name: Configuration Verified
+    runs-on: ubuntu-latest
+    needs: clerk-config-verification
+    if: success()
+    
+    steps:
+      - name: Post Success Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## ✅ Clerk Configuration Guard - Verification Passed
+
+            ### All Checks Successful
+            - ✅ Environment variables configured correctly
+            - ✅ Clerk Live environment verification passed
+            - ✅ SignIn health check completed
+
+            ### Ready for Deployment
+            This PR is safe to merge. Authentication systems are properly configured.
+
+            ---
+            *Automated verification by Clerk Configuration Guard*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Log Success
+        run: |
+          echo "🎉 Clerk Configuration Guard completed successfully"
+          echo "✅ All verification checks passed"
+          echo "🚀 Deployment authorized"

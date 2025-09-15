@@ -46,7 +46,10 @@
       "Bash(git rev-parse:*)",
       "Bash(echo:*)",
       "Bash(git fetch:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(source:*)",
+      "Bash(vercel env pull:*)",
+      "WebFetch(domain:clerk.com)"
     ],
     "deny": [],
     "ask": []

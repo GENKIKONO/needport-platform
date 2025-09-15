@@ -45,13 +45,18 @@
     "db:smoke:need": "npx ts-node --transpile-only scripts/db/run-sql.ts supabase/sql/smoke_insert_need.template.sql --var USER_UUID=$USER_UUID",
     "db:rebaseline:needs": "npx ts-node --transpile-only scripts/db/rebaseline-needs.ts --user $USER_UUID",
     "test:prod:e2e": "CLERK_TEST_EMAIL=$CLERK_TEST_EMAIL CLERK_TEST_PASSWORD=$CLERK_TEST_PASSWORD npx playwright test tests/prod/e2e-needs-post.spec.ts",
+    "test:prod:login": "CLERK_TEST_EMAIL=$CLERK_TEST_EMAIL CLERK_TEST_PASSWORD=$CLERK_TEST_PASSWORD npx playwright test tests/prod/e2e-login-posting-flow.spec.ts",
     "monitor:prod:e2e": "node scripts/prod-e2e-monitor.js",
     "monitor:prod:full": "npm run monitor:prod && npm run monitor:prod:e2e",
     "cleanup:e2e": "npx tsx scripts/cleanup-e2e-drafts.ts --dry-run",
     "clerk:backfill:profiles": "npx tsx scripts/clerk/backfill-profiles.ts",
     "cleanup:e2e:live": "npx tsx scripts/cleanup-e2e-drafts.ts",
     "test:clerk:login": "node scripts/test-clerk-login.js",
-    "check:clerk:config": "node scripts/check-clerk-config.js"
+    "check:clerk:config": "node scripts/check-clerk-config.js",
+    "clerk:verify": "npx ts-node scripts/clerk/verify-live-config.ts",
+    "clerk:sync": "npx ts-node scripts/clerk/sync-from-test-to-live.ts",
+    "clerk:health": "npx ts-node scripts/diag/print-signin-health.ts",
+    "clerk:guard": "npm run clerk:verify && npm run clerk:health"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.6",

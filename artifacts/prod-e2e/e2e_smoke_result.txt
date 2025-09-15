@@ -1,0 +1,57 @@
+## E2E スモークテスト実行結果
+
+**実行日時:** 2025-09-15  
+**テスト対象:** tests/prod/e2e-needs-post.spec.ts  
+**テストケース:** "should complete authenticated posting flow successfully"
+
+### 実行ステータス: ❌ FAILED
+
+**エラー:**
+```
+Error: CLERK_TEST_EMAIL and CLERK_TEST_PASSWORD must be set for production tests
+```
+
+**失敗分類:** A_AUTH (認証統合問題)
+
+### 詳細分析:
+
+1. **環境変数不足:** CLERK_TEST_EMAIL, CLERK_TEST_PASSWORD が未設定
+2. **影響範囲:** Live環境でのE2E自動テスト実行が不可
+3. **代替手段:** 手動テストによる検証が必要
+
+### 必要な対応:
+
+**最小差分パッチ（A_AUTH対応）:**
+
+**ファイル:** `.env.production.tmp` または環境変数設定
+```bash
+export CLERK_TEST_EMAIL="test@needport.dev"
+export CLERK_TEST_PASSWORD="テスト用パスワード"
+```
+
+**または：**
+
+**ファイル:** `tests/prod/e2e-needs-post.spec.ts`  
+**差分:** テスト用認証情報をハードコード（セキュリティ考慮事項あり）
+
+```typescript
+// 修正前
+const testEmail = process.env.CLERK_TEST_EMAIL;
+const testPassword = process.env.CLERK_TEST_PASSWORD;
+
+// 修正後（一時的）
+const testEmail = process.env.CLERK_TEST_EMAIL || "test@needport.dev";
+const testPassword = process.env.CLERK_TEST_PASSWORD || "fallback-password";
+```
+
+### 次のアクション:
+
+1. **手動検証:** https://needport.jp/needs/new での手動投稿テスト
+2. **認証情報設定:** 本番テスト用の認証情報を環境変数に設定
+3. **再実行:** 認証情報設定後のE2Eテスト再実行
+
+### 証跡ファイル:
+
+- **E2Eログ:** artifacts/prod-e2e/e2e_smoke_result.txt (このファイル)
+- **エラースクリーンショット:** 未取得（認証エラーのため実行前に停止）
+- **レスポンスJSON:** 未取得（APIリクエスト未実行）
