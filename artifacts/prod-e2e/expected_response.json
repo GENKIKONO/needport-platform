@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-09-15T01:15:10.491Z",
+  "test_scenario": "Production E2E Needs Posting (when authentication succeeds)",
+  "expected_api_response": {
+    "status": 201,
+    "body": {
+      "id": "uuid-generated-by-supabase",
+      "title": "[E2E] Need Posting Smoke - 1726361710491",
+      "created_at": "2025-09-15T01:15:10.491Z"
+    }
+  },
+  "expected_page_behavior": {
+    "redirect_to": "/me",
+    "draft_visible": true,
+    "draft_location": "My Page > 投稿したニーズ section"
+  },
+  "expected_db_state": {
+    "status": "draft",
+    "published": false,
+    "owner_id": "profile-uuid-from-clerk-mapping"
+  },
+  "security_verification": {
+    "no_public_visibility": true,
+    "no_notifications_sent": true,
+    "no_billing_triggered": true,
+    "auto_cleanup_eligible": true
+  }
+}
