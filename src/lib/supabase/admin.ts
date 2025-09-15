@@ -11,7 +11,11 @@ export function createAdminClient() {
       }
       throw new Error("Missing SUPABASE env for admin client");
     }
-    return createClient(url, key, { auth: { persistSession: false } });
+    return createClient(url, key, { 
+      auth: { persistSession: false },
+      db: { schema: 'public' },
+      global: { headers: { 'x-client-info': 'supabase-admin-js' } }
+    });
   } catch (error) {
     // Safe fallback during build time
     if (typeof window === 'undefined' && process.env.NODE_ENV !== 'development') {

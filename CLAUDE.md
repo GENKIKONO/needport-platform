@@ -184,8 +184,26 @@ Returns:
 #### Automated Monitoring
 - **Nightly monitoring**: GitHub Actions runs comprehensive checks at 3:00 AM JST
 - **Critical flow testing**: Homepage → Needs listing → Detail page → Engagement
+- **E2E posting flow**: Complete authenticated posting workflow validation
 - **Performance monitoring**: Response times, error rates, accessibility
 - **Auto-recovery**: Issues create GitHub alerts, resolved issues auto-close
+- **Auto-fix PRs**: Automated diagnosis and fix generation for detected issues
+
+#### Production E2E Monitoring
+```bash
+# Full production E2E test with auto-fix
+npm run monitor:prod:e2e
+
+# Production E2E test only (requires CLERK_TEST_EMAIL/CLERK_TEST_PASSWORD)
+npm run test:prod:e2e
+
+# Combined monitoring (health + E2E)
+npm run monitor:prod:full
+```
+
+**Required Environment Variables for E2E:**
+- `CLERK_TEST_EMAIL`: Test account email for production E2E tests
+- `CLERK_TEST_PASSWORD`: Test account password for production E2E tests
 
 #### Manual Monitoring
 ```bash
@@ -203,13 +221,34 @@ BASE="https://needport.jp" npm run smoke:ci
 Configure monitoring notifications by setting GitHub Secrets:
 - `SLACK_WEBHOOK_URL`: Slack notifications (recommended)
 - `NOTIFICATION_EMAIL`: Email alerts for critical failures
+- `CLERK_TEST_EMAIL`: Production test account email
+- `CLERK_TEST_PASSWORD`: Production test account password
 
 #### Monitoring Test Coverage
 1. **System Health**: Database, RLS, security configurations
 2. **User Flows**: Core navigation and engagement paths
-3. **Performance**: Response times, loading speeds
-4. **Accessibility**: Basic WCAG compliance checks
-5. **API Health**: Key endpoints availability and response format
+3. **Authenticated Posting**: Complete login → post → verify workflow
+4. **Database Verification**: Draft status, RLS compliance, owner assignment
+5. **Performance**: Response times, loading speeds
+6. **Accessibility**: Basic WCAG compliance checks
+7. **API Health**: Key endpoints availability and response format
+
+#### Auto-Fix System
+The monitoring system includes automatic failure classification and fix generation:
+
+**Failure Classifications:**
+- **A_AUTH**: Authentication/Authorization integration issues
+- **B_RLS**: Row Level Security policy issues
+- **C_SCHEMA**: Database schema constraint issues
+- **D_NETWORK**: Network or timeout issues (usually transient)
+- **ENV_CONFIG**: Environment configuration issues
+
+**Auto-Generated Fixes:**
+- Enhanced error logging and debugging
+- RLS policy adjustments
+- Schema constraint fixes
+- Environment variable updates
+- Comprehensive fix documentation with reproduction steps
 
 ### Database Changes
 1. Update types in `src/lib/types/database.ts`
@@ -1383,7 +1422,44 @@ Enforced rules:
 
 ---
 
+## 投稿ページの認証ガード
+
+### 認証ガード仕様（2025-09-14実装）
+
+#### サーバー側認証ガード
+- `/needs/new` ページは **サーバー側で完全に認証ガード** されています
+- 未認証ユーザーは投稿フォームを一切見ることができません
+- `auth()` による認証チェック後、未認証の場合は即座に `/sign-in?redirect_url=/needs/new` へリダイレクト
+- `export const dynamic = 'force-dynamic'` により動的レンダリングを強制
+
+#### API側認証強制
+- `POST /api/needs` は必ず認証を要求し、未認証は 401 エラーを返却
+- 日本語の親切なエラーメッセージ: 「ログインが必要です。ログインしてから再度お試しください。」
+- service-role キーによる RLS バイパスで確実な投稿処理
+
+#### ユーザー導線
+- ヘッダー/サイドナビの「ニーズを投稿する」→ `/needs/new` → 未認証なら自動的に `/sign-in` へ
+- ログイン成功後は `redirect_url` パラメータにより `/needs/new` に自動復帰
+- 投稿完了後は `/me` ページへ遷移
+
+#### E2Eテスト
+- `unauthenticated-user-is-redirected-from-new-to-signin.spec.ts`: 未認証ユーザーのリダイレクト確認
+- `authenticated-user-can-post-need-minimal.spec.ts`: 認証済みユーザーの投稿フロー確認
+- 既存のモーダル表示テストは削除し、リダイレクトベースに更新
+
+---
+
 ## 変更履歴
+
+### 2025-09-14 認証ガード完全実装
+- **変更内容**: `/needs/new` の認証ガードをサーバー側で完全実装
+- **対象**: 投稿ページの認証フロー全体を刷新
+- **新ファイル**: 
+  - `src/app/needs/new/components/NewNeedForm.tsx` (フォームコンポーネント分離)
+  - `tests/unauthenticated-user-is-redirected-from-new-to-signin.spec.ts`
+  - `tests/authenticated-user-can-post-need-minimal.spec.ts`
+- **削除**: クライアント側モーダル認証チェック処理
+- **技術**: Server Component + `auth()` + `redirect()` による確実なガード
 
 ### 2025-09-14 テスト・品質管理インフラ追加
 - **追加内容**: API契約テスト、RLS検証、E2Eテスト、UIドリフト防止テスト

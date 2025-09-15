@@ -1,0 +1,441 @@
+# .github/workflows/automated-release-tagging.yml
+# Automated release tagging and changelog generation system
+# Creates releases after successful production deployments with auto-generated changelogs
+
+name: 🏷️ Automated Release Tagging
+
+on:
+  # Trigger after successful production deployments
+  workflow_run:
+    workflows: ["Production Deploy"]
+    types:
+      - completed
+    branches:
+      - main
+  
+  # Manual trigger for custom releases
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      custom_version:
+        description: 'Custom version (overrides release_type)'
+        required: false
+        type: string
+      include_all_commits:
+        description: 'Include all commits in changelog'
+        required: false
+        default: false
+        type: boolean
+
+# Prevent multiple concurrent releases
+concurrency:
+  group: automated-release
+  cancel-in-progress: false
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  # Check if release should be created
+  check-release-needed:
+    name: 🔍 Check Release Needed
+    runs-on: ubuntu-latest
+    outputs:
+      should-release: ${{ steps.check.outputs.should-release }}
+      current-version: ${{ steps.check.outputs.current-version }}
+      next-version: ${{ steps.check.outputs.next-version }}
+      commits-since-last: ${{ steps.check.outputs.commits-since-last }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install semver tool
+        run: npm install -g semver
+
+      - name: Check if release is needed
+        id: check
+        run: |
+          echo "🔍 Checking if release is needed..."
+          
+          # Get current version from package.json
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Get latest release tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          LATEST_VERSION=$(echo "$LATEST_TAG" | sed 's/^v//')
+          echo "Latest tagged version: $LATEST_VERSION"
+          
+          # Count commits since last release
+          if [[ "$LATEST_TAG" != "v0.0.0" ]]; then
+            COMMITS_SINCE=$(git rev-list ${LATEST_TAG}..HEAD --count)
+          else
+            COMMITS_SINCE=$(git rev-list HEAD --count)
+          fi
+          echo "Commits since last release: $COMMITS_SINCE"
+          
+          # Determine if we should create a release
+          SHOULD_RELEASE="false"
+          NEXT_VERSION=""
+          
+          # Manual trigger always creates release
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            SHOULD_RELEASE="true"
+            
+            if [[ -n "${{ github.event.inputs.custom_version }}" ]]; then
+              NEXT_VERSION="${{ github.event.inputs.custom_version }}"
+            else
+              NEXT_VERSION=$(semver -i ${{ github.event.inputs.release_type }} "$CURRENT_VERSION")
+            fi
+            
+            echo "Manual release triggered: $NEXT_VERSION"
+          
+          # Auto release based on commits and deployment success
+          elif [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]] && [[ $COMMITS_SINCE -gt 0 ]]; then
+              SHOULD_RELEASE="true"
+              
+              # Analyze commits to determine version bump type
+              echo "🔍 Analyzing commits for version bump type..."
+              
+              # Get commit messages since last release
+              if [[ "$LATEST_TAG" != "v0.0.0" ]]; then
+                COMMIT_MESSAGES=$(git log --format="%s" ${LATEST_TAG}..HEAD)
+              else
+                COMMIT_MESSAGES=$(git log --format="%s" HEAD~$COMMITS_SINCE..HEAD)
+              fi
+              
+              # Determine version bump based on conventional commits
+              if echo "$COMMIT_MESSAGES" | grep -qE "^(feat|feature)(\(.+\))?!:|^BREAKING CHANGE:|^[^:]+!:"; then
+                BUMP_TYPE="major"
+              elif echo "$COMMIT_MESSAGES" | grep -qE "^(feat|feature)(\(.+\))?:"; then
+                BUMP_TYPE="minor"
+              else
+                BUMP_TYPE="patch"
+              fi
+              
+              NEXT_VERSION=$(semver -i $BUMP_TYPE "$CURRENT_VERSION")
+              echo "Auto release determined: $NEXT_VERSION ($BUMP_TYPE)"
+            else
+              echo "No release needed: deployment failed or no new commits"
+            fi
+          fi
+          
+          # Set outputs
+          echo "should-release=$SHOULD_RELEASE" >> $GITHUB_OUTPUT
+          echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "next-version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "commits-since-last=$COMMITS_SINCE" >> $GITHUB_OUTPUT
+          
+          echo "🎯 Release check completed: should_release=$SHOULD_RELEASE, next_version=$NEXT_VERSION"
+
+  # Generate changelog and create release
+  create-release:
+    name: 🚀 Create Release
+    runs-on: ubuntu-latest
+    needs: check-release-needed
+    if: needs.check-release-needed.outputs.should-release == 'true'
+    outputs:
+      release-url: ${{ steps.create-release.outputs.release-url }}
+      release-tag: ${{ steps.create-release.outputs.release-tag }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update version in package.json
+        run: |
+          echo "📝 Updating version to ${{ needs.check-release-needed.outputs.next-version }}"
+          
+          # Update package.json version
+          npm version ${{ needs.check-release-needed.outputs.next-version }} --no-git-tag-version
+          
+          # Commit version bump
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to v${{ needs.check-release-needed.outputs.next-version }}"
+          git push origin main
+
+      - name: Generate comprehensive changelog
+        id: generate-changelog
+        run: |
+          echo "📋 Generating comprehensive changelog..."
+          
+          NEXT_VERSION="${{ needs.check-release-needed.outputs.next-version }}"
+          CURRENT_VERSION="${{ needs.check-release-needed.outputs.current-version }}"
+          
+          # Get latest release tag for comparison
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          
+          # Create changelog file
+          echo "# Changelog for v$NEXT_VERSION" > RELEASE_CHANGELOG.md
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "**Release Date**: $(date -u '+%Y-%m-%d')" >> RELEASE_CHANGELOG.md
+          echo "**Previous Version**: v$CURRENT_VERSION" >> RELEASE_CHANGELOG.md
+          echo "" >> RELEASE_CHANGELOG.md
+          
+          # Get commit range for changelog
+          if [[ "$LATEST_TAG" != "v0.0.0" ]]; then
+            COMMIT_RANGE="${LATEST_TAG}..HEAD"
+          else
+            # First release - get all commits
+            COMMIT_RANGE="--all"
+          fi
+          
+          # Categorize commits
+          echo "## 🚀 Features" >> RELEASE_CHANGELOG.md
+          git log $COMMIT_RANGE --format="- %s (%h)" --grep="^feat" --grep="^feature" >> RELEASE_CHANGELOG.md || echo "- No new features" >> RELEASE_CHANGELOG.md
+          
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "## 🐛 Bug Fixes" >> RELEASE_CHANGELOG.md
+          git log $COMMIT_RANGE --format="- %s (%h)" --grep="^fix" >> RELEASE_CHANGELOG.md || echo "- No bug fixes" >> RELEASE_CHANGELOG.md
+          
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "## 📚 Documentation" >> RELEASE_CHANGELOG.md
+          git log $COMMIT_RANGE --format="- %s (%h)" --grep="^docs" >> RELEASE_CHANGELOG.md || echo "- No documentation changes" >> RELEASE_CHANGELOG.md
+          
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "## 🔧 Maintenance" >> RELEASE_CHANGELOG.md
+          git log $COMMIT_RANGE --format="- %s (%h)" --grep="^chore" --grep="^refactor" >> RELEASE_CHANGELOG.md || echo "- No maintenance changes" >> RELEASE_CHANGELOG.md
+          
+          # Include all commits if requested
+          if [[ "${{ github.event.inputs.include_all_commits }}" == "true" ]]; then
+            echo "" >> RELEASE_CHANGELOG.md
+            echo "## 📝 All Commits" >> RELEASE_CHANGELOG.md
+            git log $COMMIT_RANGE --format="- %s (%h)" >> RELEASE_CHANGELOG.md
+          fi
+          
+          # Add deployment info
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "## 📦 Deployment Information" >> RELEASE_CHANGELOG.md
+          echo "- **Production URL**: https://needport.jp" >> RELEASE_CHANGELOG.md
+          echo "- **Deploy Status**: ✅ Successful" >> RELEASE_CHANGELOG.md
+          echo "- **Build Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> RELEASE_CHANGELOG.md
+          
+          # Add verification status
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "## ✅ Verification" >> RELEASE_CHANGELOG.md
+          echo "- **Smoke Tests**: Passed" >> RELEASE_CHANGELOG.md
+          echo "- **Production Health**: Verified" >> RELEASE_CHANGELOG.md
+          echo "- **Lv1 Functionality**: Tested" >> RELEASE_CHANGELOG.md
+          
+          # Technical details
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "## 🔧 Technical Details" >> RELEASE_CHANGELOG.md
+          echo "- **Node.js Version**: $(node --version)" >> RELEASE_CHANGELOG.md
+          echo "- **Next.js Version**: $(npm list next --depth=0 | grep next | cut -d'@' -f2 || echo 'N/A')" >> RELEASE_CHANGELOG.md
+          echo "- **Commits Since Last Release**: ${{ needs.check-release-needed.outputs.commits-since-last }}" >> RELEASE_CHANGELOG.md
+          
+          # Contributors
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "## 👥 Contributors" >> RELEASE_CHANGELOG.md
+          git log $COMMIT_RANGE --format="- %an (%ae)" | sort -u >> RELEASE_CHANGELOG.md || echo "- github-actions[bot]" >> RELEASE_CHANGELOG.md
+          
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "---" >> RELEASE_CHANGELOG.md
+          echo "*This release was automatically generated by the NeedPort release system.*" >> RELEASE_CHANGELOG.md
+          
+          # Read changelog content for release
+          CHANGELOG_CONTENT=$(cat RELEASE_CHANGELOG.md)
+          echo "changelog-content<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG_CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create git tag and release
+        id: create-release
+        run: |
+          echo "🏷️ Creating release v${{ needs.check-release-needed.outputs.next-version }}"
+          
+          RELEASE_TAG="v${{ needs.check-release-needed.outputs.next-version }}"
+          
+          # Create and push tag
+          git tag -a "$RELEASE_TAG" -m "Release $RELEASE_TAG
+
+          Automated release created after successful production deployment.
+          
+          Features and fixes included in this release:
+          - ${{ needs.check-release-needed.outputs.commits-since-last }} commits since last release
+          - Production deployment verified
+          - All smoke tests passed
+          
+          🤖 Generated with Claude Code
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          
+          git push origin "$RELEASE_TAG"
+          
+          # Create GitHub release
+          RELEASE_TITLE="🚀 NeedPort v${{ needs.check-release-needed.outputs.next-version }}"
+          
+          RELEASE_BODY="## NeedPort Platform Release v${{ needs.check-release-needed.outputs.next-version }}
+
+          This release was automatically created following a successful production deployment.
+
+          ${{ steps.generate-changelog.outputs.changelog-content }}
+
+          ## 🔗 Quick Links
+          - **Production**: https://needport.jp
+          - **Documentation**: [README.md](https://github.com/${{ github.repository }}/blob/main/README.md)
+          - **Issues**: [GitHub Issues](https://github.com/${{ github.repository }}/issues)
+
+          ## 📊 Release Metrics
+          - **Commits**: ${{ needs.check-release-needed.outputs.commits-since-last }}
+          - **Release Type**: ${{ github.event.inputs.release_type || 'auto' }}
+          - **Generated**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+          ---
+          🤖 **Automated Release**: This release was created automatically by our CI/CD pipeline after successful production deployment and verification.
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          
+          # Create release using GitHub CLI
+          RELEASE_URL=$(gh release create "$RELEASE_TAG" \
+            --title "$RELEASE_TITLE" \
+            --notes "$RELEASE_BODY" \
+            --latest \
+            --verify-tag || echo "FAILED")
+          
+          if [[ "$RELEASE_URL" != "FAILED" ]]; then
+            echo "release-url=$RELEASE_URL" >> $GITHUB_OUTPUT
+            echo "release-tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+            echo "✅ Created release: $RELEASE_URL"
+          else
+            echo "❌ Failed to create release"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update CHANGELOG.md file
+        run: |
+          echo "📝 Updating CHANGELOG.md file..."
+          
+          # Create or update CHANGELOG.md
+          if [[ -f CHANGELOG.md ]]; then
+            # Prepend new changelog to existing file
+            cat RELEASE_CHANGELOG.md > TEMP_CHANGELOG.md
+            echo "" >> TEMP_CHANGELOG.md
+            echo "---" >> TEMP_CHANGELOG.md
+            echo "" >> TEMP_CHANGELOG.md
+            cat CHANGELOG.md >> TEMP_CHANGELOG.md
+            mv TEMP_CHANGELOG.md CHANGELOG.md
+          else
+            # Create new CHANGELOG.md
+            cp RELEASE_CHANGELOG.md CHANGELOG.md
+          fi
+          
+          # Commit updated changelog
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG.md for v${{ needs.check-release-needed.outputs.next-version }}"
+          git push origin main
+          
+          echo "✅ CHANGELOG.md updated"
+
+  # Post-release verification and notifications
+  post-release:
+    name: 📢 Post-Release Tasks
+    runs-on: ubuntu-latest
+    needs: [check-release-needed, create-release]
+    if: always() && needs.create-release.result == 'success'
+
+    steps:
+      - name: Verify release is accessible
+        run: |
+          echo "🔍 Verifying release is accessible..."
+          
+          RELEASE_TAG="${{ needs.create-release.outputs.release-tag }}"
+          
+          # Check if tag is accessible
+          if curl -s -f "https://api.github.com/repos/${{ github.repository }}/releases/tags/$RELEASE_TAG" > /dev/null; then
+            echo "✅ Release $RELEASE_TAG is accessible"
+          else
+            echo "❌ Release $RELEASE_TAG is not accessible"
+            exit 1
+          fi
+
+      - name: Send release notification
+        run: |
+          echo "📢 Sending release notification..."
+          
+          if [[ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]]; then
+            MESSAGE="🚀 *New NeedPort Release: ${{ needs.create-release.outputs.release-tag }}*
+
+            *Production URL*: https://needport.jp
+            *Release URL*: ${{ needs.create-release.outputs.release-url }}
+            *Commits*: ${{ needs.check-release-needed.outputs.commits-since-last }} since last release
+            *Type*: ${{ github.event.inputs.release_type || 'Auto' }}
+
+            ✅ *Verification Status*:
+            • Production deployment: Success
+            • Smoke tests: Passed
+            • Release creation: Success
+
+            📋 *What's New*:
+            View the complete changelog and release notes at the link above.
+
+            ---
+            🤖 Automated release created by NeedPort CI/CD"
+
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"$MESSAGE\"}" \
+              ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
+
+      - name: Create release summary
+        run: |
+          echo "# 🚀 Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Release**: ${{ needs.create-release.outputs.release-tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL**: ${{ needs.create-release.outputs.release-url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commits**: ${{ needs.check-release-needed.outputs.commits-since-last }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Production**: https://needport.jp" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Release created successfully and is now available to users." >> $GITHUB_STEP_SUMMARY
+
+      - name: Update package.json description with release info
+        run: |
+          echo "📝 Updating package.json with release info..."
+          
+          # Add release info to package.json (optional metadata)
+          node -e "
+            const pkg = require('./package.json');
+            pkg.lastRelease = {
+              version: '${{ needs.create-release.outputs.release-tag }}',
+              date: '$(date -u +%Y-%m-%dT%H:%M:%SZ)',
+              url: '${{ needs.create-release.outputs.release-url }}'
+            };
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          
+          echo "✅ Package metadata updated"

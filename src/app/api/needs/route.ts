@@ -1,147 +1,128 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
-import { createClient } from '@/lib/supabase/server';
-import { getRequestId, logWithRequestId } from '@/lib/request-id';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 // Minimal posting flow: only title + body required
-// Backward compatible: accepts additional fields but doesn't require them
 const MinimalNeedInput = z.object({
-  title: z.string().min(1),
-  body: z.string().min(1), // Required for minimal flow
-});
-
-// Extended input for backward compatibility
-const NeedInput = z.object({
-  title: z.string().min(1),
-  body: z.string().optional(),
-  summary: z.string().optional(),
-  area: z.string().optional().nullable(),
+  title: z.string().min(1).max(200),
+  body: z.string().min(1).max(10000),
 });
 
 export async function POST(req: NextRequest) {
-  const startedAt = Date.now();
-  const requestId = getRequestId(req);
-  
   try {
     const { userId } = await auth();
+    
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ 
+        error: 'UNAUTHORIZED',
+        detail: 'ログインが必要です。ログインしてから再度お試しください。' 
+      }, { status: 401 });
     }
 
     const json = await req.json().catch(() => ({}));
     
-    // Try minimal validation first, then fall back to extended
-    let input: any;
-    const minimalParsed = MinimalNeedInput.safeParse(json);
-    if (minimalParsed.success) {
-      input = minimalParsed.data;
-      logWithRequestId(requestId, 'info', '[NEEDS_POST_MINIMAL]', { 
-        flow: 'minimal', 
-        fields: Object.keys(input) 
-      });
-    } else {
-      const extendedParsed = NeedInput.safeParse(json);
-      if (!extendedParsed.success) {
-        return NextResponse.json(
-          { error: 'VALIDATION_ERROR', details: extendedParsed.error.flatten() },
-          { status: 400 }
-        );
-      }
-      input = extendedParsed.data;
-      logWithRequestId(requestId, 'info', '[NEEDS_POST_EXTENDED]', { 
-        flow: 'extended', 
-        fields: Object.keys(input) 
-      });
+    // Validate minimal input
+    const validation = MinimalNeedInput.safeParse(json);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'VALIDATION_ERROR', details: validation.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { title, body } = validation.data;
+    
+    // Use service-role client to bypass RLS
+    const supabase = createAdminClient();
+    if (!supabase) {
+      return NextResponse.json({ 
+        error: 'SERVICE_ERROR', 
+        detail: 'Admin client unavailable' 
+      }, { status: 500 });
     }
     
-    // Hardened payload - only these 4 fields, never created_by
-    const title = input.title;
-    const summary = input.summary ?? input.title;
-    const body = input.body ?? input.summary ?? input.title;
-    const area = input.area ?? null;
-
-    logWithRequestId(requestId, 'info', '[NEEDS_POST_PAYLOAD]', { 
-      keys: ['title', 'summary', 'body', 'area', 'status'],
-      processingTimeMs: Date.now() - startedAt
-    });
-
-    const supabase = createClient();
+    // Debug: Check if we're using service role
+    console.log('Using service role key:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    console.log('Clerk userId:', userId);
     
-    // Explicit column-based insert to prevent field injection
-    // Always create with status: 'draft' for RLS policy compliance
+    // First, find the profile ID from clerk_id
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('clerk_id', userId)
+      .single();
+    
+    if (profileError || !profile) {
+      console.error('Profile not found for clerk_id:', userId, profileError);
+      return NextResponse.json({ 
+        error: 'USER_NOT_FOUND', 
+        detail: 'ユーザープロフィールが見つかりません。アカウント設定を確認してください。' 
+      }, { status: 400 });
+    }
+    
+    console.log('Found profile id:', profile.id);
+    
+    // Insert with the actual profile ID as owner_id
     const { data, error } = await supabase
       .from('needs')
-      .insert([{ title, summary, body, area, status: 'draft' }])
+      .insert([{ 
+        title: title.trim(), 
+        body: body.trim(),
+        status: 'draft',
+        published: false,
+        owner_id: profile.id  // Use the profile ID, not clerk ID
+      }])
       .select('id, title, created_at')
       .single();
 
     if (error) {
-      logWithRequestId(requestId, 'error', '[NEEDS_INSERT_ERROR]', { 
-        keys: Object.keys({ title, summary, body, area, status: 'draft' }), 
-        err: error, 
-        supabaseError: error?.message 
-      });
       return NextResponse.json({ 
         error: 'DB_ERROR', 
         detail: error?.message ?? String(error) 
-      }, { status: 500, headers: { 'X-Request-ID': requestId } });
+      }, { status: 500 });
     }
 
     return NextResponse.json({ 
       id: data.id, 
       title: data.title, 
       created_at: data.created_at 
-    }, { 
-      status: 201,
-      headers: { 'X-Request-ID': requestId }
-    });
+    }, { status: 201 });
+
   } catch (e: any) {
-    logWithRequestId(requestId, 'error', '[NEEDS_POST_FATAL]', { 
-      message: e?.message, 
-      type: e?.name 
-    });
     return NextResponse.json({ 
       error: 'INTERNAL_ERROR',
       detail: e?.message ?? String(e)
-    }, { 
-      status: 500,
-      headers: { 'X-Request-ID': requestId }
-    });
-  } finally {
-    logWithRequestId(requestId, 'info', '[NEEDS_POST_FINISH]', { 
-      processingTimeMs: Date.now() - startedAt
-    });
+    }, { status: 500 });
   }
 }
 
 export async function GET(req: NextRequest) {
-  const requestId = getRequestId(req);
-  
   try {
-    const supabase = createClient();
+    const supabase = createAdminClient();
+    if (!supabase) {
+      return NextResponse.json({ 
+        error: 'SERVICE_ERROR', 
+        detail: 'Admin client unavailable' 
+      }, { status: 500 });
+    }
     
     const { data, error } = await supabase
       .from("needs")
       .select("*")
+      .eq("published", true)  // Only show published needs
       .order("created_at", { ascending: false });
 
     if (error) {
-      logWithRequestId(requestId, 'error', '[NEEDS_GET_ERROR]', error);
       return NextResponse.json({ error: error.message }, { 
-        status: 500,
-        headers: { 'X-Request-ID': requestId }
+        status: 500
       });
     }
 
-    return NextResponse.json({ needs: data || [] }, {
-      headers: { 'X-Request-ID': requestId }
-    });
+    return NextResponse.json({ needs: data || [] });
   } catch (error) {
-    logWithRequestId(requestId, 'error', '[NEEDS_GET_FATAL]', error);
     return NextResponse.json({ error: 'Failed to fetch needs' }, { 
-      status: 500,
-      headers: { 'X-Request-ID': requestId }
+      status: 500
     });
   }
 }

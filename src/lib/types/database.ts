@@ -41,6 +41,7 @@ export interface Database {
           mode: 'single' | 'pooled';
           adopted_offer_id: string | null;
           prejoin_count: number;
+          published: boolean;
           created_by: string;
           created_at: string;
           updated_at: string;
@@ -55,6 +56,7 @@ export interface Database {
           mode?: 'single' | 'pooled';
           adopted_offer_id?: string | null;
           prejoin_count?: number;
+          published?: boolean;
           created_by: string;
           created_at?: string;
           updated_at?: string;
@@ -69,6 +71,7 @@ export interface Database {
           mode?: 'single' | 'pooled';
           adopted_offer_id?: string | null;
           prejoin_count?: number;
+          published?: boolean;
           created_by?: string;
           created_at?: string;
           updated_at?: string;
@@ -397,6 +400,81 @@ export interface Database {
           status?: 'pending' | 'approved' | 'rejected';
           created_by?: string;
           created_at?: string;
+        };
+      };
+      need_engagements: {
+        Row: {
+          id: string;
+          need_id: string;
+          user_id: string;
+          kind: 'interest' | 'pledge';
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          need_id: string;
+          user_id: string;
+          kind: 'interest' | 'pledge';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          need_id?: string;
+          user_id?: string;
+          kind?: 'interest' | 'pledge';
+          created_at?: string;
+        };
+      };
+      need_anonymous_interest: {
+        Row: {
+          id: string;
+          need_id: string;
+          anon_key: string;
+          day: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          need_id: string;
+          anon_key: string;
+          day: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          need_id?: string;
+          anon_key?: string;
+          day?: string;
+          created_at?: string;
+        };
+      };
+      proposals: {
+        Row: {
+          id: string;
+          need_id: string;
+          message: string;
+          estimate: number | null;
+          status: 'review' | 'approved' | 'rejected';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          need_id: string;
+          message: string;
+          estimate?: number | null;
+          status?: 'review' | 'approved' | 'rejected';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          need_id?: string;
+          message?: string;
+          estimate?: number | null;
+          status?: 'review' | 'approved' | 'rejected';
+          created_at?: string;
+          updated_at?: string;
         };
       };
     };

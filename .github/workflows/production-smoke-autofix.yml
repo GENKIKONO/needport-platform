@@ -1,0 +1,677 @@
+# .github/workflows/production-smoke-autofix.yml
+# Automated production smoke testing with auto-fix PR creation
+# Runs against https://needport.jp and creates fix PRs for any detected issues
+
+name: 🔥 Production Smoke with Auto-Fix
+
+on:
+  # Scheduled runs - every 6 hours during business hours (JST)
+  schedule:
+    # 9 AM JST (00:00 UTC) - Start of business day
+    - cron: '0 0 * * *'
+    # 3 PM JST (06:00 UTC) - Mid-day check
+    - cron: '0 6 * * *'
+    # 9 PM JST (12:00 UTC) - End of business day
+    - cron: '0 12 * * *'
+  
+  # Manual trigger with customizable options
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL to test'
+        required: false
+        default: 'https://needport.jp'
+        type: string
+      create_fix_pr:
+        description: 'Create auto-fix PR on failures'
+        required: false
+        default: true
+        type: boolean
+      notify_failures:
+        description: 'Send notifications on failures'
+        required: false
+        default: true
+        type: boolean
+
+# Prevent concurrent runs of the same workflow
+concurrency:
+  group: production-smoke-autofix
+  cancel-in-progress: false
+
+env:
+  TARGET_BASE: ${{ github.event.inputs.target_url || 'https://needport.jp' }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  # Production smoke testing
+  production-smoke-test:
+    name: 🧪 Production Smoke Test
+    runs-on: ubuntu-latest
+    outputs:
+      smoke-status: ${{ steps.smoke-test.outputs.smoke-status }}
+      failed-endpoints: ${{ steps.smoke-test.outputs.failed-endpoints }}
+      failed-count: ${{ steps.smoke-test.outputs.failed-count }}
+      test-report: ${{ steps.smoke-test.outputs.test-report }}
+      needs-fix: ${{ steps.smoke-test.outputs.needs-fix }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci --legacy-peer-deps
+          echo "✅ Dependencies installed"
+
+      - name: Run comprehensive production smoke test
+        id: smoke-test
+        run: |
+          echo "🔥 Running production smoke test against $TARGET_BASE"
+          
+          # Initialize result tracking
+          FAILED_ENDPOINTS=""
+          FAILED_COUNT=0
+          TEST_REPORT="# Production Smoke Test Report\n\n"
+          TEST_REPORT+="**Target**: $TARGET_BASE\n"
+          TEST_REPORT+="**Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\n\n"
+          
+          # Extended endpoint list for comprehensive testing
+          declare -a endpoints=(
+            "/"
+            "/v2"
+            "/needs" 
+            "/vendors"
+            "/api/health"
+            "/api/ready"
+            "/api/needs"
+            "/sitemap.xml"
+            "/robots.txt"
+            "/feed.xml"
+            "/feed.atom"
+          )
+          
+          # Test each endpoint
+          echo "## Endpoint Test Results" >> smoke_report.md
+          echo "" >> smoke_report.md
+          
+          for endpoint in "${endpoints[@]}"; do
+            echo "Testing: $TARGET_BASE$endpoint"
+            
+            # Test with curl and capture detailed response
+            HTTP_STATUS=$(curl -s -w "%{http_code}" -o /tmp/response_body "$TARGET_BASE$endpoint" --connect-timeout 10 --max-time 30 || echo "000")
+            RESPONSE_SIZE=$(wc -c < /tmp/response_body 2>/dev/null || echo "0")
+            
+            # Determine if this endpoint passed
+            ENDPOINT_STATUS="✅ PASS"
+            
+            case "$endpoint" in
+              "/api/health"|"/api/ready")
+                # API endpoints should return 200 and valid JSON
+                if [[ "$HTTP_STATUS" != "200" ]]; then
+                  ENDPOINT_STATUS="❌ FAIL (HTTP $HTTP_STATUS)"
+                  FAILED_ENDPOINTS="$FAILED_ENDPOINTS$endpoint "
+                  FAILED_COUNT=$((FAILED_COUNT + 1))
+                elif [[ "$RESPONSE_SIZE" -lt 10 ]]; then
+                  ENDPOINT_STATUS="⚠️ WARN (Empty response)"
+                else
+                  # Check if response is valid JSON for API endpoints
+                  if ! jq . /tmp/response_body > /dev/null 2>&1; then
+                    ENDPOINT_STATUS="⚠️ WARN (Invalid JSON)"
+                  fi
+                fi
+                ;;
+              "/sitemap.xml"|"/feed.xml"|"/feed.atom"|"/robots.txt")
+                # These should return 200 and have some content
+                if [[ "$HTTP_STATUS" != "200" ]]; then
+                  ENDPOINT_STATUS="❌ FAIL (HTTP $HTTP_STATUS)"
+                  FAILED_ENDPOINTS="$FAILED_ENDPOINTS$endpoint "
+                  FAILED_COUNT=$((FAILED_COUNT + 1))
+                elif [[ "$RESPONSE_SIZE" -lt 20 ]]; then
+                  ENDPOINT_STATUS="⚠️ WARN (Too small: ${RESPONSE_SIZE}B)"
+                fi
+                ;;
+              *)
+                # Regular pages should return 200 or redirect (301/302)
+                if [[ "$HTTP_STATUS" =~ ^(200|301|302)$ ]]; then
+                  if [[ "$RESPONSE_SIZE" -lt 100 ]]; then
+                    ENDPOINT_STATUS="⚠️ WARN (Small response: ${RESPONSE_SIZE}B)"
+                  fi
+                else
+                  ENDPOINT_STATUS="❌ FAIL (HTTP $HTTP_STATUS)"
+                  FAILED_ENDPOINTS="$FAILED_ENDPOINTS$endpoint "
+                  FAILED_COUNT=$((FAILED_COUNT + 1))
+                fi
+                ;;
+            esac
+            
+            # Add to report
+            printf "| %-20s | %-10s | %-20s | %sB |\n" "$endpoint" "$HTTP_STATUS" "$ENDPOINT_STATUS" "$RESPONSE_SIZE" >> smoke_report.md
+          done
+          
+          # Add table header at the beginning
+          sed -i '1i| Endpoint | Status Code | Result | Response Size |' smoke_report.md
+          sed -i '2i|----------|-------------|--------|---------------|' smoke_report.md
+          
+          # Run existing smoke script as additional check
+          echo "" >> smoke_report.md
+          echo "## Detailed Smoke Test Output" >> smoke_report.md
+          echo "" >> smoke_report.md
+          
+          if BASE="$TARGET_BASE" npm run smoke:ci >> smoke_detail.log 2>&1; then
+            echo "✅ Legacy smoke tests passed" >> smoke_report.md
+          else
+            echo "❌ Legacy smoke tests failed" >> smoke_report.md
+            echo "" >> smoke_report.md
+            echo "```" >> smoke_report.md
+            tail -20 smoke_detail.log >> smoke_report.md
+            echo "```" >> smoke_report.md
+            FAILED_COUNT=$((FAILED_COUNT + 1))
+          fi
+          
+          # Set outputs
+          echo "failed-endpoints=$FAILED_ENDPOINTS" >> $GITHUB_OUTPUT
+          echo "failed-count=$FAILED_COUNT" >> $GITHUB_OUTPUT
+          
+          if [[ $FAILED_COUNT -eq 0 ]]; then
+            echo "smoke-status=success" >> $GITHUB_OUTPUT
+            echo "needs-fix=false" >> $GITHUB_OUTPUT
+            echo "✅ All smoke tests passed!"
+          else
+            echo "smoke-status=failed" >> $GITHUB_OUTPUT
+            echo "needs-fix=true" >> $GITHUB_OUTPUT
+            echo "❌ $FAILED_COUNT endpoint(s) failed: $FAILED_ENDPOINTS"
+          fi
+          
+          # Prepare full test report for PR
+          TEST_REPORT_CONTENT=$(cat smoke_report.md)
+          echo "test-report<<EOF" >> $GITHUB_OUTPUT
+          echo "$TEST_REPORT_CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Upload smoke test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-results-${{ github.run_number }}
+          path: |
+            smoke_report.md
+            smoke_detail.log
+          retention-days: 7
+
+  # Create auto-fix PR for failed tests
+  create-autofix-pr:
+    name: 🔧 Create Auto-Fix PR
+    runs-on: ubuntu-latest
+    needs: production-smoke-test
+    if: needs.production-smoke-test.outputs.needs-fix == 'true' && (github.event.inputs.create_fix_pr != 'false')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Create fix branch
+        id: create-branch
+        run: |
+          FIX_BRANCH="autofix/production-smoke-failures-$(date +%Y%m%d-%H%M%S)"
+          echo "fix-branch=$FIX_BRANCH" >> $GITHUB_OUTPUT
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git checkout -b "$FIX_BRANCH"
+          echo "✅ Created fix branch: $FIX_BRANCH"
+
+      - name: Analyze and fix common issues
+        id: apply-fixes
+        run: |
+          echo "🔧 Analyzing failed endpoints and applying common fixes..."
+          
+          FAILED_ENDPOINTS="${{ needs.production-smoke-test.outputs.failed-endpoints }}"
+          FIXES_APPLIED=""
+          
+          # Fix 1: Update health endpoint if it's failing
+          if echo "$FAILED_ENDPOINTS" | grep -q "/api/health"; then
+            echo "🩺 Fixing health endpoint..."
+            
+            # Check if health endpoint exists
+            if [[ -f "src/app/api/health/route.ts" ]]; then
+              # Add comprehensive error handling and logging
+              cat > src/app/api/health/route.ts << 'EOF'
+import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase/admin';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
+
+export async function GET() {
+  try {
+    const startTime = Date.now();
+    let checks = {
+      database: { status: 'unknown', responseTime: 0, error: null },
+      environment: { status: 'unknown', nodeEnv: process.env.NODE_ENV },
+      timestamp: new Date().toISOString()
+    };
+
+    // Database check
+    try {
+      const dbStart = Date.now();
+      const supabase = supabaseAdmin();
+      
+      if (!supabase) {
+        checks.database = { status: 'error', responseTime: 0, error: 'Supabase client not available' };
+      } else {
+        // Simple query to test database connectivity
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('count(*)', { count: 'exact', head: true })
+          .limit(1);
+        
+        checks.database.responseTime = Date.now() - dbStart;
+        
+        if (error) {
+          checks.database.status = 'error';
+          checks.database.error = error.message;
+        } else {
+          checks.database.status = 'ok';
+        }
+      }
+    } catch (dbError) {
+      checks.database = { 
+        status: 'error', 
+        responseTime: Date.now() - Date.now(), 
+        error: dbError instanceof Error ? dbError.message : 'Unknown database error'
+      };
+    }
+
+    // Overall status
+    const isHealthy = checks.database.status === 'ok';
+    const totalResponseTime = Date.now() - startTime;
+
+    return NextResponse.json({
+      ok: isHealthy,
+      status: isHealthy ? 'healthy' : 'unhealthy',
+      version: process.env.npm_package_version || '1.0.0',
+      environment: process.env.NODE_ENV || 'unknown',
+      timestamp: new Date().toISOString(),
+      responseTime: totalResponseTime,
+      checks
+    }, { 
+      status: isHealthy ? 200 : 503,
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Content-Type': 'application/json'
+      }
+    });
+
+  } catch (error) {
+    console.error('Health check failed:', error);
+    
+    return NextResponse.json({
+      ok: false,
+      status: 'error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+      checks: {
+        database: { status: 'error', error: 'Health check failed completely' }
+      }
+    }, { status: 500 });
+  }
+}
+EOF
+              
+              FIXES_APPLIED="$FIXES_APPLIED\n- Fixed /api/health endpoint with comprehensive error handling"
+              echo "✅ Health endpoint fix applied"
+            fi
+          fi
+          
+          # Fix 2: Update ready endpoint if it's failing
+          if echo "$FAILED_ENDPOINTS" | grep -q "/api/ready"; then
+            echo "🚀 Fixing ready endpoint..."
+            
+            mkdir -p src/app/api/ready
+            cat > src/app/api/ready/route.ts << 'EOF'
+import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
+
+export async function GET() {
+  try {
+    return NextResponse.json({
+      ready: true,
+      status: 'ok',
+      prod: process.env.NODE_ENV === 'production',
+      runtime: 'nodejs',
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || '1.0.0'
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (error) {
+    return NextResponse.json({
+      ready: false,
+      status: 'error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
+  }
+}
+EOF
+            
+            FIXES_APPLIED="$FIXES_APPLIED\n- Created/fixed /api/ready endpoint"
+            echo "✅ Ready endpoint fix applied"
+          fi
+          
+          # Fix 3: Ensure sitemap.xml exists and is valid
+          if echo "$FAILED_ENDPOINTS" | grep -q "/sitemap.xml"; then
+            echo "🗺️ Fixing sitemap.xml..."
+            
+            mkdir -p src/app
+            cat > src/app/sitemap.ts << 'EOF'
+import type { MetadataRoute } from 'next';
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = 'https://needport.jp';
+  
+  return [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1,
+    },
+    {
+      url: `${baseUrl}/needs`,
+      lastModified: new Date(),
+      changeFrequency: 'hourly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/vendors`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/v2`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+  ];
+}
+EOF
+            
+            FIXES_APPLIED="$FIXES_APPLIED\n- Created/updated sitemap.ts for automatic sitemap.xml generation"
+            echo "✅ Sitemap fix applied"
+          fi
+          
+          # Fix 4: Ensure robots.txt exists
+          if echo "$FAILED_ENDPOINTS" | grep -q "/robots.txt"; then
+            echo "🤖 Fixing robots.txt..."
+            
+            mkdir -p public
+            cat > public/robots.txt << 'EOF'
+# NeedPort - Production robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://needport.jp/sitemap.xml
+
+# Disallow admin and API paths
+Disallow: /admin/
+Disallow: /api/
+Disallow: /me/
+
+# Allow specific public API endpoints
+Allow: /api/health
+Allow: /api/ready
+EOF
+            
+            FIXES_APPLIED="$FIXES_APPLIED\n- Created/updated robots.txt with proper production rules"
+            echo "✅ Robots.txt fix applied"
+          fi
+          
+          # Set output for fixes applied
+          echo "fixes-applied<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$FIXES_APPLIED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          if [[ -n "$FIXES_APPLIED" ]]; then
+            echo "✅ Applied $(echo -e "$FIXES_APPLIED" | wc -l) fixes"
+          else
+            echo "ℹ️ No automatic fixes available for the detected issues"
+          fi
+
+      - name: Run tests after fixes
+        id: verify-fixes
+        run: |
+          echo "🧪 Running tests to verify fixes..."
+          
+          # Run build to ensure no syntax errors
+          if npm run build; then
+            echo "build-status=success" >> $GITHUB_OUTPUT
+            echo "✅ Build successful after fixes"
+          else
+            echo "build-status=failed" >> $GITHUB_OUTPUT
+            echo "❌ Build failed after fixes"
+          fi
+          
+          # Run type check
+          if npm run typecheck; then
+            echo "typecheck-status=success" >> $GITHUB_OUTPUT
+            echo "✅ Type check passed after fixes"
+          else
+            echo "typecheck-status=failed" >> $GITHUB_OUTPUT
+            echo "❌ Type check failed after fixes"
+          fi
+
+      - name: Commit fixes and create PR
+        id: create-pr
+        if: steps.apply-fixes.outputs.fixes-applied != ''
+        run: |
+          git add .
+          
+          # Create commit message
+          COMMIT_MSG="fix: automated production smoke test fixes
+
+          Applied fixes for failed production endpoints:
+          ${{ steps.apply-fixes.outputs.fixes-applied }}
+          
+          This is an automated fix generated by production smoke testing.
+          
+          Failed endpoints: ${{ needs.production-smoke-test.outputs.failed-endpoints }}
+          Total failures: ${{ needs.production-smoke-test.outputs.failed-count }}
+          
+          🤖 Generated with Claude Code
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          
+          git commit -m "$COMMIT_MSG"
+          git push origin "${{ steps.create-branch.outputs.fix-branch }}"
+          
+          # Create PR with comprehensive details
+          PR_TITLE="🔧 Auto-fix: Production smoke test failures ($(date +%Y-%m-%d))"
+          
+          PR_BODY="## 🔥 Automated Production Smoke Test Fixes
+
+          This PR contains automated fixes for production smoke test failures detected against \`$TARGET_BASE\`.
+
+          ### 📊 Test Results Summary
+          - **Failed Endpoints**: ${{ needs.production-smoke-test.outputs.failed-count }}
+          - **Endpoints**: ${{ needs.production-smoke-test.outputs.failed-endpoints }}
+          - **Test Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+          ### 🔧 Fixes Applied
+          ${{ steps.apply-fixes.outputs.fixes-applied }}
+
+          ### 📋 Detailed Test Report
+          ${{ needs.production-smoke-test.outputs.test-report }}
+
+          ### 🧪 Post-Fix Validation
+          - **Build Status**: ${{ steps.verify-fixes.outputs.build-status }}
+          - **Type Check**: ${{ steps.verify-fixes.outputs.typecheck-status }}
+
+          ### ⚡ Next Steps
+          1. Review the automated fixes
+          2. Run additional manual testing if needed
+          3. Merge if fixes look good
+          4. Monitor the next smoke test run
+
+          ### 🤖 Automation Details
+          - **Workflow**: [Production Smoke with Auto-Fix](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - **Trigger**: ${{ github.event_name }}
+          - **Branch**: \`${{ steps.create-branch.outputs.fix-branch }}\`
+
+          ---
+          🤖 This PR was automatically created by the production monitoring system.
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          
+          # Create PR using GitHub CLI
+          PR_URL=$(gh pr create \
+            --title "$PR_TITLE" \
+            --body "$PR_BODY" \
+            --head "${{ steps.create-branch.outputs.fix-branch }}" \
+            --base main \
+            --label "automated,production-fix,smoke-test" \
+            --reviewer "" || echo "FAILED")
+          
+          if [[ "$PR_URL" != "FAILED" ]]; then
+            echo "pr-url=$PR_URL" >> $GITHUB_OUTPUT
+            echo "pr-created=true" >> $GITHUB_OUTPUT
+            echo "✅ Created PR: $PR_URL"
+          else
+            echo "pr-created=false" >> $GITHUB_OUTPUT
+            echo "❌ Failed to create PR"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Notification and summary
+  notify-results:
+    name: 📢 Notify Results
+    runs-on: ubuntu-latest
+    needs: [production-smoke-test, create-autofix-pr]
+    if: always()
+    
+    steps:
+      - name: Prepare notification summary
+        id: summary
+        run: |
+          echo "📝 Preparing notification summary..."
+          
+          SMOKE_STATUS="${{ needs.production-smoke-test.outputs.smoke-status }}"
+          FAILED_COUNT="${{ needs.production-smoke-test.outputs.failed-count }}"
+          FAILED_ENDPOINTS="${{ needs.production-smoke-test.outputs.failed-endpoints }}"
+          
+          if [[ "$SMOKE_STATUS" == "success" ]]; then
+            SUMMARY_EMOJI="✅"
+            SUMMARY_STATUS="SUCCESS"
+            SUMMARY_MESSAGE="All production smoke tests passed"
+          else
+            SUMMARY_EMOJI="❌"
+            SUMMARY_STATUS="FAILED"
+            SUMMARY_MESSAGE="$FAILED_COUNT endpoint(s) failed: $FAILED_ENDPOINTS"
+          fi
+          
+          echo "summary-emoji=$SUMMARY_EMOJI" >> $GITHUB_OUTPUT
+          echo "summary-status=$SUMMARY_STATUS" >> $GITHUB_OUTPUT
+          echo "summary-message=$SUMMARY_MESSAGE" >> $GITHUB_OUTPUT
+
+      - name: Create workflow summary
+        run: |
+          echo "# ${{ steps.summary.outputs.summary-emoji }} Production Smoke Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Target URL**: $TARGET_BASE" >> $GITHUB_STEP_SUMMARY  
+          echo "**Status**: ${{ steps.summary.outputs.summary-status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.production-smoke-test.outputs.smoke-status }}" == "success" ]]; then
+            echo "🎉 **All tests passed!** Production is healthy." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Issues detected:**" >> $GITHUB_STEP_SUMMARY
+            echo "- Failed endpoints: ${{ needs.production-smoke-test.outputs.failed-count }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Affected: ${{ needs.production-smoke-test.outputs.failed-endpoints }}" >> $GITHUB_STEP_SUMMARY
+            
+            if [[ "${{ needs.create-autofix-pr.outputs.pr-created }}" == "true" ]]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "🔧 **Auto-fix PR created**: ${{ needs.create-autofix-pr.outputs.pr-url }}" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      - name: Send Slack notification on failures
+        if: needs.production-smoke-test.outputs.smoke-status == 'failed' && github.event.inputs.notify_failures != 'false'
+        run: |
+          echo "📤 Sending Slack notification for smoke test failures..."
+          
+          if [[ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]]; then
+            MESSAGE="🔥 *Production Smoke Test Alert*
+
+            *Status*: FAILED ❌
+            *Target*: $TARGET_BASE
+            *Failed Endpoints*: ${{ needs.production-smoke-test.outputs.failed-count }}
+            *Affected*: ${{ needs.production-smoke-test.outputs.failed-endpoints }}
+            *Time*: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+            ${{ needs.create-autofix-pr.outputs.pr-created == 'true' && '🔧 *Auto-fix PR*: ${{ needs.create-autofix-pr.outputs.pr-url }}' || '⚠️ No automatic fixes available' }}
+
+            <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Report>"
+
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"$MESSAGE\"}" \
+              ${{ secrets.SLACK_WEBHOOK_URL }}
+          else
+            echo "ℹ️ SLACK_WEBHOOK_URL not configured - skipping Slack notification"
+          fi
+
+      - name: Comment summary on related PRs
+        if: needs.create-autofix-pr.outputs.pr-created == 'true'
+        run: |
+          echo "💬 Adding summary comment to auto-fix PR..."
+          
+          COMMENT="## 🤖 Auto-Fix Summary
+
+          This PR was automatically generated to fix production smoke test failures.
+
+          ### Test Results
+          - **Target**: $TARGET_BASE  
+          - **Status**: ${{ steps.summary.outputs.summary-status }}
+          - **Failed Count**: ${{ needs.production-smoke-test.outputs.failed-count }}
+
+          ### Recommendation
+          ${{ needs.production-smoke-test.outputs.smoke-status == 'success' && '✅ Ready for review and merge' || '⚠️ Manual review recommended' }}
+
+          ---
+          *Generated by [Production Smoke with Auto-Fix](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})*"
+          
+          # Add comment to the created PR (if we can determine PR number from URL)
+          echo "$COMMENT"

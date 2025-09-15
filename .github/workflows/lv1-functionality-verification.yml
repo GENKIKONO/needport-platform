@@ -1,0 +1,577 @@
+# .github/workflows/lv1-functionality-verification.yml
+# Comprehensive Lv1 functionality verification against production environment
+# Verifies all critical MVP features are working correctly
+
+name: ✅ Lv1 Functionality Verification
+
+on:
+  # Run after production deployments
+  workflow_run:
+    workflows: ["Production Deploy"]
+    types:
+      - completed
+  
+  # Scheduled comprehensive checks
+  schedule:
+    # Daily at 4 AM JST (19:00 UTC previous day)
+    - cron: '0 19 * * *'
+    # Business hours check at 2 PM JST (05:00 UTC) on weekdays
+    - cron: '0 5 * * 1-5'
+  
+  # Manual trigger with options
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL to verify'
+        required: false
+        default: 'https://needport.jp'
+        type: string
+      test_depth:
+        description: 'Test depth'
+        required: false
+        default: 'comprehensive'
+        type: choice
+        options:
+          - quick
+          - comprehensive
+          - deep
+      create_issues:
+        description: 'Create issues for failures'
+        required: false
+        default: true
+        type: boolean
+
+# Prevent concurrent runs
+concurrency:
+  group: lv1-verification
+  cancel-in-progress: false
+
+env:
+  TARGET_URL: ${{ github.event.inputs.target_url || 'https://needport.jp' }}
+  TEST_DEPTH: ${{ github.event.inputs.test_depth || 'comprehensive' }}
+
+jobs:
+  # Core functionality verification
+  verify-lv1-core:
+    name: 🔍 Lv1 Core Verification
+    runs-on: ubuntu-latest
+    outputs:
+      core-status: ${{ steps.core-tests.outputs.status }}
+      failed-features: ${{ steps.core-tests.outputs.failed-features }}
+      success-rate: ${{ steps.core-tests.outputs.success-rate }}
+      test-report: ${{ steps.core-tests.outputs.test-report }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci --legacy-peer-deps
+          # Install testing tools
+          npx playwright install chromium --with-deps
+
+      - name: Run Lv1 core functionality tests
+        id: core-tests
+        run: |
+          echo "✅ Starting Lv1 core functionality verification against $TARGET_URL"
+          
+          # Initialize results
+          PASSED_TESTS=0
+          FAILED_TESTS=0
+          TOTAL_TESTS=0
+          FAILED_FEATURES=""
+          
+          # Create test report
+          echo "# Lv1 Functionality Verification Report" > lv1_verification_report.md
+          echo "" >> lv1_verification_report.md
+          echo "**Target URL**: $TARGET_URL" >> lv1_verification_report.md
+          echo "**Test Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> lv1_verification_report.md  
+          echo "**Test Depth**: $TEST_DEPTH" >> lv1_verification_report.md
+          echo "" >> lv1_verification_report.md
+          
+          # Define Lv1 critical functionality tests
+          declare -A LV1_TESTS=(
+            # Core page availability
+            ["homepage_loads"]="Homepage loads and displays correctly"
+            ["needs_listing"]="Needs listing page works"
+            ["need_details"]="Individual need detail pages load"
+            ["vendors_listing"]="Vendors listing page works"
+            ["auth_flows"]="Authentication flows accessible"
+            
+            # API functionality
+            ["health_endpoint"]="Health endpoint returns OK"
+            ["needs_api"]="Needs API returns data"
+            ["ready_endpoint"]="Ready endpoint accessible"
+            
+            # Core features
+            ["need_posting_form"]="Need posting form loads"
+            ["search_functionality"]="Search functionality works"
+            ["navigation"]="Site navigation works"
+            ["responsive_design"]="Site works on mobile"
+            
+            # SEO and metadata
+            ["sitemap_xml"]="Sitemap.xml generates correctly"
+            ["robots_txt"]="Robots.txt is accessible"
+            ["meta_tags"]="Meta tags are present"
+            
+            # Performance
+            ["page_load_speed"]="Pages load within acceptable time"
+            ["api_response_time"]="API responses are fast enough"
+          )
+          
+          echo "## Test Results" >> lv1_verification_report.md
+          echo "" >> lv1_verification_report.md
+          echo "| Feature | Test | Status | Details |" >> lv1_verification_report.md
+          echo "|---------|------|--------|---------|" >> lv1_verification_report.md
+          
+          # Test 1: Homepage loads
+          echo "🏠 Testing homepage..."
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
+          
+          RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code};TIME:%{time_total}" "$TARGET_URL" --max-time 10 || echo "FAILED")
+          if [[ "$RESPONSE" != "FAILED" ]]; then
+            HTTP_CODE=$(echo "$RESPONSE" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+            LOAD_TIME=$(echo "$RESPONSE" | grep -o "TIME:[0-9.]*" | cut -d: -f2)
+            
+            if [[ "$HTTP_CODE" =~ ^(200|301|302)$ ]] && (( $(echo "$LOAD_TIME < 5" | bc -l) )); then
+              echo "| Homepage | Loads correctly | ✅ PASS | HTTP $HTTP_CODE, ${LOAD_TIME}s |" >> lv1_verification_report.md
+              PASSED_TESTS=$((PASSED_TESTS + 1))
+            else
+              echo "| Homepage | Loads correctly | ❌ FAIL | HTTP $HTTP_CODE, ${LOAD_TIME}s |" >> lv1_verification_report.md
+              FAILED_TESTS=$((FAILED_TESTS + 1))
+              FAILED_FEATURES="$FAILED_FEATURES homepage"
+            fi
+          else
+            echo "| Homepage | Loads correctly | ❌ FAIL | Connection failed |" >> lv1_verification_report.md
+            FAILED_TESTS=$((FAILED_TESTS + 1))
+            FAILED_FEATURES="$FAILED_FEATURES homepage"
+          fi
+          
+          # Test 2: Needs listing page
+          echo "📋 Testing needs listing..."
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
+          
+          NEEDS_RESPONSE=$(curl -s -w "%{http_code}" "$TARGET_URL/needs" --max-time 10 || echo "000")
+          if [[ "$NEEDS_RESPONSE" =~ ^(200|301|302)$ ]]; then
+            echo "| Needs Listing | Page loads | ✅ PASS | HTTP $NEEDS_RESPONSE |" >> lv1_verification_report.md
+            PASSED_TESTS=$((PASSED_TESTS + 1))
+          else
+            echo "| Needs Listing | Page loads | ❌ FAIL | HTTP $NEEDS_RESPONSE |" >> lv1_verification_report.md
+            FAILED_TESTS=$((FAILED_TESTS + 1))
+            FAILED_FEATURES="$FAILED_FEATURES needs_listing"
+          fi
+          
+          # Test 3: Health endpoint
+          echo "🏥 Testing health endpoint..."
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
+          
+          HEALTH_RESPONSE=$(curl -s "$TARGET_URL/api/health" --max-time 10 || echo "FAILED")
+          if [[ "$HEALTH_RESPONSE" != "FAILED" ]] && echo "$HEALTH_RESPONSE" | jq -e '.ok == true' > /dev/null 2>&1; then
+            echo "| Health API | Returns healthy | ✅ PASS | API OK |" >> lv1_verification_report.md
+            PASSED_TESTS=$((PASSED_TESTS + 1))
+          else
+            echo "| Health API | Returns healthy | ❌ FAIL | API Error |" >> lv1_verification_report.md
+            FAILED_TESTS=$((FAILED_TESTS + 1))
+            FAILED_FEATURES="$FAILED_FEATURES health_api"
+          fi
+          
+          # Test 4: Needs API
+          echo "📊 Testing needs API..."
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
+          
+          NEEDS_API_RESPONSE=$(curl -s -w "%{http_code}" "$TARGET_URL/api/needs" --max-time 10 || echo "000")
+          if [[ "$NEEDS_API_RESPONSE" =~ ^(200|401|403)$ ]]; then
+            # 401/403 are acceptable for protected endpoints
+            echo "| Needs API | Responds correctly | ✅ PASS | HTTP $NEEDS_API_RESPONSE |" >> lv1_verification_report.md
+            PASSED_TESTS=$((PASSED_TESTS + 1))
+          else
+            echo "| Needs API | Responds correctly | ❌ FAIL | HTTP $NEEDS_API_RESPONSE |" >> lv1_verification_report.md
+            FAILED_TESTS=$((FAILED_TESTS + 1))
+            FAILED_FEATURES="$FAILED_FEATURES needs_api"
+          fi
+          
+          # Test 5: Vendors page
+          echo "🏢 Testing vendors page..."
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
+          
+          VENDORS_RESPONSE=$(curl -s -w "%{http_code}" "$TARGET_URL/vendors" --max-time 10 || echo "000")
+          if [[ "$VENDORS_RESPONSE" =~ ^(200|301|302)$ ]]; then
+            echo "| Vendors Page | Loads correctly | ✅ PASS | HTTP $VENDORS_RESPONSE |" >> lv1_verification_report.md
+            PASSED_TESTS=$((PASSED_TESTS + 1))
+          else
+            echo "| Vendors Page | Loads correctly | ❌ FAIL | HTTP $VENDORS_RESPONSE |" >> lv1_verification_report.md
+            FAILED_TESTS=$((FAILED_TESTS + 1))
+            FAILED_FEATURES="$FAILED_FEATURES vendors_page"
+          fi
+          
+          # Test 6: Sitemap
+          echo "🗺️ Testing sitemap..."
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
+          
+          SITEMAP_RESPONSE=$(curl -s -w "%{http_code}" "$TARGET_URL/sitemap.xml" --max-time 10 || echo "000")
+          if [[ "$SITEMAP_RESPONSE" == "200" ]]; then
+            echo "| Sitemap | XML accessible | ✅ PASS | HTTP 200 |" >> lv1_verification_report.md
+            PASSED_TESTS=$((PASSED_TESTS + 1))
+          else
+            echo "| Sitemap | XML accessible | ❌ FAIL | HTTP $SITEMAP_RESPONSE |" >> lv1_verification_report.md
+            FAILED_TESTS=$((FAILED_TESTS + 1))
+            FAILED_FEATURES="$FAILED_FEATURES sitemap"
+          fi
+          
+          # Test 7: Robots.txt
+          echo "🤖 Testing robots.txt..."
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
+          
+          ROBOTS_RESPONSE=$(curl -s -w "%{http_code}" "$TARGET_URL/robots.txt" --max-time 10 || echo "000")
+          if [[ "$ROBOTS_RESPONSE" == "200" ]]; then
+            echo "| Robots.txt | File accessible | ✅ PASS | HTTP 200 |" >> lv1_verification_report.md
+            PASSED_TESTS=$((PASSED_TESTS + 1))
+          else
+            echo "| Robots.txt | File accessible | ❌ FAIL | HTTP $ROBOTS_RESPONSE |" >> lv1_verification_report.md
+            FAILED_TESTS=$((FAILED_TESTS + 1))
+            FAILED_FEATURES="$FAILED_FEATURES robots"
+          fi
+          
+          # Comprehensive tests only if depth is comprehensive or deep
+          if [[ "$TEST_DEPTH" != "quick" ]]; then
+            echo "🔬 Running comprehensive tests..."
+            
+            # Test 8: RSS Feeds
+            TOTAL_TESTS=$((TOTAL_TESTS + 1))
+            RSS_RESPONSE=$(curl -s -w "%{http_code}" "$TARGET_URL/feed.xml" --max-time 10 || echo "000")
+            if [[ "$RSS_RESPONSE" == "200" ]]; then
+              echo "| RSS Feed | XML feed works | ✅ PASS | HTTP 200 |" >> lv1_verification_report.md
+              PASSED_TESTS=$((PASSED_TESTS + 1))
+            else
+              echo "| RSS Feed | XML feed works | ❌ FAIL | HTTP $RSS_RESPONSE |" >> lv1_verification_report.md
+              FAILED_TESTS=$((FAILED_TESTS + 1))
+              FAILED_FEATURES="$FAILED_FEATURES rss_feed"
+            fi
+            
+            # Test 9: Ready endpoint
+            TOTAL_TESTS=$((TOTAL_TESTS + 1))
+            READY_RESPONSE=$(curl -s "$TARGET_URL/api/ready" --max-time 10 || echo "FAILED")
+            if [[ "$READY_RESPONSE" != "FAILED" ]] && echo "$READY_RESPONSE" | jq -e '.ready == true' > /dev/null 2>&1; then
+              echo "| Ready API | Service ready | ✅ PASS | API Ready |" >> lv1_verification_report.md
+              PASSED_TESTS=$((PASSED_TESTS + 1))
+            else
+              echo "| Ready API | Service ready | ❌ FAIL | API Error |" >> lv1_verification_report.md
+              FAILED_TESTS=$((FAILED_TESTS + 1))
+              FAILED_FEATURES="$FAILED_FEATURES ready_api"
+            fi
+          fi
+          
+          # Deep testing with Playwright
+          if [[ "$TEST_DEPTH" == "deep" ]]; then
+            echo "🎭 Running deep E2E tests..."
+            
+            # Create a simple E2E test
+            cat > lv1_e2e_test.js << 'EOF'
+const { chromium } = require('playwright');
+
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  
+  try {
+    // Test homepage interactivity
+    await page.goto(process.env.TARGET_URL, { waitUntil: 'networkidle' });
+    
+    // Check if page has title
+    const title = await page.title();
+    if (!title.includes('NeedPort')) {
+      console.log('FAIL: Homepage title incorrect');
+      process.exit(1);
+    }
+    
+    // Try to navigate to needs
+    try {
+      await page.click('a[href*="needs"]', { timeout: 5000 });
+      await page.waitForLoadState('networkidle');
+      console.log('PASS: Needs navigation works');
+    } catch (e) {
+      console.log('FAIL: Needs navigation failed');
+      process.exit(1);
+    }
+    
+    console.log('PASS: Deep E2E tests completed successfully');
+    
+  } catch (error) {
+    console.log('FAIL: Deep E2E test failed:', error.message);
+    process.exit(1);
+  } finally {
+    await browser.close();
+  }
+})();
+EOF
+            
+            TOTAL_TESTS=$((TOTAL_TESTS + 1))
+            if node lv1_e2e_test.js; then
+              echo "| Deep E2E | Navigation flows | ✅ PASS | Interactive tests passed |" >> lv1_verification_report.md
+              PASSED_TESTS=$((PASSED_TESTS + 1))
+            else
+              echo "| Deep E2E | Navigation flows | ❌ FAIL | Interactive tests failed |" >> lv1_verification_report.md
+              FAILED_TESTS=$((FAILED_TESTS + 1))
+              FAILED_FEATURES="$FAILED_FEATURES e2e_navigation"
+            fi
+          fi
+          
+          # Calculate success rate
+          if [[ $TOTAL_TESTS -gt 0 ]]; then
+            SUCCESS_RATE=$(echo "scale=2; $PASSED_TESTS * 100 / $TOTAL_TESTS" | bc)
+          else
+            SUCCESS_RATE=0
+          fi
+          
+          # Add summary to report
+          echo "" >> lv1_verification_report.md
+          echo "## Summary" >> lv1_verification_report.md
+          echo "" >> lv1_verification_report.md
+          echo "- **Total Tests**: $TOTAL_TESTS" >> lv1_verification_report.md
+          echo "- **Passed**: $PASSED_TESTS" >> lv1_verification_report.md
+          echo "- **Failed**: $FAILED_TESTS" >> lv1_verification_report.md
+          echo "- **Success Rate**: ${SUCCESS_RATE}%" >> lv1_verification_report.md
+          
+          # Add recommendations
+          echo "" >> lv1_verification_report.md
+          echo "## Recommendations" >> lv1_verification_report.md
+          echo "" >> lv1_verification_report.md
+          
+          if [[ $FAILED_TESTS -eq 0 ]]; then
+            echo "✅ **All Lv1 functionality tests passed!** The platform is ready for production use." >> lv1_verification_report.md
+            STATUS="success"
+          elif [[ $(echo "$SUCCESS_RATE >= 80" | bc) -eq 1 ]]; then
+            echo "⚠️ **Minor issues detected** but core functionality works. Review failed tests." >> lv1_verification_report.md
+            STATUS="warning"
+          else
+            echo "❌ **Critical issues detected** that may impact user experience. Immediate attention required." >> lv1_verification_report.md
+            STATUS="failure"
+          fi
+          
+          # Set outputs
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "failed-features=$FAILED_FEATURES" >> $GITHUB_OUTPUT
+          echo "success-rate=$SUCCESS_RATE" >> $GITHUB_OUTPUT
+          
+          # Output test report
+          TEST_REPORT_CONTENT=$(cat lv1_verification_report.md)
+          echo "test-report<<EOF" >> $GITHUB_OUTPUT
+          echo "$TEST_REPORT_CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "🎯 Lv1 verification completed: $STATUS (${SUCCESS_RATE}% success rate)"
+
+      - name: Upload verification results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lv1-verification-results-${{ github.run_number }}
+          path: |
+            lv1_verification_report.md
+            lv1_e2e_test.js
+          retention-days: 14
+
+  # Performance verification
+  verify-lv1-performance:
+    name: ⚡ Lv1 Performance Check
+    runs-on: ubuntu-latest
+    needs: verify-lv1-core
+    outputs:
+      performance-status: ${{ steps.perf-check.outputs.status }}
+      lighthouse-score: ${{ steps.perf-check.outputs.lighthouse-score }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.12.x
+          npm ci --legacy-peer-deps
+
+      - name: Run Lighthouse performance audit
+        id: perf-check
+        run: |
+          echo "⚡ Running Lighthouse performance audit on $TARGET_URL"
+          
+          # Create Lighthouse CI config
+          cat > lighthouserc.js << 'EOF'
+module.exports = {
+  ci: {
+    collect: {
+      url: [process.env.TARGET_URL],
+      startServerCommand: '',
+      numberOfRuns: 3,
+    },
+    assert: {
+      assertions: {
+        'categories:performance': ['error', { minScore: 0.6 }],
+        'categories:accessibility': ['error', { minScore: 0.9 }],
+        'categories:best-practices': ['error', { minScore: 0.8 }],
+        'categories:seo': ['error', { minScore: 0.8 }],
+        'first-contentful-paint': ['error', { maxNumericValue: 3000 }],
+        'largest-contentful-paint': ['error', { maxNumericValue: 4000 }],
+        'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
+      },
+    },
+    upload: {
+      target: 'filesystem',
+      outputDir: './lhci-results',
+    },
+  },
+};
+EOF
+          
+          # Run Lighthouse CI
+          if lhci autorun; then
+            echo "✅ Performance audit passed"
+            STATUS="success"
+            
+            # Extract scores from results
+            if [[ -f "./lhci-results/manifest.json" ]]; then
+              PERF_SCORE=$(jq -r '.[0].summary.performance' ./lhci-results/manifest.json 2>/dev/null || echo "0")
+              LIGHTHOUSE_SCORE=$(echo "scale=0; $PERF_SCORE * 100" | bc 2>/dev/null || echo "0")
+            else
+              LIGHTHOUSE_SCORE="N/A"
+            fi
+          else
+            echo "❌ Performance audit failed"
+            STATUS="failure"
+            LIGHTHOUSE_SCORE="FAILED"
+          fi
+          
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "lighthouse-score=$LIGHTHOUSE_SCORE" >> $GITHUB_OUTPUT
+          echo "🎯 Performance check completed: $STATUS (Score: $LIGHTHOUSE_SCORE)"
+
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-results-${{ github.run_number }}
+          path: |
+            lhci-results/
+          retention-days: 14
+
+  # Create comprehensive status report
+  create-lv1-status-report:
+    name: 📊 Create Status Report
+    runs-on: ubuntu-latest
+    needs: [verify-lv1-core, verify-lv1-performance]
+    if: always()
+
+    steps:
+      - name: Generate comprehensive status report
+        run: |
+          echo "📊 Generating Lv1 status report..."
+          
+          # Create comprehensive status report
+          cat > lv1_status_report.md << EOF
+          # NeedPort Lv1 Functionality Status Report
+          
+          **Generated**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          **Target URL**: $TARGET_URL
+          **Test Depth**: $TEST_DEPTH
+          
+          ## 🎯 Overall Status
+          - **Core Functionality**: ${{ needs.verify-lv1-core.outputs.core-status }}
+          - **Performance**: ${{ needs.verify-lv1-performance.outputs.performance-status }}
+          - **Success Rate**: ${{ needs.verify-lv1-core.outputs.success-rate }}%
+          
+          ## 📋 Test Results Summary
+          ${{ needs.verify-lv1-core.outputs.test-report }}
+          
+          ## ⚡ Performance Metrics
+          - **Lighthouse Score**: ${{ needs.verify-lv1-performance.outputs.lighthouse-score }}
+          - **Performance Status**: ${{ needs.verify-lv1-performance.outputs.performance-status }}
+          
+          ## 🚨 Failed Features
+          ${{ needs.verify-lv1-core.outputs.failed-features != '' && 'Failed features detected:' || 'No failed features' }}
+          ${{ needs.verify-lv1-core.outputs.failed-features }}
+          
+          ## 📈 Recommendations
+          ${{ needs.verify-lv1-core.outputs.core-status == 'success' && needs.verify-lv1-performance.outputs.performance-status == 'success' && '✅ Platform ready for production use' || '⚠️ Issues detected - review recommendations above' }}
+          
+          ---
+          *Report generated by Lv1 Functionality Verification*
+          EOF
+          
+          echo "✅ Status report generated"
+
+      - name: Create GitHub issue for failures
+        if: github.event.inputs.create_issues != 'false' && (needs.verify-lv1-core.outputs.core-status == 'failure' || needs.verify-lv1-performance.outputs.performance-status == 'failure')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🎯 Lv1 Functionality Issues Detected - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## 🎯 Lv1 Functionality Verification Alert
+            
+            **Verification Time**: ${new Date().toUTCString()}
+            **Target**: ${{ env.TARGET_URL }}
+            **Workflow**: [Lv1 Verification Run #${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ### 📊 Status Summary
+            - **Core Functionality**: ${{ needs.verify-lv1-core.outputs.core-status }}
+            - **Performance**: ${{ needs.verify-lv1-performance.outputs.performance-status }}
+            - **Success Rate**: ${{ needs.verify-lv1-core.outputs.success-rate }}%
+            
+            ### 🚨 Issues Detected
+            ${{ needs.verify-lv1-core.outputs.failed-features && format('**Failed Features**: {0}', needs.verify-lv1-core.outputs.failed-features) || '' }}
+            
+            ### 📋 Action Items
+            - [ ] Review failed functionality tests
+            - [ ] Check production environment health
+            - [ ] Validate critical user flows manually
+            - [ ] Address performance issues if any
+            
+            ### 🔧 Next Steps
+            1. Review the [detailed verification report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            2. Test affected functionality manually
+            3. Deploy fixes if needed
+            4. Re-run verification
+            
+            ---
+            *This issue was automatically created by Lv1 functionality verification*`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['lv1-verification', 'production', 'automated']
+            });
+
+      - name: Send Slack notification
+        if: needs.verify-lv1-core.outputs.core-status == 'failure'
+        run: |
+          if [[ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]]; then
+            MESSAGE="🎯 *Lv1 Functionality Alert*
+
+            *Status*: FAILED ❌  
+            *Target*: $TARGET_URL
+            *Success Rate*: ${{ needs.verify-lv1-core.outputs.success-rate }}%
+            *Failed Features*: ${{ needs.verify-lv1-core.outputs.failed-features }}
+            
+            *Performance*: ${{ needs.verify-lv1-performance.outputs.performance-status }}
+            
+            Production functionality verification has detected issues that may impact user experience.
+            
+            <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Report>"
+
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"$MESSAGE\"}" \
+              ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
