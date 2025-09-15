@@ -1,3 +1,5 @@
+'use client';
+
 import { SignIn } from '@clerk/nextjs';
 import AuthPageLayout from '@/components/auth/AuthPageLayout';
 import { BRAND } from '@/lib/constants/brand';
