@@ -28,10 +28,10 @@ export default function Header() {
           <div className="flex items-center gap-4">
             {/* PC表示ナビゲーション */}
             <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold">
-              <Link href="/needs" className="text-slate-700 hover:text-blue-600 transition-colors">
+              <Link href="/needs" className="text-slate-700 hover:text-blue-600 transition-colors" data-testid="needs-list-link">
                 ニーズ一覧
               </Link>
-              <Link href="/needs/new" className="text-slate-700 hover:text-blue-600 transition-colors">
+              <Link href="/needs/new" className="text-slate-700 hover:text-blue-600 transition-colors" data-testid="needs-new-link">
                 ニーズを投稿する
               </Link>
             </nav>

@@ -8,8 +8,8 @@ test.describe('Navigation', () => {
     await expect(page.locator('header a[href="/"]')).toBeVisible();
     
     // Check main navigation links in header specifically (not sidebar) - updated per CLAUDE.md specs
-    await expect(page.locator('header nav a[href="/needs"]')).toContainText('ニーズ一覧');
-    await expect(page.locator('header nav a[href="/needs/new"]')).toContainText('ニーズを投稿する');
+    await expect(page.locator('[data-testid="needs-list-link"]')).toContainText('ニーズ一覧');
+    await expect(page.locator('[data-testid="needs-new-link"]')).toContainText('ニーズを投稿する');
     
     // Verify prohibited links are NOT present in header
     await expect(page.locator('header nav a[href="/about"]')).not.toBeVisible();
@@ -17,11 +17,11 @@ test.describe('Navigation', () => {
     await expect(page.locator('header nav a[href="/privacy"]')).not.toBeVisible();
     
     // Test each navigation link actually navigates correctly
-    await page.click('header nav a[href="/needs"]');
+    await page.click('[data-testid="needs-list-link"]');
     await expect(page).toHaveURL('/needs');
     
     await page.goto('/');
-    await page.click('header nav a[href="/needs/new"]');
+    await page.click('[data-testid="needs-new-link"]');
     // Check that the link navigates to /needs/new (authentication will be handled there)
     await expect(page).toHaveURL(/.*\/needs\/new.*/);
   });
@@ -60,8 +60,8 @@ test.describe('Navigation', () => {
     await expect(page.locator('.fixed nav >> text=ニーズを投稿する')).toBeVisible();
     
     // Check authentication links (should show login buttons when not authenticated)
-    await expect(page.locator('.fixed nav >> text=一般ログイン')).toBeVisible();
-    await expect(page.locator('.fixed nav >> text=事業者ログイン')).toBeVisible();
+    await expect(page.locator('[data-testid="signin-link"]')).toBeVisible();
+    await expect(page.locator('[data-testid="vendor-signin-link"]')).toBeVisible();
     
     // Check additional navigation links per CLAUDE.md specs
     await expect(page.locator('.fixed nav >> text=サービスについて')).toBeVisible();

@@ -18,6 +18,7 @@
     "e2e": "playwright test",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:golden": "playwright test tests/navigation.spec.ts tests/prod/e2e-login-posting-flow.spec.ts",
     "monitor": "playwright test --config=playwright.monitoring.config.ts",
     "monitor:prod": "BASE_URL=https://needport.jp playwright test --config=playwright.monitoring.config.ts",
     "test": "vitest --run",

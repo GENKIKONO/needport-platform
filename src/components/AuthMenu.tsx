@@ -23,10 +23,10 @@ export default function AuthMenu() {
   if (!isSignedIn) {
     return (
       <>
-        <Link href="/sign-in" className="bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
+        <Link href="/sign-in" className="bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors" data-testid="signin-link">
           一般ログイン
         </Link>
-        <Link href="/vendors/login" className="bg-slate-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-700 transition-colors">
+        <Link href="/vendors/login" className="bg-slate-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-700 transition-colors" data-testid="vendor-signin-link">
           事業者ログイン
         </Link>
       </>
@@ -41,6 +41,7 @@ export default function AuthMenu() {
         className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors"
         aria-expanded={dropdownOpen}
         aria-haspopup="true"
+        data-testid="user-menu"
       >
         {user?.imageUrl ? (
           <img 
@@ -76,6 +77,7 @@ export default function AuthMenu() {
             href="/me"
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             onClick={() => setDropdownOpen(false)}
+            data-testid="me-link"
           >
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

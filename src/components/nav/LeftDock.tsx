@@ -23,6 +23,7 @@ export default function LeftDock({ onItemClick }: LeftDockProps) {
                 href="/me"
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200 font-medium"
                 onClick={onItemClick}
+                data-testid="me-link"
               >
                 {user?.imageUrl ? (
                   <img 
@@ -47,6 +48,7 @@ export default function LeftDock({ onItemClick }: LeftDockProps) {
                   href="/sign-in"
                   className="block px-3 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200 font-medium text-center"
                   onClick={onItemClick}
+                  data-testid="signin-link"
                 >
                   一般ログイン
                 </Link>
@@ -56,6 +58,7 @@ export default function LeftDock({ onItemClick }: LeftDockProps) {
                   href="/vendors/login"
                   className="block px-3 py-2 rounded-xl bg-slate-600 text-white hover:bg-slate-700 transition-all duration-200 font-medium text-center"
                   onClick={onItemClick}
+                  data-testid="vendor-signin-link"
                 >
                   事業者ログイン
                 </Link>

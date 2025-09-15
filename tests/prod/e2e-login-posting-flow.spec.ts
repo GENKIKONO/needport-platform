@@ -99,10 +99,10 @@ test.describe('Production Login → Posting Flow', () => {
     
     // Look for authenticated UI elements
     const authIndicators = [
-      page.locator('text=/マイページ|My Page|profile/i'),
-      page.locator('text=/ログアウト|logout|sign out/i'),
       page.locator('[data-testid="user-menu"]'),
-      page.locator('.user-avatar, .profile-menu')
+      page.locator('[data-testid="me-link"]'),
+      page.locator('text=/マイページ|My Page|profile/i'),
+      page.locator('text=/ログアウト|logout|sign out/i')
     ];
 
     let authFound = false;
@@ -265,7 +265,7 @@ test.describe('Production Login → Posting Flow', () => {
     await page.goto(`${PROD_BASE_URL}/me`);
     
     // Check if already authenticated (from previous test)
-    const isAuthenticated = await page.locator('text=/マイページ|My Page|profile/i').count() > 0;
+    const isAuthenticated = await page.locator('[data-testid="user-menu"]').count() > 0;
     
     if (!isAuthenticated) {
       // Quick login if needed
@@ -279,7 +279,7 @@ test.describe('Production Login → Posting Flow', () => {
     await page.waitForTimeout(3000);
     
     // Verify still authenticated
-    await expect(page.locator('text=/マイページ|My Page|profile/i')).toBeVisible();
+    await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
     
     console.log('✅ Authentication persists across reloads');
   });

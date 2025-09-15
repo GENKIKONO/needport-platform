@@ -57,9 +57,9 @@ export default function NeedsCard({ need, scope, isPreview = false, canPropose =
   const showFullContent = isAuthenticated && !isPreview;
   
   return (
-    <div className={`${u.card} ${u.cardPad} ${u.cardHover}`}>
+    <div className={`${u.card} ${u.cardPad} ${u.cardHover}`} data-testid="need-card">
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold text-[var(--c-text)] line-clamp-2">
+        <h3 className="text-lg font-semibold text-[var(--c-text)] line-clamp-2" data-testid="need-title">
           {need.title}
         </h3>
         <div className="flex gap-2">
