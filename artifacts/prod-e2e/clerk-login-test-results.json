@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-09-15T01:14:06.468Z",
+  "tests": [
+    {
+      "test": "SIGNIN_PAGE",
+      "status": "INFO",
+      "message": "Checking sign-in page structure",
+      "details": null,
+      "timestamp": "2025-09-15T01:14:06.469Z"
+    },
+    {
+      "test": "SIGNIN_PAGE",
+      "status": "FAIL",
+      "message": "Sign-in page structure has issues",
+      "details": {
+        "emailInput": false,
+        "passwordInput": false,
+        "signInButton": false,
+        "errorMessages": false
+      },
+      "timestamp": "2025-09-15T01:14:08.896Z"
+    },
+    {
+      "test": "CREDENTIALS",
+      "status": "INFO",
+      "message": "Checking if test credentials are provided",
+      "details": null,
+      "timestamp": "2025-09-15T01:14:08.912Z"
+    },
+    {
+      "test": "CREDENTIALS",
+      "status": "WARN",
+      "message": "Test credentials not provided",
+      "details": {
+        "email": false,
+        "password": false,
+        "note": "Set CLERK_TEST_EMAIL and CLERK_TEST_PASSWORD to enable login testing"
+      },
+      "timestamp": "2025-09-15T01:14:08.913Z"
+    },
+    {
+      "test": "LOGIN_TEST",
+      "status": "SKIP",
+      "message": "Skipping login test - no credentials provided",
+      "details": null,
+      "timestamp": "2025-09-15T01:14:08.913Z"
+    }
+  ],
+  "canProceedWithE2E": false
+}

@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-09-15T01:14:57.076Z",
+  "url": "https://needport.jp/sign-in",
+  "title": "NeedPort",
+  "h1Elements": [
+    "NeedPortにログイン",
+    "Sign in to NeedPort"
+  ],
+  "inputCount": 2,
+  "buttonCount": 5,
+  "htmlAnalysis": {
+    "hasEmailInput": true,
+    "hasPasswordInput": true,
+    "hasSignInButton": true,
+    "hasClerkComponent": true,
+    "hasErrorMessage": true,
+    "totalLength": 23728
+  },
+  "recommendation": "Email/Password authentication appears to be enabled"
+}
