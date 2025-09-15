@@ -79,3 +79,43 @@ export async function POST(req: Request) {
   
   return NextResponse.json({ ok: true, id: data.id, status: 'review' });
 }
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const needId = searchParams.get('need_id');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
+
+    const s = supabaseAdmin();
+    let query = s.from('proposals').select('*');
+
+    // Filter by need_id if provided
+    if (needId) {
+      query = query.eq('need_id', needId);
+    }
+
+    // Apply pagination and ordering
+    const { data, error } = await query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error('[proposals:get_error]', error);
+      return NextResponse.json({ error: 'db_error' }, { status: 500 });
+    }
+
+    return NextResponse.json({ 
+      proposals: data || [],
+      pagination: {
+        limit,
+        offset,
+        total: data?.length || 0
+      }
+    });
+
+  } catch (error) {
+    console.error('[proposals:get_fatal]', error);
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+  }
+}

@@ -1,0 +1,597 @@
+# .github/workflows/clerk-ssr-safety-scan.yml
+# Automated Clerk/SSR safety scanning and fixing across all components
+# Scans for unsafe usage patterns and creates auto-fix PRs
+
+name: 🔐 Clerk/SSR Safety Scanner
+
+on:
+  # Run on push to main to catch new issues
+  push:
+    branches: [main]
+    paths:
+      - 'src/**/*.tsx'
+      - 'src/**/*.ts'
+      - 'src/**/*.jsx'
+      - 'src/**/*.js'
+  
+  # Weekly comprehensive scan
+  schedule:
+    # Every Sunday at 2 AM JST (17:00 UTC Saturday)
+    - cron: '0 17 * * 6'
+  
+  # Manual trigger for immediate scan
+  workflow_dispatch:
+    inputs:
+      create_fix_pr:
+        description: 'Create auto-fix PR for detected issues'
+        required: false
+        default: true
+        type: boolean
+      scan_mode:
+        description: 'Scan mode'
+        required: false
+        default: 'comprehensive'
+        type: choice
+        options:
+          - comprehensive
+          - modified-only
+          - critical-only
+
+# Prevent multiple concurrent scans
+concurrency:
+  group: clerk-ssr-safety-scan
+  cancel-in-progress: true
+
+jobs:
+  # Scan for Clerk/SSR safety issues
+  safety-scan:
+    name: 🔍 Safety Scan
+    runs-on: ubuntu-latest
+    outputs:
+      issues-found: ${{ steps.scan.outputs.issues-found }}
+      critical-issues: ${{ steps.scan.outputs.critical-issues }}
+      fixable-issues: ${{ steps.scan.outputs.fixable-issues }}
+      scan-report: ${{ steps.scan.outputs.scan-report }}
+      needs-pr: ${{ steps.scan.outputs.needs-pr }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci --legacy-peer-deps
+          # Install additional static analysis tools
+          npm install -g eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
+
+      - name: Run comprehensive Clerk/SSR safety scan
+        id: scan
+        run: |
+          echo "🔐 Starting Clerk/SSR safety scan..."
+          
+          # Initialize counters and reports
+          TOTAL_ISSUES=0
+          CRITICAL_ISSUES=0
+          FIXABLE_ISSUES=0
+          SCAN_REPORT=""
+          ISSUES_FOUND="false"
+          NEEDS_PR="false"
+          
+          # Create scan results file
+          echo "# Clerk/SSR Safety Scan Report" > safety_scan_report.md
+          echo "" >> safety_scan_report.md
+          echo "**Scan Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> safety_scan_report.md
+          echo "**Scan Mode**: ${{ github.event.inputs.scan_mode || 'comprehensive' }}" >> safety_scan_report.md
+          echo "" >> safety_scan_report.md
+          
+          # Define scan patterns for different safety issues
+          declare -A PATTERNS=(
+            # Critical SSR issues
+            ["useUser_in_server"]="useUser.*import.*@clerk/nextjs|import.*useUser.*@clerk/nextjs"
+            ["useAuth_in_server"]="useAuth.*import.*@clerk/nextjs|import.*useAuth.*@clerk/nextjs"
+            ["useSession_in_server"]="useSession.*import.*@clerk/nextjs|import.*useSession.*@clerk/nextjs"
+            ["useClerk_in_server"]="useClerk.*import.*@clerk/nextjs|import.*useClerk.*@clerk/nextjs"
+            
+            # Unsafe component patterns
+            ["direct_clerk_hooks_in_components"]="const.*use(User|Auth|Session|Clerk).*=.*use(User|Auth|Session|Clerk)"
+            ["missing_dynamic_import"]="import.*Header.*@/components/(chrome|nav)/Header"
+            ["missing_ssr_false"]="dynamic.*import.*{.*ssr.*false.*}"
+            
+            # Missing safety wrappers
+            ["missing_safe_clerk_provider"]="ClerkProvider.*children.*ClerkProvider"
+            ["unsafe_auth_checks"]="user\?\.|auth\?\.|session\?\."
+          )
+          
+          # Scan different file types based on mode
+          SCAN_MODE="${{ github.event.inputs.scan_mode || 'comprehensive' }}"
+          
+          case "$SCAN_MODE" in
+            "comprehensive")
+              SCAN_FILES=$(find src -type f \( -name "*.tsx" -o -name "*.ts" -o -name "*.jsx" -o -name "*.js" \) | grep -v node_modules | head -200)
+              ;;
+            "modified-only")
+              SCAN_FILES=$(git diff --name-only HEAD~1 HEAD | grep -E "\.(tsx?|jsx?)$" | head -50)
+              ;;
+            "critical-only")
+              SCAN_FILES=$(find src/app src/components -name "*.tsx" | grep -E "(page|layout|component)" | head -100)
+              ;;
+            *)
+              SCAN_FILES=$(find src -type f -name "*.tsx" | head -100)
+              ;;
+          esac
+          
+          if [[ -z "$SCAN_FILES" ]]; then
+            echo "No files to scan" >> safety_scan_report.md
+            echo "issues-found=false" >> $GITHUB_OUTPUT
+            echo "needs-pr=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "## Scan Results" >> safety_scan_report.md
+          echo "" >> safety_scan_report.md
+          echo "| File | Issue Type | Severity | Line | Pattern |" >> safety_scan_report.md
+          echo "|------|------------|----------|------|---------|" >> safety_scan_report.md
+          
+          # Scan each file
+          for file in $SCAN_FILES; do
+            if [[ ! -f "$file" ]]; then
+              continue
+            fi
+            
+            echo "Scanning: $file"
+            
+            # Check each pattern
+            for pattern_name in "${!PATTERNS[@]}"; do
+              pattern="${PATTERNS[$pattern_name]}"
+              
+              # Use ripgrep if available, otherwise grep
+              if command -v rg >/dev/null 2>&1; then
+                matches=$(rg -n "$pattern" "$file" || true)
+              else
+                matches=$(grep -n "$pattern" "$file" || true)
+              fi
+              
+              if [[ -n "$matches" ]]; then
+                while IFS= read -r line; do
+                  if [[ -n "$line" ]]; then
+                    line_num=$(echo "$line" | cut -d: -f1)
+                    line_content=$(echo "$line" | cut -d: -f2-)
+                    
+                    # Determine severity
+                    severity="Medium"
+                    if [[ "$pattern_name" == *"server"* || "$pattern_name" == *"ssr"* ]]; then
+                      severity="High"
+                      CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1))
+                    fi
+                    
+                    # Check if fixable
+                    if [[ "$pattern_name" == "missing_dynamic_import" || "$pattern_name" == "missing_ssr_false" || "$pattern_name" == "unsafe_auth_checks" ]]; then
+                      FIXABLE_ISSUES=$((FIXABLE_ISSUES + 1))
+                    fi
+                    
+                    TOTAL_ISSUES=$((TOTAL_ISSUES + 1))
+                    
+                    # Add to report
+                    echo "| \`$file\` | $pattern_name | $severity | $line_num | \`$(echo "$line_content" | sed 's/|/\\|/g' | head -c 50)...\` |" >> safety_scan_report.md
+                  fi
+                done <<< "$matches"
+              fi
+            done
+          done
+          
+          # Additional TypeScript compilation check for SSR safety
+          echo "" >> safety_scan_report.md
+          echo "## TypeScript Compilation Check" >> safety_scan_report.md
+          echo "" >> safety_scan_report.md
+          
+          if npm run typecheck > typescript_check.log 2>&1; then
+            echo "✅ TypeScript compilation successful" >> safety_scan_report.md
+          else
+            echo "❌ TypeScript compilation failed" >> safety_scan_report.md
+            echo "" >> safety_scan_report.md
+            echo "```" >> safety_scan_report.md
+            tail -20 typescript_check.log >> safety_scan_report.md
+            echo "```" >> safety_scan_report.md
+            CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1))
+            TOTAL_ISSUES=$((TOTAL_ISSUES + 1))
+          fi
+          
+          # Build test for SSR safety
+          echo "" >> safety_scan_report.md
+          echo "## Build Test" >> safety_scan_report.md
+          echo "" >> safety_scan_report.md
+          
+          if npm run build > build_check.log 2>&1; then
+            echo "✅ Build successful" >> safety_scan_report.md
+          else
+            echo "❌ Build failed - possible SSR issues" >> safety_scan_report.md
+            echo "" >> safety_scan_report.md
+            echo "```" >> safety_scan_report.md
+            tail -20 build_check.log >> safety_scan_report.md
+            echo "```" >> safety_scan_report.md
+            CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1))
+            TOTAL_ISSUES=$((TOTAL_ISSUES + 1))
+          fi
+          
+          # Summary
+          echo "" >> safety_scan_report.md
+          echo "## Summary" >> safety_scan_report.md
+          echo "" >> safety_scan_report.md
+          echo "- **Total Issues**: $TOTAL_ISSUES" >> safety_scan_report.md
+          echo "- **Critical Issues**: $CRITICAL_ISSUES" >> safety_scan_report.md
+          echo "- **Fixable Issues**: $FIXABLE_ISSUES" >> safety_scan_report.md
+          echo "- **Files Scanned**: $(echo "$SCAN_FILES" | wc -l)" >> safety_scan_report.md
+          
+          # Set outputs
+          if [[ $TOTAL_ISSUES -gt 0 ]]; then
+            ISSUES_FOUND="true"
+            if [[ $FIXABLE_ISSUES -gt 0 ]]; then
+              NEEDS_PR="true"
+            fi
+          fi
+          
+          echo "issues-found=$ISSUES_FOUND" >> $GITHUB_OUTPUT
+          echo "critical-issues=$CRITICAL_ISSUES" >> $GITHUB_OUTPUT
+          echo "fixable-issues=$FIXABLE_ISSUES" >> $GITHUB_OUTPUT
+          echo "needs-pr=$NEEDS_PR" >> $GITHUB_OUTPUT
+          
+          # Output scan report
+          SCAN_REPORT_CONTENT=$(cat safety_scan_report.md)
+          echo "scan-report<<EOF" >> $GITHUB_OUTPUT
+          echo "$SCAN_REPORT_CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # Final summary
+          echo "🔍 Scan completed:"
+          echo "  - Total issues: $TOTAL_ISSUES"
+          echo "  - Critical issues: $CRITICAL_ISSUES" 
+          echo "  - Fixable issues: $FIXABLE_ISSUES"
+          echo "  - Needs PR: $NEEDS_PR"
+
+      - name: Upload scan artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: clerk-ssr-safety-scan-${{ github.run_number }}
+          path: |
+            safety_scan_report.md
+            typescript_check.log
+            build_check.log
+          retention-days: 30
+
+  # Create auto-fix PR for detected issues
+  create-safety-fix-pr:
+    name: 🔧 Create Safety Fix PR
+    runs-on: ubuntu-latest
+    needs: safety-scan
+    if: needs.safety-scan.outputs.needs-pr == 'true' && (github.event.inputs.create_fix_pr != 'false')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Create safety fix branch
+        id: create-branch
+        run: |
+          FIX_BRANCH="autofix/clerk-ssr-safety-$(date +%Y%m%d-%H%M%S)"
+          echo "fix-branch=$FIX_BRANCH" >> $GITHUB_OUTPUT
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git checkout -b "$FIX_BRANCH"
+          echo "✅ Created safety fix branch: $FIX_BRANCH"
+
+      - name: Apply automated safety fixes
+        id: apply-fixes
+        run: |
+          echo "🔧 Applying automated Clerk/SSR safety fixes..."
+          
+          FIXES_APPLIED=""
+          
+          # Fix 1: Add dynamic imports for components using Clerk hooks
+          echo "🔄 Adding dynamic imports for unsafe components..."
+          
+          # Find components that import and use Clerk hooks
+          for file in $(find src -name "*.tsx" -type f | head -50); do
+            if [[ ! -f "$file" ]]; then continue; fi
+            
+            # Check if file uses Clerk hooks and isn't already dynamic
+            if grep -q "use(User|Auth|Session|Clerk)" "$file" && ! grep -q "dynamic.*import" "$file" && [[ "$file" != *"layout.tsx" ]] && [[ "$file" != *"page.tsx" ]]; then
+              echo "  Fixing: $file"
+              
+              # Create a dynamic wrapper version
+              base_name=$(basename "$file" .tsx)
+              dir_name=$(dirname "$file")
+              
+              # Create dynamic import wrapper
+              cat > "${dir_name}/${base_name}Dynamic.tsx" << EOF
+'use client';
+import dynamic from 'next/dynamic';
+
+const ${base_name}Component = dynamic(() => import('./${base_name}'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center p-4">
+      <div className="animate-pulse bg-gray-200 rounded h-8 w-32"></div>
+    </div>
+  ),
+});
+
+export default ${base_name}Component;
+EOF
+              
+              FIXES_APPLIED="$FIXES_APPLIED\n- Created dynamic wrapper for $file"
+            fi
+          done
+          
+          # Fix 2: Update unsafe auth checks with proper null handling
+          echo "🔒 Adding safety checks for auth objects..."
+          
+          for file in $(find src -name "*.tsx" -type f | head -50); do
+            if [[ ! -f "$file" ]]; then continue; fi
+            
+            # Replace unsafe auth checks
+            if sed -i 's/user\?\./user \&\& user\./g' "$file" 2>/dev/null; then
+              if git diff --quiet "$file"; then
+                # No changes made
+                true
+              else
+                FIXES_APPLIED="$FIXES_APPLIED\n- Added safety checks in $file"
+              fi
+            fi
+            
+            # Replace other unsafe patterns
+            sed -i 's/auth\?\./auth \&\& auth\./g' "$file" 2>/dev/null || true
+            sed -i 's/session\?\./session \&\& session\./g' "$file" 2>/dev/null || true
+          done
+          
+          # Fix 3: Ensure SafeClerkProvider is used where needed
+          echo "🛡️ Checking SafeClerkProvider usage..."
+          
+          if [[ -f "src/lib/clerk/SafeClerkProvider.tsx" ]]; then
+            # Update layout files to use SafeClerkProvider
+            for layout_file in $(find src -name "layout.tsx" -type f); do
+              if [[ -f "$layout_file" ]] && grep -q "ClerkProvider" "$layout_file" && ! grep -q "SafeClerkProvider" "$layout_file"; then
+                sed -i 's|import.*ClerkProvider.*from.*@clerk/nextjs|import { SafeClerkProvider as ClerkProvider } from "@/lib/clerk/SafeClerkProvider"|g' "$layout_file"
+                FIXES_APPLIED="$FIXES_APPLIED\n- Updated $layout_file to use SafeClerkProvider"
+              fi
+            done
+          fi
+          
+          # Fix 4: Add proper loading states and error boundaries
+          echo "🔄 Adding loading states for client components..."
+          
+          for file in $(find src -name "*.tsx" -type f | grep -v node_modules | head -30); do
+            if [[ ! -f "$file" ]]; then continue; fi
+            
+            # Add loading states for components that use Clerk hooks
+            if grep -q "useUser\|useAuth\|useSession" "$file" && ! grep -q "isLoaded\|loading" "$file"; then
+              # This would require more complex AST manipulation
+              # For now, just document it
+              echo "  - $file needs loading state review" >> fixes_needed_manual.md
+            fi
+          done
+          
+          # Set output for fixes applied
+          if [[ -n "$FIXES_APPLIED" ]]; then
+            echo "fixes-applied<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$FIXES_APPLIED" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "✅ Applied $(echo -e "$FIXES_APPLIED" | wc -l) automated fixes"
+          else
+            echo "fixes-applied=" >> $GITHUB_OUTPUT
+            echo "ℹ️ No automated fixes could be applied"
+          fi
+
+      - name: Verify fixes don't break build
+        id: verify-fixes
+        run: |
+          echo "🧪 Verifying fixes don't break build..."
+          
+          # Type check
+          if npm run typecheck; then
+            echo "typecheck-status=success" >> $GITHUB_OUTPUT
+            echo "✅ TypeScript check passed after fixes"
+          else
+            echo "typecheck-status=failed" >> $GITHUB_OUTPUT
+            echo "❌ TypeScript check failed after fixes"
+          fi
+          
+          # Build check
+          if npm run build; then
+            echo "build-status=success" >> $GITHUB_OUTPUT
+            echo "✅ Build successful after fixes"
+          else
+            echo "build-status=failed" >> $GITHUB_OUTPUT
+            echo "❌ Build failed after fixes"
+          fi
+
+      - name: Commit fixes and create PR
+        id: create-pr
+        if: steps.apply-fixes.outputs.fixes-applied != ''
+        run: |
+          git add .
+          
+          # Check if there are actually changes to commit
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            echo "pr-created=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Create commit message
+          COMMIT_MSG="fix: automated Clerk/SSR safety improvements
+
+          Applied automated fixes for Clerk/SSR safety issues:
+          ${{ steps.apply-fixes.outputs.fixes-applied }}
+          
+          Scan Results:
+          - Total issues found: ${{ needs.safety-scan.outputs.issues-found }}
+          - Critical issues: ${{ needs.safety-scan.outputs.critical-issues }}
+          - Fixable issues: ${{ needs.safety-scan.outputs.fixable-issues }}
+          
+          Post-fix validation:
+          - TypeScript check: ${{ steps.verify-fixes.outputs.typecheck-status }}
+          - Build status: ${{ steps.verify-fixes.outputs.build-status }}
+          
+          🤖 Generated with Claude Code
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          
+          git commit -m "$COMMIT_MSG"
+          git push origin "${{ steps.create-branch.outputs.fix-branch }}"
+          
+          # Create PR
+          PR_TITLE="🔐 Auto-fix: Clerk/SSR safety improvements ($(date +%Y-%m-%d))"
+          
+          PR_BODY="## 🔐 Automated Clerk/SSR Safety Fixes
+
+          This PR contains automated fixes for Clerk/SSR safety issues detected by our security scanner.
+
+          ### 📊 Scan Results
+          - **Issues Found**: ${{ needs.safety-scan.outputs.issues-found }}
+          - **Critical Issues**: ${{ needs.safety-scan.outputs.critical-issues }}
+          - **Fixable Issues**: ${{ needs.safety-scan.outputs.fixable-issues }}
+
+          ### 🔧 Applied Fixes
+          ${{ steps.apply-fixes.outputs.fixes-applied }}
+
+          ### 🧪 Validation Results
+          - **TypeScript Check**: ${{ steps.verify-fixes.outputs.typecheck-status }}
+          - **Build Status**: ${{ steps.verify-fixes.outputs.build-status }}
+
+          ### 📋 Detailed Scan Report
+          ${{ needs.safety-scan.outputs.scan-report }}
+
+          ### ⚠️ Manual Review Required
+          Please review the following:
+          1. Ensure dynamic imports maintain proper functionality
+          2. Verify loading states provide good UX  
+          3. Test authentication flows still work correctly
+          4. Check for any performance impacts
+
+          ### 🤖 Automation Details
+          - **Workflow**: [Clerk/SSR Safety Scanner](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - **Scan Mode**: ${{ github.event.inputs.scan_mode || 'comprehensive' }}
+          - **Branch**: \`${{ steps.create-branch.outputs.fix-branch }}\`
+
+          ---
+          🤖 This PR was automatically created by the Clerk/SSR safety scanner.
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          
+          # Create PR using GitHub CLI
+          PR_URL=$(gh pr create \
+            --title "$PR_TITLE" \
+            --body "$PR_BODY" \
+            --head "${{ steps.create-branch.outputs.fix-branch }}" \
+            --base main \
+            --label "automated,security,ssr-safety,clerk" \
+            --reviewer "" || echo "FAILED")
+          
+          if [[ "$PR_URL" != "FAILED" ]]; then
+            echo "pr-url=$PR_URL" >> $GITHUB_OUTPUT
+            echo "pr-created=true" >> $GITHUB_OUTPUT
+            echo "✅ Created safety fix PR: $PR_URL"
+          else
+            echo "pr-created=false" >> $GITHUB_OUTPUT
+            echo "❌ Failed to create PR"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Notification job
+  notify-safety-results:
+    name: 📢 Safety Scan Notifications
+    runs-on: ubuntu-latest
+    needs: [safety-scan, create-safety-fix-pr]
+    if: always() && needs.safety-scan.outputs.critical-issues > 0
+
+    steps:
+      - name: Send critical security alert
+        if: needs.safety-scan.outputs.critical-issues > 0
+        run: |
+          echo "🚨 Sending critical security alert..."
+          
+          if [[ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]]; then
+            MESSAGE="🔐 *Critical Clerk/SSR Security Alert*
+
+            *Severity*: HIGH ⚠️
+            *Critical Issues*: ${{ needs.safety-scan.outputs.critical-issues }}
+            *Total Issues*: ${{ needs.safety-scan.outputs.issues-found }}
+            *Scan Time*: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+            ${{ needs.create-safety-fix-pr.outputs.pr-created == 'true' && '🔧 *Auto-fix PR*: ${{ needs.create-safety-fix-pr.outputs.pr-url }}' || '⚠️ Manual intervention required' }}
+
+            *Immediate Actions Required*:
+            • Review SSR safety issues
+            • Test authentication flows
+            • Validate production stability
+
+            <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Scan Report>"
+
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"$MESSAGE\"}" \
+              ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
+
+      - name: Create GitHub issue for critical issues
+        if: needs.safety-scan.outputs.critical-issues > 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🔐 Critical Clerk/SSR Security Issues Detected - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## 🔐 Critical Clerk/SSR Security Alert
+            
+            **Scan Time**: ${new Date().toUTCString()}
+            **Workflow**: [Security Scan Run #${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ### 📊 Issue Summary
+            - **Critical Issues**: ${{ needs.safety-scan.outputs.critical-issues }}
+            - **Total Issues**: ${{ needs.safety-scan.outputs.issues-found }}
+            - **Fixable Issues**: ${{ needs.safety-scan.outputs.fixable-issues }}
+            
+            ### 🚨 Immediate Actions Required
+            - [ ] Review critical SSR safety violations
+            - [ ] Test authentication flows in production
+            - [ ] Validate component hydration behavior
+            - [ ] Check for client-side security leaks
+            
+            ${{ needs.create-safety-fix-pr.outputs.pr-created == 'true' && '### 🔧 Auto-fix PR Created\n[Review auto-fix PR](${{ needs.create-safety-fix-pr.outputs.pr-url }})' || '### ⚠️ Manual Fixes Required\nNo automated fixes available for detected issues.' }}
+            
+            ### 📋 Next Steps
+            1. Review the [detailed scan report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            2. Test production environment for auth issues
+            3. Implement necessary fixes
+            4. Re-run the security scan
+            
+            ---
+            *This issue was automatically created by the Clerk/SSR safety scanner*`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'critical', 'ssr-safety', 'clerk', 'automated']
+            });

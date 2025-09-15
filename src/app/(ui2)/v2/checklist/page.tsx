@@ -1,5 +1,7 @@
 "use client";
 import useSWR from "swr";
+
+export const dynamic = 'force-dynamic';
 import Link from "next/link";
 
 const fetcher = async (url:string) => {

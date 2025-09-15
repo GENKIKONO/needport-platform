@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { sendMail } from "@/lib/mail/smtp";
+
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 export async function POST(
   request: NextRequest,

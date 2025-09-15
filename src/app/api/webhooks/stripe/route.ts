@@ -14,6 +14,9 @@ import { headers } from "next/headers";
  * Lv2+ Policy: Full automation planned (do not remove event handlers)
  */
 
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req: Request) {
@@ -39,6 +42,13 @@ export async function POST(req: Request) {
   }
 
   const sadmin = supabaseAdmin();
+  
+  // Check if Supabase admin client is available
+  if (!sadmin) {
+    console.error("Supabase admin client not available, webhook processing skipped");
+    // Return success to acknowledge receipt but skip processing
+    return NextResponse.json({ received: true, processed: false });
+  }
 
   try {
     switch (event.type) {

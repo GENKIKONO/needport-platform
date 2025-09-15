@@ -11,7 +11,7 @@ const featured: Need[] = [
 export default function Home(){
   return (
     <div className="space-y-16">
-      {/* ヒーロー - イラスト調の柔らかいデザイン */}
+      {/* ヒーロー */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-50/30 via-slate-50 to-blue-50/50 border border-blue-100/50">
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-16 left-12 w-24 h-24 bg-blue-200/60 rounded-full blur-lg"></div>
@@ -21,19 +21,17 @@ export default function Home(){
         <div className="relative mx-auto max-w-5xl px-6 py-24 text-center space-y-8">
           <div className="inline-flex items-center gap-2 mb-6 px-5 py-3 bg-white/70 backdrop-blur-sm rounded-full border border-blue-100/60 shadow-sm">
             <div className="w-2 h-2 bg-blue-400/70 rounded-full animate-pulse"></div>
-            <span className="text-sm text-slate-600 font-medium">みんなの想いをつなぐ場所</span>
+            <span className="text-sm text-slate-600 font-medium">ニーズマッチングプラットフォーム</span>
           </div>
           <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-slate-800 leading-tight">
-            埋もれた声を、<br />
+            欲しい暮らし、<br />
             <span className="text-blue-600/80 relative">
-              つなぐ。
+              10人で叶える
               <div className="absolute -bottom-2 left-0 w-full h-3 bg-blue-200/60 rounded-full"></div>
             </span>
-            <span className="text-slate-700">形にする。</span>
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            困りごとを温かく受け止めて、地域の事業者さんと<br />
-            安心・透明につながる、新しい出会いの場です。
+            「欲しい」と「できる」の橋渡し
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
             <Link 
@@ -58,75 +56,26 @@ export default function Home(){
         </div>
       </section>
 
-      {/* ブランドストーリー - 素敵な世界観 */}
+      {/* ブランドストーリー（CMS編集可） */}
       <section className="mx-auto max-w-6xl px-4">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 border border-blue-100/30 p-12 sm:p-16">
-          {/* 装飾的な背景要素 */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute top-8 left-8 w-32 h-32 bg-blue-200/40 rounded-full blur-2xl"></div>
-            <div className="absolute bottom-12 right-12 w-24 h-24 bg-slate-300/30 rounded-full blur-xl"></div>
-          </div>
-          
           <div className="relative text-center space-y-8">
             <div className="space-y-4">
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 leading-tight">
-                誰かの「困った」が<br />
-                誰かの「喜び」になる場所
+                {/* CMS編集可: ブランドストーリータイトル */}
+                NeedPortについて
               </h2>
-              <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-                街の小さな困りごとから、大きな夢まで。<br />
-                みんなで支え合いながら、温かい未来を紡いでいく。
-              </p>
-            </div>
-
-            <div className="grid sm:grid-cols-3 gap-8 mt-12">
-              <div className="space-y-3 text-center">
-                <div className="w-16 h-16 mx-auto bg-white/70 rounded-2xl flex items-center justify-center shadow-sm">
-                  <svg className="w-8 h-8 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-slate-800">想いを大切に</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  一人ひとりの声に耳を傾け、小さなニーズも見逃さない
-                </p>
+              <div className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed space-y-4">
+                {/* CMS編集可: ブランドストーリー本文 */}
+                <p>地域のニーズと事業者をつなぐプラットフォームです。</p>
+                <p>匿名性と安全性を確保しながら、あなたの「欲しい」を実現へと導きます。</p>
               </div>
-
-              <div className="space-y-3 text-center">
-                <div className="w-16 h-16 mx-auto bg-white/70 rounded-2xl flex items-center justify-center shadow-sm">
-                  <svg className="w-8 h-8 text-slate-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-slate-800">地域とつながる</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  地域の事業者と住民が自然に出会える温かい関係づくり
-                </p>
-              </div>
-
-              <div className="space-y-3 text-center">
-                <div className="w-16 h-16 mx-auto bg-white/70 rounded-2xl flex items-center justify-center shadow-sm">
-                  <svg className="w-8 h-8 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-slate-800">未来を創る</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  今日の小さなアクションが、明日の豊かな暮らしの種になる
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-6">
-              <p className="text-base text-slate-700 italic font-medium">
-                "必要なものが、必要な人に、自然と届く世界"
-              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 注目のニーズ - シンプルで柔らかいカード */}
+      {/* ニーズ一覧プレビュー */}
       <section className="mx-auto max-w-5xl px-4">
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
@@ -135,7 +84,7 @@ export default function Home(){
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">注目のニーズ</h2>
+            <h2 className="text-2xl font-bold text-slate-800">最新のニーズ</h2>
           </div>
           <Link href="/needs" className="text-blue-600/80 hover:text-blue-700 font-medium text-sm flex items-center gap-1 transition-colors">
             すべて見る 
@@ -214,7 +163,7 @@ export default function Home(){
         </div>
       </section>
 
-      {/* はじめかた - シンプルで柔らかい3ステップ */}
+      {/* 仕組み紹介（CMS編集可） */}
       <section className="mx-auto max-w-5xl px-4">
         <div className="text-center mb-14">
           <div className="flex items-center justify-center gap-3 mb-6">
@@ -223,69 +172,16 @@ export default function Home(){
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">はじめかた</h2>
+            <h2 className="text-2xl font-bold text-slate-800">
+              {/* CMS編集可: 仕組み紹介タイトル */}
+              サービスの仕組み
+            </h2>
           </div>
-          <p className="text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            簡単3ステップで、あなたの困りごとが温かい解決につながります
-          </p>
-        </div>
-        
-        <div className="grid gap-8 sm:grid-cols-3 relative">
-          {/* 繋がりを表現する線 */}
-          <div className="hidden sm:block absolute top-20 left-1/4 right-1/4 h-px bg-gradient-to-r from-blue-100/40 via-slate-200/60 to-blue-100/40"></div>
-          
-          {[
-            {
-              step: "1",
-              title: "困りごとを投稿",
-              desc: "匿名で安心して、あなたの「こんなのあったらいいな」を投稿してみてください。",
-              color: "from-blue-50/40 to-slate-50/60",
-              icon: (
-                <svg className="w-6 h-6 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              )
-            },
-            {
-              step: "2", 
-              title: "事業者が提案",
-              desc: "地域の事業者さんから、温かい提案やアイデアが届きます。",
-              color: "from-slate-50/60 to-blue-50/40",
-              icon: (
-                <svg className="w-6 h-6 text-slate-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              )
-            },
-            {
-              step: "3",
-              title: "成約・実現", 
-              desc: "安心・透明な形で成約し、必要な情報だけを共有して実現へ。",
-              color: "from-blue-50/40 to-slate-50/60",
-              icon: (
-                <svg className="w-6 h-6 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
-                </svg>
-              )
-            }
-          ].map(({step, title, desc, color, icon},i)=>(
-            <div key={i} className="relative text-center group">
-              <div className={`relative bg-gradient-to-br ${color} rounded-3xl p-8 border border-blue-50/40 group-hover:shadow-md transition-all duration-300 backdrop-blur-sm`}>
-                {/* ステップ番号 */}
-                <div className="absolute -top-4 left-8 w-8 h-8 bg-white rounded-full border-2 border-blue-100/60 flex items-center justify-center font-bold text-sm text-slate-700 shadow-sm">
-                  {step}
-                </div>
-                
-                <div className="space-y-4 pt-2">
-                  <div className="w-12 h-12 mx-auto bg-white/60 rounded-full flex items-center justify-center mb-4 shadow-sm">
-                    {icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800">{title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{desc}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+          <div className="text-slate-600 max-w-2xl mx-auto leading-relaxed space-y-4">
+            {/* CMS編集可: 仕組み紹介本文 */}
+            <p>地域のニーズと事業者をマッチングするプラットフォームです。</p>
+            <p>安全で透明性の高い取引を実現します。</p>
+          </div>
         </div>
         
         <div className="text-center mt-14">
@@ -296,80 +192,70 @@ export default function Home(){
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-            今すぐはじめてみる
+            ニーズを投稿する
           </Link>
         </div>
       </section>
 
-      {/* 数字で見るNeedPort - 実績と信頼 */}
-      <section className="mx-auto max-w-5xl px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">みんなで紡ぐ物語</h2>
-          <p className="text-slate-600">
-            小さな一歩が、大きな変化を生み出しています
-          </p>
-        </div>
-        
-        <div className="grid sm:grid-cols-4 gap-8">
-          {[
-            { number: "127", label: "投稿されたニーズ", desc: "困りごとから夢まで" },
-            { number: "89", label: "マッチング成立", desc: "新しい出会いが生まれた数" },
-            { number: "23", label: "参加地域", desc: "東京を中心に広がる輪" },
-            { number: "156", label: "登録事業者", desc: "想いある事業者さんたち" }
-          ].map((stat, i) => (
-            <div key={i} className="text-center space-y-3">
-              <div className="text-4xl font-bold text-blue-600/80">{stat.number}</div>
-              <div className="text-lg font-semibold text-slate-800">{stat.label}</div>
-              <div className="text-sm text-slate-600 leading-relaxed">{stat.desc}</div>
+      {/* こんな方におすすめ（CMS編集可） */}
+      <section className="mx-auto max-w-6xl px-4">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 border border-blue-100/30 p-12 sm:p-16">
+          <div className="relative text-center space-y-8">
+            <div className="space-y-4">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 leading-tight">
+                {/* CMS編集可: おすすめタイトル */}
+                こんな方におすすめ
+              </h2>
+              <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                {/* CMS編集可: おすすめ説明文 */}
+                あなたの「欲しい」に合わせた活用方法をご提案します
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* 心に響くメッセージ */}
-      <section className="mx-auto max-w-4xl px-4">
-        <div className="text-center bg-gradient-to-r from-blue-50/50 to-slate-50/70 rounded-3xl p-12 border border-blue-100/30">
-          <blockquote className="text-xl sm:text-2xl text-slate-800 font-medium leading-relaxed mb-6">
-            「一人では解決できないことも、<br className="hidden sm:block" />
-            誰かと一緒なら、きっと道は見つかる」
-          </blockquote>
-          <div className="space-y-4">
-            <p className="text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              NeedPortは、技術やサービスを超えた、人と人をつなぐ架け橋です。<br />
-              あなたの小さな一歩が、誰かの大きな喜びになる瞬間を、<br />
-              一緒に作っていきませんか。
-            </p>
-            <div className="pt-4">
-              <Link 
-                href="/needs/new" 
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-500/90 to-blue-600/90 text-white font-semibold rounded-full hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                あなたの物語を始める
-              </Link>
+            <div className="grid sm:grid-cols-3 gap-8 mt-12">
+              {/* CMS編集可: おすすめカード1 */}
+              <div className="space-y-4 text-center">
+                <div className="w-16 h-16 mx-auto bg-white/70 rounded-2xl flex items-center justify-center shadow-sm">
+                  <svg className="w-8 h-8 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800">ニーズの需要を確認したい方</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  同じニーズを持つ人がどれくらいいるか、事前に把握できます
+                </p>
+              </div>
+
+              {/* CMS編集可: おすすめカード2 */}
+              <div className="space-y-4 text-center">
+                <div className="w-16 h-16 mx-auto bg-white/70 rounded-2xl flex items-center justify-center shadow-sm">
+                  <svg className="w-8 h-8 text-slate-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800">事業化を検討している方</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  需要が集まったタイミングで、新しいサービスの検討ができます
+                </p>
+              </div>
+
+              {/* CMS編集可: おすすめカード3 */}
+              <div className="space-y-4 text-center">
+                <div className="w-16 h-16 mx-auto bg-white/70 rounded-2xl flex items-center justify-center shadow-sm">
+                  <svg className="w-8 h-8 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800">まずは匿名で参加したい方</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  ログイン不要で「気になる」を押して、気軽に参加できます
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* フッター的な優しいメッセージ */}
-      <section className="mx-auto max-w-3xl px-4 text-center">
-        <div className="space-y-6 py-12 border-t border-blue-100/50">
-          <div className="w-12 h-12 mx-auto bg-blue-100/60 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-blue-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-            </svg>
-          </div>
-          <p className="text-lg text-slate-700 font-medium">
-            今日という日が、誰かの明日を輝かせる
-          </p>
-          <p className="text-sm text-slate-500 italic">
-            NeedPort - 必要が港で出会う場所
-          </p>
-        </div>
-      </section>
     </div>
   );
 }

@@ -1,0 +1,64 @@
+{
+  "timestamp": "2025-09-15T00:02:15.848Z",
+  "tests": [
+    {
+      "test": "HOMEPAGE_LINK",
+      "status": "INFO",
+      "message": "Testing homepage posting link",
+      "details": null,
+      "timestamp": "2025-09-15T00:02:15.849Z"
+    },
+    {
+      "test": "HOMEPAGE_LINK",
+      "status": "PASS",
+      "message": "Found posting link on homepage",
+      "details": {
+        "href": "/needs/new"
+      },
+      "timestamp": "2025-09-15T00:02:18.102Z"
+    },
+    {
+      "test": "HOMEPAGE_LINK_TARGET",
+      "status": "PASS",
+      "message": "Posting link targets /needs/new correctly",
+      "details": null,
+      "timestamp": "2025-09-15T00:02:18.102Z"
+    },
+    {
+      "test": "HEADER_NAV",
+      "status": "INFO",
+      "message": "Testing header navigation",
+      "details": null,
+      "timestamp": "2025-09-15T00:02:18.102Z"
+    },
+    {
+      "test": "HEADER_NAV",
+      "status": "PASS",
+      "message": "Found posting link in header",
+      "details": {
+        "href": "/needs/new"
+      },
+      "timestamp": "2025-09-15T00:02:18.107Z"
+    },
+    {
+      "test": "REDIRECT_TEST",
+      "status": "INFO",
+      "message": "Testing actual redirect behavior",
+      "details": null,
+      "timestamp": "2025-09-15T00:02:18.107Z"
+    },
+    {
+      "test": "REDIRECT_TEST",
+      "status": "FAIL",
+      "message": "Did not redirect to sign-in",
+      "details": {
+        "finalUrl": "https://needport.jp/needs/new"
+      },
+      "timestamp": "2025-09-15T00:02:20.485Z"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1
+  }
+}

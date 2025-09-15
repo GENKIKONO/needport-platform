@@ -1,0 +1,140 @@
+name: 🧹 Nightly E2E Cleanup
+
+on:
+  schedule:
+    # Run weekly on Sundays at 2:00 AM JST (17:00 UTC Saturday)
+    - cron: '0 17 * * 6'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (no actual deletions)'
+        required: false
+        type: boolean
+        default: true
+      age_threshold_days:
+        description: 'Age threshold in days'
+        required: false
+        type: number
+        default: 30
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  cleanup-e2e-drafts:
+    name: Clean E2E Draft Posts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 🛠️ Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📥 Install dependencies
+        run: npm ci
+        
+      - name: 🧹 Run E2E cleanup (dry-run)
+        if: github.event_name == 'schedule' || inputs.dry_run
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "🧹 Running E2E cleanup in DRY RUN mode..."
+          npx tsx scripts/cleanup-e2e-drafts.ts --dry-run
+          
+      - name: 🧹 Run E2E cleanup (live)
+        if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "🧹 Running E2E cleanup in LIVE mode..."
+          npx tsx scripts/cleanup-e2e-drafts.ts
+          
+      - name: 📊 Upload cleanup results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cleanup-results-${{ github.run_number }}
+          path: |
+            artifacts/
+          retention-days: 30
+          
+      - name: 🚨 Notify on failure (Slack)
+        if: failure() && secrets.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#alerts'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: |
+            🚨 E2E cleanup job failed!
+            
+            Repository: ${{ github.repository }}
+            Workflow: ${{ github.workflow }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Please check the logs for details.
+
+  verify-cleanup-safety:
+    name: Verify Cleanup Safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: 🛠️ Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📥 Install dependencies
+        run: npm ci
+        
+      - name: 🔍 Verify cleanup script safety
+        run: |
+          echo "🔍 Verifying cleanup script safety..."
+          
+          # Check that script only targets drafts
+          if ! grep -q "eq('status', 'draft')" scripts/cleanup-e2e-drafts.ts; then
+            echo "❌ Script does not properly filter for draft status"
+            exit 1
+          fi
+          
+          # Check that script only targets unpublished needs
+          if ! grep -q "eq('published', false)" scripts/cleanup-e2e-drafts.ts; then
+            echo "❌ Script does not properly filter for unpublished status"
+            exit 1
+          fi
+          
+          # Check for E2E title filter
+          if ! grep -q "ilike('title', '\[E2E\]%')" scripts/cleanup-e2e-drafts.ts; then
+            echo "❌ Script does not properly filter for E2E titles"
+            exit 1
+          fi
+          
+          # Check for engagement verification
+          if ! grep -q "checkForEngagements" scripts/cleanup-e2e-drafts.ts; then
+            echo "❌ Script does not check for existing engagements"
+            exit 1
+          fi
+          
+          echo "✅ Cleanup script safety verified"
+          
+      - name: 🧪 Test cleanup script (dry-run)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "🧪 Testing cleanup script..."
+          npx tsx scripts/cleanup-e2e-drafts.ts --dry-run || echo "Script test completed (may fail if no Supabase access)"

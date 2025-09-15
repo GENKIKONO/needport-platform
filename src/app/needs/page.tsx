@@ -1,6 +1,7 @@
 // src/app/needs/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import EngagementButtons from "@/components/EngagementButtons";
 
 // 既存の identity があれば優先、なければフォールバック
 let IDENTITY: { SEA_PATH: string };
@@ -289,18 +290,16 @@ function NeedCard({ n }: { n: NeedRow }) {
         )}
       </div>
       
-      <div className="flex gap-2 pt-2 border-t border-blue-50/50">
+      <div className="space-y-3 pt-2 border-t border-blue-50/50">
+        {/* Engagement Buttons */}
+        <EngagementButtons needId={n.id} />
+        
+        {/* Detail Link */}
         <Link 
-          className="flex-1 text-center text-sm px-4 py-2 rounded-full border border-blue-100/60 text-blue-600/80 hover:bg-blue-50/50 transition-all duration-300" 
+          className="block w-full text-center text-sm px-4 py-2 rounded-full border border-blue-100/60 text-blue-600/80 hover:bg-blue-50/50 transition-all duration-300" 
           href={`/needs/${n.id}`}
         >
           詳細を見る
-        </Link>
-        <Link 
-          className="flex-1 text-center text-sm px-4 py-2 rounded-full bg-blue-500/90 text-white hover:bg-blue-600/90 transition-all duration-300 shadow-sm" 
-          href={`/needs/${n.id}#cta`}
-        >
-          提案する
         </Link>
       </div>
     </div>

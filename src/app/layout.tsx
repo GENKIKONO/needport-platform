@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import AppShell from '@/components/layout/AppShell'
 import { ToastProvider } from '@/components/ui/use-toast'
 import { Toaster } from '@/components/ui/toaster'
-import { ClerkProvider } from '@clerk/nextjs'
+import SafeClerkProvider from '@/components/auth/SafeClerkProvider'
 
 export const metadata: Metadata = {
   title: 'NeedPort',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <SafeClerkProvider>
       <html lang="ja">
         <body>
           <ToastProvider>
@@ -21,6 +21,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </ToastProvider>
         </body>
       </html>
-    </ClerkProvider>
+    </SafeClerkProvider>
   )
 }

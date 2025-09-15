@@ -20,6 +20,8 @@ npm test             # Run unit tests with Vitest
 npm run test:watch   # Run tests in watch mode
 npm run e2e          # Run Playwright end-to-end tests
 npm run e2e:ui       # Run E2E tests with UI
+npm run monitor      # Run monitoring tests (local)
+npm run monitor:prod # Run monitoring tests (production)
 npm run ci           # Run full CI test suite (build + unit + e2e)
 npm run rls:check    # Verify RLS policies (requires DATABASE_URL)
 ```
@@ -164,6 +166,89 @@ if (FLAGS.UI_V2_DEFAULT) { /* ... */ }
 // MVP config
 if (config.GUEST_VIEW) { /* ... */ }
 ```
+
+### Production Monitoring & Health Checks
+
+#### Health Check Endpoint
+The `/api/health` endpoint provides comprehensive system monitoring:
+```bash
+curl https://needport.jp/api/health
+```
+
+Returns:
+- **Database connectivity**: Connection speed and availability
+- **RLS policies**: Row Level Security validation
+- **Security checks**: Write protection verification
+- **Environment status**: All required configurations
+
+#### Automated Monitoring
+- **Nightly monitoring**: GitHub Actions runs comprehensive checks at 3:00 AM JST
+- **Critical flow testing**: Homepage → Needs listing → Detail page → Engagement
+- **E2E posting flow**: Complete authenticated posting workflow validation
+- **Performance monitoring**: Response times, error rates, accessibility
+- **Auto-recovery**: Issues create GitHub alerts, resolved issues auto-close
+- **Auto-fix PRs**: Automated diagnosis and fix generation for detected issues
+
+#### Production E2E Monitoring
+```bash
+# Full production E2E test with auto-fix
+npm run monitor:prod:e2e
+
+# Production E2E test only (requires CLERK_TEST_EMAIL/CLERK_TEST_PASSWORD)
+npm run test:prod:e2e
+
+# Combined monitoring (health + E2E)
+npm run monitor:prod:full
+```
+
+**Required Environment Variables for E2E:**
+- `CLERK_TEST_EMAIL`: Test account email for production E2E tests
+- `CLERK_TEST_PASSWORD`: Test account password for production E2E tests
+
+#### Manual Monitoring
+```bash
+# Production monitoring test suite
+npm run monitor:prod
+
+# Local monitoring tests
+npm run monitor
+
+# Quick smoke test
+BASE="https://needport.jp" npm run smoke:ci
+```
+
+#### Notification Setup
+Configure monitoring notifications by setting GitHub Secrets:
+- `SLACK_WEBHOOK_URL`: Slack notifications (recommended)
+- `NOTIFICATION_EMAIL`: Email alerts for critical failures
+- `CLERK_TEST_EMAIL`: Production test account email
+- `CLERK_TEST_PASSWORD`: Production test account password
+
+#### Monitoring Test Coverage
+1. **System Health**: Database, RLS, security configurations
+2. **User Flows**: Core navigation and engagement paths
+3. **Authenticated Posting**: Complete login → post → verify workflow
+4. **Database Verification**: Draft status, RLS compliance, owner assignment
+5. **Performance**: Response times, loading speeds
+6. **Accessibility**: Basic WCAG compliance checks
+7. **API Health**: Key endpoints availability and response format
+
+#### Auto-Fix System
+The monitoring system includes automatic failure classification and fix generation:
+
+**Failure Classifications:**
+- **A_AUTH**: Authentication/Authorization integration issues
+- **B_RLS**: Row Level Security policy issues
+- **C_SCHEMA**: Database schema constraint issues
+- **D_NETWORK**: Network or timeout issues (usually transient)
+- **ENV_CONFIG**: Environment configuration issues
+
+**Auto-Generated Fixes:**
+- Enhanced error logging and debugging
+- RLS policy adjustments
+- Schema constraint fixes
+- Environment variable updates
+- Comprehensive fix documentation with reproduction steps
 
 ### Database Changes
 1. Update types in `src/lib/types/database.ts`
@@ -1243,6 +1328,29 @@ docs/
 - **Response Format**: JSON only, never HTML error pages
 - **RLS Compliance**: Server client passes Clerk tokens to Supabase
 
+### Minimal Posting Flow Contract (Non-Destructive)
+**Environment Flag**: `NEXT_PUBLIC_MINIMAL_POST_FLOW=true` enables minimal UI
+
+**Schema Contract (needs table)**:
+- Required columns: `id` (uuid PK), `title` (text), `body` (text), `status` (text default 'draft'), `published` (boolean default false), `owner_id` (uuid), `created_at` (timestamptz default now())
+- Publication logic: `published = true` OR `status = 'published'` for public visibility
+- Owner assignment: DB trigger auto-sets `owner_id = auth.uid()` on INSERT
+
+**API Contract**:
+- **POST /api/needs**: Accept minimal `{title, body}` → create draft → return `{id, title, created_at}`
+- **GET /api/me/needs**: List owner's needs (draft+published) → `[{id, title, status, published, created_at}]`
+- Backward compatible: existing fields accepted but not required
+
+**RLS Policies**:
+- Public read: `published = true OR status = 'published'`
+- Owner read: `owner_id = auth.uid()` (includes drafts)
+- Owner mutations: INSERT/UPDATE/DELETE with `owner_id = auth.uid()` check
+
+**UI Contract**:
+- Flag ON: `/needs/new` shows title+body form only
+- Flag OFF: Full form (backward compatible)
+- Success flow: POST → toast → redirect to `/me`
+
 ### RLS Policies Canonical Set
 Required policies for needs table:
 - `public read needs`: SELECT with `status = 'published'` restriction
@@ -1276,7 +1384,6 @@ Required policies for needs table:
 **Header Navigation** (required):
 - Brand: "NeedPort" → `/`
 - ニーズ一覧 → `/needs`  
-- 事業者一覧 → `/vendors`
 - マイページ → `/me` (authenticated)
 - ログイン (unauthenticated)
 
@@ -1315,7 +1422,44 @@ Enforced rules:
 
 ---
 
+## 投稿ページの認証ガード
+
+### 認証ガード仕様（2025-09-14実装）
+
+#### サーバー側認証ガード
+- `/needs/new` ページは **サーバー側で完全に認証ガード** されています
+- 未認証ユーザーは投稿フォームを一切見ることができません
+- `auth()` による認証チェック後、未認証の場合は即座に `/sign-in?redirect_url=/needs/new` へリダイレクト
+- `export const dynamic = 'force-dynamic'` により動的レンダリングを強制
+
+#### API側認証強制
+- `POST /api/needs` は必ず認証を要求し、未認証は 401 エラーを返却
+- 日本語の親切なエラーメッセージ: 「ログインが必要です。ログインしてから再度お試しください。」
+- service-role キーによる RLS バイパスで確実な投稿処理
+
+#### ユーザー導線
+- ヘッダー/サイドナビの「ニーズを投稿する」→ `/needs/new` → 未認証なら自動的に `/sign-in` へ
+- ログイン成功後は `redirect_url` パラメータにより `/needs/new` に自動復帰
+- 投稿完了後は `/me` ページへ遷移
+
+#### E2Eテスト
+- `unauthenticated-user-is-redirected-from-new-to-signin.spec.ts`: 未認証ユーザーのリダイレクト確認
+- `authenticated-user-can-post-need-minimal.spec.ts`: 認証済みユーザーの投稿フロー確認
+- 既存のモーダル表示テストは削除し、リダイレクトベースに更新
+
+---
+
 ## 変更履歴
+
+### 2025-09-14 認証ガード完全実装
+- **変更内容**: `/needs/new` の認証ガードをサーバー側で完全実装
+- **対象**: 投稿ページの認証フロー全体を刷新
+- **新ファイル**: 
+  - `src/app/needs/new/components/NewNeedForm.tsx` (フォームコンポーネント分離)
+  - `tests/unauthenticated-user-is-redirected-from-new-to-signin.spec.ts`
+  - `tests/authenticated-user-can-post-need-minimal.spec.ts`
+- **削除**: クライアント側モーダル認証チェック処理
+- **技術**: Server Component + `auth()` + `redirect()` による確実なガード
 
 ### 2025-09-14 テスト・品質管理インフラ追加
 - **追加内容**: API契約テスト、RLS検証、E2Eテスト、UIドリフト防止テスト
@@ -1330,3 +1474,277 @@ Enforced rules:
 - **追加**: 2.10決済・返金ポリシーv1.0、2.11将来対応セクション
 - **番号調整**: 旧2.10成功指標・KPIを2.12に繰り下げ
 - **コミット**: [差分確認後に記載予定]
+
+---
+
+## UIナビゲーション仕様（固定ルール）
+
+### 1) ヘッダー（PCビュー）
+- 左：ロゴ（クリックで /）
+- 右ナビ：
+  1. ニーズを投稿する /needs/new
+  2. ニーズ一覧 /needs
+  3. 認証状態による切替
+     - 未ログイン → 「一般ログイン」「事業者ログイン」ボタン
+     - ログイン済み → 「マイページ」（ユーザーアイコン＋ユーザー名）
+- 注意：ヘッダーには 「サービスについて /about」「利用規約 /terms」「プライバシーポリシー /privacy」 を置かない。
+
+### 2) サイドナビ（ハンバーガー／モバイル用）
+- 項目：
+  1. 一般ログイン（未ログイン時のみ・CTA色）
+  2. 事業者ログイン（未ログイン時のみ・CTA色）
+  3. マイページ（ログイン済み時に上記2つの代わりに表示／ユーザーアイコン＋名前）
+  4. ニーズを投稿する /needs/new
+  5. ニーズ一覧 /needs
+  6. サービスについて /about
+  7. 利用規約 /terms
+  8. プライバシーポリシー /privacy
+
+### 3) フッター
+- サービスについて /about ／ 利用規約 /terms ／ プライバシーポリシー /privacy
+
+---
+
+## トップページ構成（CMS編集対応）
+
+1. **ヒーローセクション**
+   - キャッチコピー（CMS編集可）
+   - サブコピー（CMS編集可）
+   - CTAボタン（「ニーズを投稿する」「ニーズを探す」）
+
+2. **ニーズ一覧プレビュー**
+   - 最新のニーズをカードで表示
+
+3. **ブランドストーリー（CMS編集可）**
+   - 文章・画像を管理者が更新可能
+
+4. **仕組み紹介（CMS編集可）**
+   - フローチャート or 3ステップ
+
+5. **こんな方におすすめ（CMS編集可）**
+   - ターゲット別の紹介文＋アイコン/画像
+
+---
+
+## マイページ仕様（/me）
+
+### 一般ユーザー
+- 投稿管理（下書き/公開）
+- 購入/支払い履歴
+- プロフィール編集
+
+### 事業者ユーザー
+- 投稿管理（ニーズ・提案）
+- 提案ガイド（CMS編集可）
+- アカウント設定
+
+---
+
+## CMS 管理要件（全セクションCMS化）
+
+### 管理ダッシュボードから編集可能：
+
+1. **トップページ各セクション**
+   - ヒーロー：キャッチ/サブ/CTA文言
+   - ブランドストーリー：本文＋画像
+   - 仕組み紹介：本文＋画像
+   - こんな方におすすめ：本文＋画像
+
+2. **固定ページ**
+   - /about（サービスについて）
+   - /terms（利用規約）
+   - /privacy（プライバシーポリシー）
+
+3. **ナビ文言**
+   - ヘッダー／サイドナビ／フッターのリンク名
+   - 画像アップロード対応（S3 or Vercel Storage想定）
+   - 公開反映は即時（ISR/SWRでも可）
+   - 変更履歴＆ロールバック（望ましい）
+
+---
+
+## 禁止事項（ガードレール）
+
+- 「猫のみんなで紡ぐ物語」等の不要コピーの追加禁止
+- 想定外ナビリンクの独断追加禁止
+- マイページ機能をヘッダー/サイドナビに分散配置しない（導線のみ）
+
+---
+
+## 投稿者編集ポリシー（一般/事業者 共通）
+
+### 共通
+- 全投稿（needs, proposals）に owner_id: uuid（owner_id = auth.uid()）
+- 編集/削除の可否はサーバー側で判定（UIはAPIの canEdit/canDelete を利用）
+
+### ニーズ（needs）
+- 編集可：本人かつ リアクションが一切ない
+- "リアクション"＝ need_engagements（interest/pledge）合計 0 かつ need_anonymous_interest 合計 0
+- 削除可：同上（完全無反応時）
+- 不可：上記以外（いずれか1件以上のエンゲージメントがある）
+
+### 提案（proposals）
+- 事業者も一般同様にニーズ投稿可（needsは共通仕様）
+- 編集可：本人かつ 返信が一切ない（proposal_replies 合計 0）
+- 削除可：同上
+- 不可：返信1件以上
+
+---
+
+## データモデル & マイグレーション
+
+```sql
+-- needs に owner_id 追記
+ALTER TABLE public.needs
+  ADD COLUMN IF NOT EXISTS owner_id uuid REFERENCES public.profiles(id);
+CREATE INDEX IF NOT EXISTS idx_needs_owner ON public.needs(owner_id);
+
+-- proposals
+CREATE TABLE IF NOT EXISTS public.proposals (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  need_id uuid NOT NULL REFERENCES public.needs(id) ON DELETE CASCADE,
+  owner_id uuid NOT NULL REFERENCES public.profiles(id),
+  title text NOT NULL,
+  body text NOT NULL,
+  status text NOT NULL DEFAULT 'draft',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_proposals_need ON public.proposals(need_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_owner ON public.proposals(owner_id);
+
+-- proposal_replies
+CREATE TABLE IF NOT EXISTS public.proposal_replies (
+  id bigserial PRIMARY KEY,
+  proposal_id uuid NOT NULL REFERENCES public.proposals(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.profiles(id),
+  body text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_proposal_replies_proposal ON public.proposal_replies(proposal_id);
+```
+
+---
+
+## RLS（Row Level Security）
+
+```sql
+-- needs
+ALTER TABLE public.needs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "needs_owner_rw" ON public.needs;
+CREATE POLICY "needs_owner_rw"
+ON public.needs
+FOR SELECT USING (true);
+FOR UPDATE TO authenticated USING (owner_id = auth.uid());
+FOR DELETE TO authenticated USING (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "needs_public_r" ON public.needs;
+CREATE POLICY "needs_public_r"
+ON public.needs
+FOR SELECT TO anon, authenticated
+USING (COALESCE(published, false) = true OR status = 'published');
+
+-- proposals
+ALTER TABLE public.proposals ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "proposals_owner_rw" ON public.proposals;
+CREATE POLICY "proposals_owner_rw"
+ON public.proposals
+FOR SELECT USING (true);
+FOR UPDATE TO authenticated USING (owner_id = auth.uid());
+FOR DELETE TO authenticated USING (owner_id = auth.uid());
+
+-- proposal_replies（閲覧は公開）
+ALTER TABLE public.proposal_replies ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "proposal_replies_read" ON public.proposal_replies;
+CREATE POLICY "proposal_replies_read"
+ON public.proposal_replies
+FOR SELECT TO anon, authenticated
+USING (true);
+```
+
+注：実際の編集/削除可否（無反応・無返信チェック）はAPIで最終判定。RLSは「本人のみ更新/削除可」を担保。
+
+---
+
+## API 仕様
+
+### Needs
+- **PUT /api/needs/:id**
+  - チェック：owner_id == auth.uid() かつ engagements 0 かつ anon-interest 0
+  - 不許可：409 { error: 'LOCKED_BY_ENGAGEMENT' }
+- **DELETE /api/needs/:id**
+  - 同上
+
+### Proposals
+- **PUT /api/proposals/:id**
+  - チェック：owner_id == auth.uid() かつ replies 0
+  - 不許可：409 { error: 'LOCKED_BY_REPLIES' }
+- **DELETE /api/proposals/:id**
+  - 同上
+
+ログ：X-Request-ID を受理し監査ログに記録（推奨）
+
+---
+
+## マイページUI（/me）
+
+- 自分の投稿（ニーズ）：canEdit/canDelete に基づきボタン活性／理由ツールチップ
+- 提案（事業者）：同様。返信ありはボタン無効化
+- 削除時は確認ダイアログ→成功後リスト再取得
+
+---
+
+## 返却フォーマット例
+
+```json
+// GET /api/me/needs
+{
+  "id": "uuid",
+  "title": "string",
+  "status": "draft|published|archived",
+  "owner_id": "uuid",
+  "engagement": { "interest_users": 0, "pledge_users": 0, "anon_total": 0 },
+  "locks": { "hasEngagement": false },
+  "canEdit": true,
+  "canDelete": true,
+  "updated_at": "2025-09-14T00:00:00Z"
+}
+
+// GET /api/me/proposals
+{
+  "id": "uuid",
+  "need_id": "uuid",
+  "title": "string",
+  "owner_id": "uuid",
+  "reply_count": 0,
+  "locks": { "hasReplies": false },
+  "canEdit": true,
+  "canDelete": true
+}
+```
+
+---
+
+## 受け入れ基準（E2E/Playwright テスト含む）
+
+- 未反応のニーズは 編集/削除できる
+- 反応（興味/購入/匿名いずれか）付きのニーズは 編集/削除不可
+- 返信なしの提案は 編集/削除できる
+- 返信ありの提案は 編集/削除不可
+- ヘッダー/サイドナビ/フッターのリンクが仕様どおり
+- トップ各セクション＆固定ページ文言/画像がCMSから編集→即時反映
+- ナビ文言変更がCMSから反映
+- 変更履歴の保存（望ましい）
+- 仕様全文が CLAUDE.md に反映 されている
+
+---
+
+## 実装タスク
+
+1. CLAUDE.md に本仕様を追記
+2. UI：Header / SideNav / Footer / TopPage / MyPage を仕様準拠に修正
+3. CMS：管理画面実装（上記セクション＆固定ページ＆ナビ文言／画像アップロード／即時反映／履歴）
+4. API：needs/proposals の PUT/DELETE と canEdit/canDelete 計算
+5. RLS：ポリシー適用（上記SQL）
+6. E2E/Playwright：ナビ遷移・編集/削除可否・CMS反映の自動テスト
+7. PR：差分・スクショ・curl例・テスト結果を添付

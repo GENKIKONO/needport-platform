@@ -3,4 +3,5 @@ export const FLAGS = {
   DISABLE_STRIPE_CAPTURE: true, // 決済は画面までで止める
   ENFORCE_CANONICAL: true,
   CANONICAL_HOST: (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "").trim(), // ex: needport.jp
+  FEATURE_ENGAGEMENT: process.env.NEXT_PUBLIC_FEATURE_ENGAGEMENT === 'true', // エンゲージメント機能のON/OFF
 };

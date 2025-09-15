@@ -1,0 +1,377 @@
+# .github/workflows/nightly-monitoring.yml
+# Nightly monitoring and health checks for production-only systems
+
+name: 🌙 Production-Only Nightly Monitoring
+
+on:
+  schedule:
+    # Run every day at 3:00 AM JST (18:00 UTC previous day)
+    - cron: '0 18 * * *'
+    # Additional monitoring runs during business hours
+    - cron: '0 9 * * 1-5'   # 6 PM JST weekdays (9:00 UTC) - End of business day
+    - cron: '0 21 * * 0-6'  # 6 AM JST daily (21:00 UTC previous day) - Early morning
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      skip_fix_pr:
+        description: 'Skip creating auto-fix PRs'
+        required: false
+        default: false
+        type: boolean
+      force_notifications:
+        description: 'Force notifications even on success'
+        required: false
+        default: false
+        type: boolean
+
+# Prevent concurrent runs
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  # Secrets existence check
+  check-secrets:
+    name: 🔐 Check Required Secrets
+    runs-on: ubuntu-latest
+    outputs:
+      has-slack: ${{ steps.check.outputs.has-slack }}
+      has-email: ${{ steps.check.outputs.has-email }}
+      should-notify: ${{ steps.check.outputs.should-notify }}
+    
+    steps:
+      - name: Check secret availability
+        id: check
+        run: |
+          echo "has-slack=${{ secrets.SLACK_WEBHOOK_URL != '' }}" >> $GITHUB_OUTPUT
+          echo "has-email=${{ secrets.NOTIFICATION_EMAIL != '' }}" >> $GITHUB_OUTPUT
+          echo "should-notify=${{ secrets.SLACK_WEBHOOK_URL != '' || secrets.NOTIFICATION_EMAIL != '' }}" >> $GITHUB_OUTPUT
+          
+          echo "✓ Secret availability check completed"
+          echo "Slack notifications: ${{ secrets.SLACK_WEBHOOK_URL != '' && 'Available' || 'Not configured' }}"
+          echo "Email notifications: ${{ secrets.NOTIFICATION_EMAIL != '' && 'Available' || 'Not configured' }}"
+
+  # Production health monitoring
+  production-health:
+    name: 🏥 Production Health Check
+    runs-on: ubuntu-latest
+    needs: check-secrets
+    outputs:
+      health-status: ${{ steps.health-check.outputs.health-status }}
+      health-message: ${{ steps.health-check.outputs.health-message }}
+      smoke-status: ${{ steps.smoke-tests.outputs.smoke-status }}
+      smoke-message: ${{ steps.smoke-tests.outputs.smoke-message }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check production health endpoint
+        id: health-check
+        run: |
+          echo "🔍 Checking production health endpoint..."
+          
+          # Test main production health endpoint
+          RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" https://needport.jp/api/health || echo "CURL_FAILED")
+          
+          if [[ "$RESPONSE" == "CURL_FAILED" ]]; then
+            echo "❌ Health check failed - curl request failed"
+            echo "health-status=failed" >> $GITHUB_OUTPUT
+            echo "health-message=Production health endpoint unreachable" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          HTTP_CODE=$(echo "$RESPONSE" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+          BODY=$(echo "$RESPONSE" | sed 's/HTTPSTATUS:[0-9]*$//')
+          
+          echo "Health endpoint returned HTTP $HTTP_CODE"
+          
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "❌ Health check failed - HTTP $HTTP_CODE"
+            echo "health-status=failed" >> $GITHUB_OUTPUT
+            echo "health-message=Production health check returned HTTP $HTTP_CODE" >> $GITHUB_OUTPUT
+            echo "health-details=$BODY" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          # Parse JSON response for detailed status
+          OK_STATUS=$(echo "$BODY" | grep -o '"ok":[^,}]*' | cut -d: -f2 | tr -d ' ')
+          
+          if [[ "$OK_STATUS" != "true" ]]; then
+            echo "❌ Health check reports system unhealthy"
+            echo "health-status=unhealthy" >> $GITHUB_OUTPUT
+            echo "health-message=Production system reports unhealthy status" >> $GITHUB_OUTPUT
+            echo "health-details=$BODY" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          echo "✅ Production health check passed"
+          echo "health-status=healthy" >> $GITHUB_OUTPUT
+          echo "health-message=All production systems healthy" >> $GITHUB_OUTPUT
+          echo "health-details=$BODY" >> $GITHUB_OUTPUT
+
+      - name: Run production smoke tests
+        id: smoke-tests
+        run: |
+          echo "🧪 Running production smoke tests..."
+          
+          # Run smoke tests against production
+          BASE="https://needport.jp" npm run smoke:ci
+          
+          echo "✅ Production smoke tests passed"
+          echo "smoke-status=passed" >> $GITHUB_OUTPUT
+          echo "smoke-message=All critical endpoints responding correctly" >> $GITHUB_OUTPUT
+
+  # Production E2E monitoring
+  critical-flow-test:
+    name: 🎯 Critical Flow Test
+    runs-on: ubuntu-latest
+    needs: [production-health]
+    if: needs.production-health.result == 'success'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run critical flow E2E tests
+        id: e2e-tests
+        run: |
+          echo "🎯 Running critical flow E2E tests..."
+          
+          # Create minimal test suite for production monitoring
+          cat > tests/monitoring.spec.ts << 'EOF'
+          import { test, expect } from '@playwright/test';
+          
+          test.describe('Critical Flow Monitoring', () => {
+            test('Homepage loads and displays needs', async ({ page }) => {
+              await page.goto('https://needport.jp');
+              
+              // Check page loads
+              await expect(page).toHaveTitle(/NeedPort/);
+              
+              // Check needs navigation works
+              await page.click('[href="/needs"]');
+              await expect(page.locator('h1')).toContainText(['ニーズ', '一覧', 'needs']);
+              
+              // Check at least one need card is visible
+              const needCards = page.locator('[data-testid="need-card"], .need-card, .card');
+              await expect(needCards.first()).toBeVisible({ timeout: 10000 });
+            });
+            
+            test('Health endpoint responds correctly', async ({ request }) => {
+              const response = await request.get('https://needport.jp/api/health');
+              expect(response.status()).toBe(200);
+              
+              const health = await response.json();
+              expect(health.ok).toBe(true);
+              expect(health.checks.database.status).toBe('ok');
+            });
+          });
+          EOF
+          
+          # Run the minimal test suite
+          npx playwright test tests/monitoring.spec.ts --reporter=json --output-dir=monitoring-results
+          
+          echo "✅ Critical flow tests completed"
+          echo "e2e-status=passed" >> $GITHUB_OUTPUT
+          echo "e2e-message=Critical user flows working correctly" >> $GITHUB_OUTPUT
+
+      - name: Upload monitoring test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: monitoring-test-results
+          path: |
+            monitoring-results/
+            test-results/
+          retention-days: 7
+
+  # Notification job
+  notify:
+    name: 📢 Send Notifications
+    runs-on: ubuntu-latest
+    needs: [check-secrets, production-health, critical-flow-test]
+    if: always() && (needs.check-secrets.outputs.should-notify == 'true' || github.event.inputs.force_notifications == 'true')
+    
+    steps:
+      - name: Prepare notification data
+        id: prepare
+        run: |
+          echo "📝 Preparing notification data..."
+          
+          PROD_STATUS="${{ needs.production-health.result }}"
+          E2E_STATUS="${{ needs.critical-flow-test.result }}"
+          
+          # Determine overall status
+          OVERALL_STATUS="success"
+          if [[ "$PROD_STATUS" == "failure" || "$E2E_STATUS" == "failure" ]]; then
+            OVERALL_STATUS="failure"
+          elif [[ "$PROD_STATUS" == "skipped" && "$E2E_STATUS" == "skipped" ]]; then
+            OVERALL_STATUS="skipped"
+          fi
+          
+          echo "overall-status=$OVERALL_STATUS" >> $GITHUB_OUTPUT
+          
+          # Prepare status emojis
+          case "$OVERALL_STATUS" in
+            "success") echo "status-emoji=✅" >> $GITHUB_OUTPUT ;;
+            "failure") echo "status-emoji=❌" >> $GITHUB_OUTPUT ;;
+            *) echo "status-emoji=⚠️" >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: Send Slack notification
+        if: needs.check-secrets.outputs.has-slack == 'true'
+        run: |
+          echo "📤 Sending Slack notification..."
+          
+          STATUS_EMOJI="${{ steps.prepare.outputs.status-emoji }}"
+          OVERALL_STATUS="${{ steps.prepare.outputs.overall-status }}"
+          
+          MESSAGE="$STATUS_EMOJI *NeedPort Production Monitoring Report*
+          
+          *Date*: $(date +'%Y-%m-%d %H:%M UTC')
+          *Overall Status*: $(echo $OVERALL_STATUS | tr '[:lower:]' '[:upper:]')
+          *Production URL*: https://needport.jp
+          
+          *System Checks*:
+          • Production Health: ${{ needs.production-health.result == 'success' && '✅ Healthy' || needs.production-health.result == 'failure' && '❌ Failed' || '⏭️ Skipped' }}
+          • Critical Flows: ${{ needs.critical-flow-test.result == 'success' && '✅ Working' || needs.critical-flow-test.result == 'failure' && '❌ Failed' || '⏭️ Skipped' }}
+          • Smoke Tests: ${{ needs.production-health.outputs.smoke-status == 'passed' && '✅ Passed' || '❌ Issues detected' }}
+          
+          ${{ needs.production-health.result == 'failure' && '*🚨 Production Issues Detected - Immediate attention required*' || '' }}
+          ${{ github.event.inputs.force_notifications == 'true' && '*ℹ️ Forced notification mode enabled*' || '' }}
+          
+          <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Report>"
+          
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"$MESSAGE\"}" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send email notification
+        if: needs.check-secrets.outputs.has-email == 'true' && steps.prepare.outputs.overall-status == 'failure'
+        run: |
+          echo "📧 Email notifications would be sent to: ${{ secrets.NOTIFICATION_EMAIL }}"
+          echo "This is a placeholder for email notification implementation"
+          echo "Consider using services like SendGrid, AWS SES, or similar"
+
+      - name: Create issue on failure
+        if: steps.prepare.outputs.overall-status == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 Nightly Monitoring Alert - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## Nightly Monitoring Alert
+            
+            **Date**: ${new Date().toUTCString()}
+            **Workflow**: [Nightly Monitoring Run #${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ### Status Summary
+            - Production Health: ${{ needs.production-health.result }}
+            - Critical Flows: ${{ needs.critical-flow-test.result }}
+            - Smoke Tests: ${{ needs.production-health.outputs.smoke-status }}
+            
+            ### Immediate Actions Required
+            ${{ needs.production-health.result == 'failure' && '- 🔥 **URGENT**: Production health check failed' || '' }}
+            ${{ needs.critical-flow-test.result == 'failure' && '- 🔥 **URGENT**: Critical user flows broken' || '' }}
+            
+            ### Investigation Steps
+            1. Check the [full monitoring logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            2. Verify production health endpoint: https://needport.jp/api/health
+            3. Run manual smoke tests: \`BASE="https://needport.jp" npm run smoke:ci\`
+            4. Check recent deployments for potential issues
+            
+            ### Auto-Resolution
+            This issue will be automatically closed if the next nightly monitoring run passes.
+            
+            ---
+            *This issue was automatically created by the nightly monitoring system*`;
+            
+            // Check if there's already an open monitoring alert
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'monitoring,alert'
+            });
+            
+            const existingAlert = issues.find(issue => issue.title.includes('Nightly Monitoring Alert'));
+            
+            if (!existingAlert) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['monitoring', 'alert', 'urgent']
+              });
+              console.log('Created new monitoring alert issue');
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingAlert.number,
+                body: `## Update: ${new Date().toUTCString()}\n\nMonitoring continues to fail. [Latest run details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              });
+              console.log('Updated existing monitoring alert issue');
+            }
+
+  # Auto-close monitoring alerts on success
+  close-alerts:
+    name: 🎉 Close Monitoring Alerts
+    runs-on: ubuntu-latest
+    needs: [production-health, critical-flow-test]
+    if: needs.production-health.result == 'success' && needs.critical-flow-test.result == 'success'
+    
+    steps:
+      - name: Close resolved monitoring alerts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'monitoring,alert'
+            });
+            
+            for (const issue of issues) {
+              if (issue.title.includes('Nightly Monitoring Alert')) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `✅ **Monitoring Alert Resolved**\n\nAll systems are now healthy. This alert is being automatically closed.\n\n**Resolution Time**: ${new Date().toUTCString()}\n**Monitoring Run**: [#${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+                });
+                
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                  state_reason: 'completed'
+                });
+                
+                console.log(`Closed monitoring alert issue #${issue.number}`);
+              }
+            }

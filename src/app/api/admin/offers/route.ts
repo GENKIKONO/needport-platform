@@ -1,5 +1,5 @@
 import { jsonOk, jsonError } from "@/lib/api";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { info, error } from "@/lib/logger";
 import { OfferCreateSchema } from "@/lib/schemas";
 import { logAudit } from "@/lib/audit";
@@ -17,7 +17,14 @@ type Body = {
 
 export async function POST(req: Request) {
   try {
-    const supabase = createAdminClient();
+    const supabase = createAdminClientOrNull();
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'SERVICE_UNAVAILABLE', detail: 'Admin env not configured' },
+        { status: 503 }
+      );
+    }
     const body = await req.json();
 
     // Validate input with Zod

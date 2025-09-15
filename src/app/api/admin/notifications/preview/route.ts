@@ -3,6 +3,13 @@ import { createMailLayout } from "@/lib/mail/layout";
 import { createSuccessBox, createButton, formatJPY, createInfoBox } from "@/lib/mail/partials";
 import { sendMail } from "@/lib/mail/smtp";
 
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");

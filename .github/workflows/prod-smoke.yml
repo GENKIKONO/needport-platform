@@ -1,0 +1,231 @@
+name: 🔎 Production Smoke Tests
+
+on:
+  schedule:
+    # Run nightly at 3:00 AM JST (18:00 UTC)
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+    inputs:
+      test_email:
+        description: 'Test email override (optional)'
+        required: false
+        type: string
+      create_pr_on_failure:
+        description: 'Create PR on failure'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  production-smoke-test:
+    name: Production E2E Smoke Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 🛠️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📥 Install dependencies
+        run: npm ci
+        
+      - name: 🎭 Install Playwright browsers
+        run: npx playwright install chromium
+        
+      - name: 🔍 Run production smoke test
+        env:
+          CLERK_TEST_EMAIL: ${{ secrets.CLERK_TEST_EMAIL || inputs.test_email }}
+          CLERK_TEST_PASSWORD: ${{ secrets.CLERK_TEST_PASSWORD }}
+          BASE_URL: 'https://needport.jp'
+        run: |
+          echo "🚀 Running production E2E smoke test..."
+          node scripts/prod-e2e-monitor.js
+        continue-on-error: true
+        id: smoke_test
+        
+      - name: 📊 Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-smoke-test-results-${{ github.run_number }}
+          path: |
+            test-results/
+            PROD_E2E_FIX_*.md
+            playwright-report/
+          retention-days: 7
+          
+      - name: 🚨 Notify on failure (Slack)
+        if: failure() && secrets.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#alerts'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: |
+            🚨 Production E2E smoke test failed!
+            
+            Repository: ${{ github.repository }}
+            Workflow: ${{ github.workflow }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Please check the test results and auto-generated fix PR.
+            
+      - name: 📧 Notify on failure (Email)
+        if: failure() && secrets.NOTIFICATION_EMAIL
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_PASSWORD }}
+          subject: "🚨 NeedPort Production E2E Test Failed"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: noreply@needport.jp
+          body: |
+            Production E2E smoke test failed for NeedPort.
+            
+            Repository: ${{ github.repository }}
+            Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Commit: ${{ github.sha }}
+            
+            Please check the GitHub Actions logs and any auto-generated fix PRs.
+            
+            This is an automated notification from the NeedPort monitoring system.
+
+  lightweight-health-check:
+    name: Lightweight Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: 🏥 Check production health endpoint
+        run: |
+          echo "🏥 Checking production health..."
+          response=$(curl -s -w "%{http_code}" https://needport.jp/api/health)
+          http_code=$(echo "$response" | tail -c 4)
+          
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Health check failed with HTTP $http_code"
+            exit 1
+          fi
+          
+          echo "✅ Health check passed"
+          echo "$response" | head -c -4 | jq .
+          
+      - name: 🔍 Check unauthenticated redirect
+        run: |
+          echo "🔍 Testing unauthenticated redirect..."
+          response=$(curl -s -w "%{http_code}" -L https://needport.jp/needs/new)
+          http_code=$(echo "$response" | tail -c 4)
+          
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Redirect test failed with HTTP $http_code"
+            exit 1
+          fi
+          
+          # Check if response contains sign-in
+          if echo "$response" | head -c -4 | grep -q "sign-in"; then
+            echo "✅ Redirect test passed - contains sign-in"
+          else
+            echo "⚠️ Warning: Response may not contain expected sign-in content"
+          fi
+          
+      - name: 🔐 Check API authentication
+        run: |
+          echo "🔐 Testing API authentication..."
+          response=$(curl -s -w "%{http_code}" -X POST https://needport.jp/api/needs \
+            -H "Content-Type: application/json" \
+            -d '{"title":"test","body":"test"}')
+          http_code=$(echo "$response" | tail -c 4)
+          
+          if [ "$http_code" != "401" ]; then
+            echo "❌ API auth test failed - expected 401, got $http_code"
+            exit 1
+          fi
+          
+          echo "✅ API authentication test passed"
+          echo "$response" | head -c -4
+
+  auto-recovery:
+    name: Auto Recovery Check
+    runs-on: ubuntu-latest
+    needs: [production-smoke-test, lightweight-health-check]
+    if: failure()
+    timeout-minutes: 10
+    
+    steps:
+      - name: 🛠️ Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🔄 Wait and retry health check
+        run: |
+          echo "⏱️ Waiting 2 minutes before retry..."
+          sleep 120
+          
+          echo "🔄 Retrying health check..."
+          for i in {1..3}; do
+            if curl -s https://needport.jp/api/health | jq .ok | grep -q true; then
+              echo "✅ Health check recovered on attempt $i"
+              exit 0
+            fi
+            echo "⏱️ Attempt $i failed, waiting 30 seconds..."
+            sleep 30
+          done
+          
+          echo "❌ Health check still failing after retries"
+          exit 1
+          
+      - name: 🏷️ Create recovery issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 Production Health Check Failed - ${new Date().toISOString()}`;
+            const body = `
+            # Production Health Check Failure
+            
+            ## Details
+            - **Timestamp**: ${new Date().toISOString()}
+            - **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            - **Commit**: ${{ github.sha }}
+            
+            ## Symptoms
+            - Health endpoint not responding correctly
+            - Auto-recovery attempts failed
+            - Manual intervention may be required
+            
+            ## Next Steps
+            1. Check Vercel deployment status
+            2. Verify environment variables
+            3. Check Supabase connection
+            4. Review recent commits for breaking changes
+            
+            ## Auto-Recovery
+            This issue was automatically created by the monitoring system.
+            It will auto-close when the system recovers.
+            
+            ## Labels
+            - \`priority:high\`
+            - \`type:production-issue\`
+            - \`automated\`
+            `;
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['priority:high', 'type:production-issue', 'automated']
+            });

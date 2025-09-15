@@ -8,6 +8,8 @@ import FlowSteps from "@/app/(ui2)/_parts/FlowSteps";
 import fetcher from "@/app/(ui2)/_parts/useSWRFetcher";
 import RelatedNeeds from "./RelatedNeeds";
 
+export const dynamic = 'force-dynamic';
+
 export default function NeedDetailV2Page() {
   const { id } = useParams() as { id: string };
   const router = useRouter();

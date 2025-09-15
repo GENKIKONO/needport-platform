@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
 import { recordApproval, notifyDecision } from '@/lib/approvals/hooks';
+
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 const schema = z.object({
   needId: z.string().uuid(),

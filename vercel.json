@@ -5,6 +5,9 @@
   "outputDirectory": ".next",
   "buildCommand": "npm run vercel-build",
   "installCommand": "npm ci --legacy-peer-deps",
+  "github": {
+    "silent": true
+  },
   "headers": [
     {
       "source": "/(.*)",

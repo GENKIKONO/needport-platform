@@ -2,9 +2,22 @@
 'use client';
 
 import React from 'react';
-import Header from '@/components/chrome/Header';
+import dynamic from 'next/dynamic';
 import LeftDock from '@/components/nav/LeftDock';
 import Footer from './Footer';
+
+// Dynamic import Header to prevent SSR issues with useUser/Clerk
+const Header = dynamic(() => import('@/components/chrome/Header'), { 
+  ssr: false,
+  loading: () => (
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-blue-100/50">
+      <div className="w-full h-16 px-3 sm:px-4 lg:px-6 flex items-center justify-between">
+        <div className="text-xl font-bold text-slate-800">NeedPort</div>
+        <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+    </header>
+  )
+});
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (

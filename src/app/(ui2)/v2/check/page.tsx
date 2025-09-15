@@ -1,5 +1,7 @@
 "use client";
 import useSWR from "swr";
+
+export const dynamic = 'force-dynamic';
 const fetcher = (u:string)=> fetch(u).then(r=>r.json());
 
 export default function RCCheck(){

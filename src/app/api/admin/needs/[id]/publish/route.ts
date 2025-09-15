@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { insertAudit } from '@/lib/audit';
 
+
+// Force dynamic rendering to avoid build-time env access
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
+
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const key = req.headers.get('x-admin-key');
   if (!key || key !== process.env.ADMIN_KEY) {

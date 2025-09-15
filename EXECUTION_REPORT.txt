@@ -1,1 +1,129 @@
-EXECUTION REPORT: 5/5 steps passed (100%)
+=== NEEDPORT REBASELINE EXECUTION REPORT ===
+Date: 2025-09-14T13:32:00+09:00
+Branch: rebaseline/needs-post-minimal
+Operation: Automated rebaselining of needs posting minimal flow
+
+## Files Created/Modified:
+
+### Database Schema & SQL Scripts
+- supabase/sql/rebaseline_needs_minimal.sql (CREATED)
+  - Adds required columns: status, published, owner_id
+  - Creates set_owner_id() trigger function with auth.uid() casting
+  - Implements RLS policy for authenticated INSERT
+  - PostgREST schema cache reload
+
+- supabase/sql/smoke_insert_need.template.sql (CREATED)
+  - Template for smoke testing with ${USER_UUID} replacement
+  - Sets JWT claim for auth context simulation
+  - Tests minimal INSERT with title/body only
+
+### Node.js Database Tools
+- scripts/db/run-sql.ts (CREATED)
+  - Generic SQL executor with variable replacement
+  - Handles .env.local.tools for DATABASE_URL_ADMIN
+  - Multi-statement support with error handling
+
+- scripts/db/rebaseline-needs.ts (CREATED)
+  - Orchestrator for schema application + smoke testing
+  - Generates execution reports
+  - UUID validation and error handling
+
+### Package Configuration
+- package.json (MODIFIED)
+  - Added pg and @types/pg dependencies
+  - Added db:apply:needs, db:smoke:need, db:rebaseline:needs scripts
+
+### Environment Setup
+- .env.example (MODIFIED)
+  - Added DATABASE_URL_ADMIN documentation
+  - Added feature flag section
+
+- .env.local.tools.example (CREATED)
+  - Template for admin database credentials
+  - Security warnings for local-only usage
+
+- .gitignore (MODIFIED)
+  - Added .env.local.tools exclusion
+
+### API Minimization
+- src/app/api/needs/route.ts (MODIFIED)
+  - Simplified to accept only {title, body} payload
+  - Removed logging, request tracking, extended validation
+  - DB insert relies on defaults/triggers for status/owner_id
+  - Returns {id, title, created_at} format
+
+### UI Simplification
+- src/app/needs/new/page.tsx (MODIFIED)
+  - Removed all conditional logic and feature flags
+  - Form reduced to title and body fields only
+  - Success redirect to /me instead of /needs/[id]
+  - Minimal state management
+
+## Technical Implementation Details:
+
+### Database Trigger System
+```sql
+CREATE FUNCTION public.set_owner_id()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.owner_id := auth.uid()::uuid;
+  RETURN NEW;
+END;
+$$;
+```
+
+### RLS Security Model
+- needs_insert_policy: Authenticated users can INSERT with check (true)
+- Owner ID auto-assignment prevents manual injection
+- Draft status default ensures RLS compliance
+
+### API Contract
+- INPUT: {title: string, body: string}
+- OUTPUT (201): {id: string, title: string, created_at: string}
+- OUTPUT (400): {error: "VALIDATION_ERROR", details: {...}}
+- OUTPUT (500): {error: "DB_ERROR"|"INTERNAL_ERROR", detail: string}
+
+## Usage Instructions:
+
+1. Setup admin credentials:
+   cp .env.local.tools.example .env.local.tools
+   # Edit DATABASE_URL_ADMIN with actual Postgres admin connection
+
+2. Get user UUID from existing profiles table or auth.users
+
+3. Execute automated rebaseline:
+   USER_UUID=<actual-uuid> npm run db:rebaseline:needs
+
+4. Expected output:
+   - Schema migration applied successfully
+   - Smoke test insertion completed
+   - Result row with status='draft', published=false, owner_id=<uuid>
+
+## Security Notes:
+- .env.local.tools is Git-ignored (local admin credentials only)
+- Production app continues using RLS-protected PostgREST
+- Admin connection is for schema management only
+- set_config() simulates auth context for smoke testing
+
+## Status: READY FOR TESTING ✅
+
+All files created and configured for CLI-driven schema rebaselining.
+Manual testing required with actual DATABASE_URL_ADMIN and user UUID.
+=== EXECUTION REPORT ===
+Date: 2025-09-14T14:18:41.635Z
+Duration: 1031ms
+User UUID: 550e8400-e29b-41d4-a716-446655440001
+Operation: Rebaseline needs minimal posting flow
+
+Files Changed:
+- supabase/sql/rebaseline_needs_minimal.sql (applied)
+- supabase/sql/smoke_insert_need.template.sql (executed with USER_UUID=550e8400-e29b-41d4-a716-446655440001)
+
+Schema Changes Applied:
+- Added columns: status (default 'draft'), published (default false), owner_id (references profiles)
+- Created trigger: set_owner_id_trigger with set_owner_id() function
+- Applied RLS policy: needs_insert_policy (authenticated users can insert)
+- PostgREST schema cache reloaded
+
+Status: SUCCESS ✅
+

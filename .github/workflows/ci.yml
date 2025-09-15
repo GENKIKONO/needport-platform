@@ -43,14 +43,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Environment setup for tests
-      - name: Setup test environment
+      # Validate secrets and environment setup
+      - name: Check secrets and setup environment
         run: |
-          cp .env.example .env.test || echo "No .env.example found, using defaults"
-          echo "NODE_ENV=test" >> .env.test
-          echo "NEXT_PUBLIC_SUPABASE_URL=https://test.supabase.co" >> .env.test
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=test-anon-key" >> .env.test
-          echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_example" >> .env.test
+          echo "🔍 Validating CI environment and secrets..."
+          node scripts/check-secrets.js --ci --verbose
+          
+          # Generate fallback env file for CI
+          node scripts/check-secrets.js --generate
+          
+          # Set NODE_ENV for test environment
+          echo "NODE_ENV=test" >> .env.local.generated
+          
+          echo "✅ Environment setup complete"
 
       # Run linting first (fast feedback)
       - name: Run ESLint
@@ -58,13 +63,13 @@ jobs:
 
       # Build the application
       - name: Build application
-        run: npm run build
+        run: |
+          # Use generated environment file for build
+          cp .env.local.generated .env.local || echo "Using existing environment"
+          npm run build
         env:
           NODE_ENV: production
           NEXT_TELEMETRY_DISABLED: 1
-          NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_example
 
       # Run unit tests
       - name: Run unit tests

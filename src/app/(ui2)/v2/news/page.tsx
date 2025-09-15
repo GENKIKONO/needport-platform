@@ -1,4 +1,6 @@
 export const metadata = { title: "お知らせ – NeedPort" };
+export const dynamic = 'force-dynamic';
+
 export default function News(){
   return (
     <div className="container-page py-10">

@@ -7,7 +7,7 @@ export const metadata = {
   description: "行政・企業のニーズに、最適な事業者をマッチング。NeedPortが、あなたのプロジェクトを成功に導きます。",
 };
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 export const revalidate = 3600; // 1h
 
 export default function V2Landing() {

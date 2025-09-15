@@ -1,9 +1,27 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClientOrNull } from "@/lib/supabase/admin";
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
-    const supabase = createAdminClient();
+    const supabase = createAdminClientOrNull();
+    
+    // Preview environment fallback - return minimal Atom XML
+    if (!supabase) {
+      console.warn('[PREVIEW_FALLBACK]', { route: '/feed.atom', reason: 'no-supabase-env' });
+      const xml = `<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><title>NeedPort</title><id>https://needport.jp/</id><updated>${new Date().toISOString()}</updated></feed>`;
+      return new NextResponse(xml, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/xml; charset=utf-8',
+          'Cache-Control': 'no-store'
+        }
+      });
+    }
     
     // Get latest published needs
     const { data: needs } = await supabase
