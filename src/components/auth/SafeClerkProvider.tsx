@@ -86,10 +86,24 @@ export default function SafeClerkProvider({ children }: SafeClerkProviderProps) 
   }
 
   // Production mode with valid key - use normal ClerkProvider
-  // Force standard Clerk domain (not custom domain) to avoid DNS resolution issues
-  const frontendApi = publishableKey?.startsWith('pk_live_') 
-    ? undefined // Let Clerk auto-detect for live keys
-    : 'allowing-gnat-26.clerk.accounts.dev'; // Force standard domain for test keys
+  // CRITICAL FIX: Force standard Clerk domain to prevent clerk.needport.jp DNS errors
+  // Extract domain from publishable key to avoid custom domain issues
+  let frontendApi = 'allowing-gnat-26.clerk.accounts.dev'; // fallback
+  
+  try {
+    if (publishableKey) {
+      // Decode base64 publishable key to extract the frontend API domain
+      const keyWithoutPrefix = publishableKey.replace(/^pk_(test|live)_/, '');
+      const decoded = atob(keyWithoutPrefix);
+      const domainMatch = decoded.match(/([a-zA-Z0-9-]+\.clerk\.accounts\.dev)/);
+      if (domainMatch) {
+        frontendApi = domainMatch[1];
+        console.log('[SafeClerkProvider] Using extracted domain:', frontendApi);
+      }
+    }
+  } catch (error) {
+    console.warn('[SafeClerkProvider] Failed to decode publishable key, using fallback domain');
+  }
   
   return (
     <ClerkProvider 
