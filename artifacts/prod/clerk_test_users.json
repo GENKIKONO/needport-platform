@@ -1,0 +1,95 @@
+🔍 Fetching ALL Clerk users for production...
+
+📋 Fetching all users from Clerk...
+
+📊 Found 3 total users in Clerk:
+
+1. User ID: user_32iEPCzsCKGMHC5OPJj7sJm6Geh
+   Email: test@needport.dev
+   Name: No name
+   Created: 1757894965726
+   Status: Active
+
+2. User ID: user_32bLa5iVBa4KBRldf4nRvKXLVnS
+   Email: genkikono.2615@gmail.com
+   Name: 元気 河野
+   Created: 1757684385531
+   Status: Active
+
+3. User ID: user_32b0oVi0qqVcHfNOiXef4mCTwHd
+   Email: genkikono.kochi@gmail.com
+   Name: 元気 河野
+   Created: 1757674139418
+   Status: Active
+
+
+📝 Generated SQL for all users:
+
+-- Copy and paste this into enable-auto-provisioning.sql
+-- Replace the placeholder INSERT statements
+
+-- For test@needport.dev:
+INSERT INTO profiles (clerk_user_id, email, full_name, role, created_at, updated_at)
+VALUES (
+  'user_32iEPCzsCKGMHC5OPJj7sJm6Geh',
+  'test@needport.dev',
+  'No name',
+  'user',
+  NOW(),
+  NOW()
+) ON CONFLICT (clerk_user_id) DO UPDATE SET
+  email = EXCLUDED.email,
+  full_name = EXCLUDED.full_name,
+  updated_at = NOW();
+
+-- For genkikono.2615@gmail.com:
+INSERT INTO profiles (clerk_user_id, email, full_name, role, created_at, updated_at)
+VALUES (
+  'user_32bLa5iVBa4KBRldf4nRvKXLVnS',
+  'genkikono.2615@gmail.com',
+  '元気 河野',
+  'admin',
+  NOW(),
+  NOW()
+) ON CONFLICT (clerk_user_id) DO UPDATE SET
+  email = EXCLUDED.email,
+  full_name = EXCLUDED.full_name,
+  updated_at = NOW();
+
+-- For genkikono.kochi@gmail.com:
+INSERT INTO profiles (clerk_user_id, email, full_name, role, created_at, updated_at)
+VALUES (
+  'user_32b0oVi0qqVcHfNOiXef4mCTwHd',
+  'genkikono.kochi@gmail.com',
+  '元気 河野',
+  'user',
+  NOW(),
+  NOW()
+) ON CONFLICT (clerk_user_id) DO UPDATE SET
+  email = EXCLUDED.email,
+  full_name = EXCLUDED.full_name,
+  updated_at = NOW();
+
+
+📋 JSON Format for API integration:
+
+{
+  "test@needport.dev": {
+    "id": "user_32iEPCzsCKGMHC5OPJj7sJm6Geh",
+    "name": "No name",
+    "email": "test@needport.dev",
+    "created_at": 1757894965726
+  },
+  "genkikono.2615@gmail.com": {
+    "id": "user_32bLa5iVBa4KBRldf4nRvKXLVnS",
+    "name": "元気 河野",
+    "email": "genkikono.2615@gmail.com",
+    "created_at": 1757684385531
+  },
+  "genkikono.kochi@gmail.com": {
+    "id": "user_32b0oVi0qqVcHfNOiXef4mCTwHd",
+    "name": "元気 河野",
+    "email": "genkikono.kochi@gmail.com",
+    "created_at": 1757674139418
+  }
+}

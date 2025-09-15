@@ -3,12 +3,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useUser } from '@clerk/nextjs';
 import LeftDock from '../nav/LeftDock';
+import AuthMenu from '../AuthMenu';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const { isSignedIn, user } = useUser();
 
   return (
     <>
@@ -39,34 +38,7 @@ export default function Header() {
 
             {/* 3. 認証エリア */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {isSignedIn ? (
-                <Link href="/me" className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
-                  {user?.imageUrl ? (
-                    <img 
-                      src={user.imageUrl} 
-                      alt="プロフィール写真" 
-                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                  )}
-                  <span className="hidden sm:inline">マイページ</span>
-                  <span className="hidden lg:inline">（{user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'ユーザー'}）</span>
-                </Link>
-              ) : (
-                <>
-                  <Link href="/sign-in" className="bg-blue-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
-                    一般ログイン
-                  </Link>
-                  <Link href="/vendors/login" className="bg-slate-600 text-white px-3 sm:px-4 lg:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-700 transition-colors">
-                    事業者ログイン
-                  </Link>
-                </>
-              )}
+              <AuthMenu />
             </div>
           </div>
         </div>

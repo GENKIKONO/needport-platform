@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { ensureProfile } from '@/lib/ensureProfile';
 
 // Minimal posting flow: only title + body required
 const MinimalNeedInput = z.object({
@@ -11,9 +12,10 @@ const MinimalNeedInput = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    // Clerkのユーザー情報を取得
+    const user = await currentUser();
     
-    if (!userId) {
+    if (!user) {
       return NextResponse.json({ 
         error: 'UNAUTHORIZED',
         detail: 'ログインが必要です。ログインしてから再度お試しください。' 
@@ -42,28 +44,16 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
     
-    // Debug: Check if we're using service role
-    console.log('Using service role key:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-    console.log('Clerk userId:', userId);
+    // プロフィールを自動作成/確保
+    const profileId = await ensureProfile({
+      id: user.id,
+      email: user.emailAddresses[0]?.emailAddress || null,
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null
+    });
     
-    // First, find the profile ID from clerk_id
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('clerk_id', userId)
-      .single();
+    console.log('Profile ID ensured:', profileId, 'for Clerk user:', user.id);
     
-    if (profileError || !profile) {
-      console.error('Profile not found for clerk_id:', userId, profileError);
-      return NextResponse.json({ 
-        error: 'USER_NOT_FOUND', 
-        detail: 'ユーザープロフィールが見つかりません。アカウント設定を確認してください。' 
-      }, { status: 400 });
-    }
-    
-    console.log('Found profile id:', profile.id);
-    
-    // Insert with the actual profile ID as owner_id
+    // Insert with the profile ID as owner_id
     const { data, error } = await supabase
       .from('needs')
       .insert([{ 
@@ -71,7 +61,7 @@ export async function POST(req: NextRequest) {
         body: body.trim(),
         status: 'draft',
         published: false,
-        owner_id: profile.id  // Use the profile ID, not clerk ID
+        owner_id: profileId
       }])
       .select('id, title, created_at')
       .single();
