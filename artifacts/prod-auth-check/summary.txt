@@ -1,0 +1,20 @@
+OAuth Verification Report
+========================
+Timestamp: 2025-09-15T09:08:52.773Z
+Base URL: https://needport.jp
+
+Results:
+✅ Clerk UI Detected: false
+✅ Google Button Found: false
+✅ Google Redirect Success: false
+
+Screenshots:
+- Sign-in page: /Users/kounogenki/Downloads/needport-platform/artifacts/prod-auth-check/01_signin.png
+- Google button: N/A
+- Redirect result: N/A
+
+Notes:
+- Browser initialized successfully
+- Page title: "NeedPort"
+- Clerk UI not detected with any selector
+- Google button not found with any selector

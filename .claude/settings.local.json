@@ -57,7 +57,17 @@
       "Bash(git clone:*)",
       "Bash(git pull:*)",
       "Bash(npm ci:*)",
-      "Bash(export PROD_BASE_URL=\"https://needport.jp\")"
+      "Bash(export PROD_BASE_URL=\"https://needport.jp\")",
+      "Bash(PROD_BASE_URL=\"https://needport.jp\" npm run check:manifest)",
+      "Bash(if [ -d \"./.git\" ])",
+      "Bash(then echo \"✅ Repo OK - 現在のディレクトリにGitリポジトリ確認\")",
+      "Bash(else echo \"❌ No Git repo found\")",
+      "Bash(fi)",
+      "Bash(if [ -f scripts/prod/run-oauth-e2e.ts ])",
+      "Bash(then echo \"✅ scripts/prod/run-oauth-e2e.ts 存在確認\")",
+      "Bash(else echo \"❌ scripts/prod/run-oauth-e2e.ts が見つかりません\")",
+      "Bash(PROD_BASE_URL=\"https://needport.jp\" npx tsx scripts/prod/run-oauth-e2e.ts)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

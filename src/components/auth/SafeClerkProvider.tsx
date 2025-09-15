@@ -86,9 +86,15 @@ export default function SafeClerkProvider({ children }: SafeClerkProviderProps) 
   }
 
   // Production mode with valid key - use normal ClerkProvider
+  // Force standard Clerk domain (not custom domain) to avoid DNS resolution issues
+  const frontendApi = publishableKey?.startsWith('pk_live_') 
+    ? undefined // Let Clerk auto-detect for live keys
+    : 'allowing-gnat-26.clerk.accounts.dev'; // Force standard domain for test keys
+  
   return (
     <ClerkProvider 
       publishableKey={publishableKey}
+      frontendApi={frontendApi}
       // Add error boundary for Clerk errors
       onError={(error) => {
         console.error('Clerk error:', error);

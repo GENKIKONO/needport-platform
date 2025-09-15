@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-09-15T11:54:56.641Z",
+  "baseUrl": "https://needport.jp",
+  "status": "failed",
+  "steps": [
+    {
+      "step": "Navigate to sign-in page",
+      "status": "success",
+      "duration": 1757937299476,
+      "screenshot": "/Users/kounogenki/Downloads/needport-platform/artifacts/prod/step_1_Navigate_to_sign_in_page.png"
+    },
+    {
+      "step": "Click general login link",
+      "status": "success",
+      "duration": 1757937300586,
+      "screenshot": "/Users/kounogenki/Downloads/needport-platform/artifacts/prod/step_2_Click_general_login_link.png"
+    },
+    {
+      "step": "Wait for Clerk OAuth form",
+      "status": "failed",
+      "duration": 1757937383532,
+      "error": "Clerk OAuth form did not appear after clicking general login",
+      "screenshot": "/Users/kounogenki/Downloads/needport-platform/artifacts/prod/step_3_Wait_for_Clerk_OAuth_form.png"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-09-15T09:08:52.773Z",
+  "baseUrl": "https://needport.jp",
+  "clerkUi": false,
+  "googleBtn": false,
+  "reachedGoogle": false,
+  "notes": [
+    "Browser initialized successfully",
+    "Page title: \"NeedPort\"",
+    "Clerk UI not detected with any selector",
+    "Google button not found with any selector"
+  ],
+  "screenshots": {
+    "signin": "/Users/kounogenki/Downloads/needport-platform/artifacts/prod-auth-check/01_signin.png"
+  }
+}

@@ -60,6 +60,8 @@
     "clerk:guard": "npm run clerk:verify && npm run clerk:health",
     "gen:icons": "tsx scripts/tools/gen-pwa-icons.ts",
     "check:manifest": "tsx scripts/prod/check-manifest-icons.ts",
+    "check:google": "tsx scripts/prod/check-google-button.ts",
+    "diag:clerk-front": "tsx scripts/prod/diag-clerk-front.ts",
     "test:signin-ui": "playwright test tests/signin-ui.spec.ts --reporter=line"
   },
   "dependencies": {

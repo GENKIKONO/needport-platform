@@ -108,7 +108,7 @@ class OAuthE2ERunner {
       
       // ページタイトルとClerk UIの確認
       const title = await this.page.title();
-      const hasClerkUI = await this.page.locator('.cl-sign-in, [data-clerk-sign-in]').count() > 0;
+      const hasClerkUI = await this.page.locator('[data-testid="signin-link"], .cl-sign-in, [data-clerk-sign-in], .cl-rootBox, form[class*="cl-"]').count() > 0;
       
       if (title.includes('NeedPort') && hasClerkUI) {
         await this.addStep('Navigate to sign-in page', 'success', true);
@@ -124,18 +124,130 @@ class OAuthE2ERunner {
     return true;
   }
 
-  async step2_clickGoogleOAuth() {
+  async step2_clickGeneralLogin() {
     if (!this.page) throw new Error('Page not initialized');
     
     try {
+      // まず「一般ログイン」リンクをクリックしてClerkモーダル/ページを開く
+      console.log('🔍 Looking for 一般ログイン (General Login) link...');
+      const generalLoginSelectors = [
+        'a[data-testid="signin-link"]',
+        'a:has-text("一般ログイン")',
+        '.bg-blue-600:has-text("一般ログイン")',
+        'a[href="/sign-in"]:has-text("一般ログイン")'
+      ];
+      
+      let loginLink = null;
+      for (const selector of generalLoginSelectors) {
+        try {
+          const link = this.page.locator(selector).first();
+          await link.waitFor({ state: 'visible', timeout: 3000 });
+          const isVisible = await link.isVisible();
+          if (isVisible) {
+            loginLink = link;
+            console.log(`✅ Found general login link: ${selector}`);
+            break;
+          }
+        } catch {
+          console.log(`❌ General login selector failed: ${selector}`);
+          continue;
+        }
+      }
+      
+      if (!loginLink) {
+        await this.addStep('Click general login link', 'failed', true, 'General login link not found');
+        return false;
+      }
+      
+      // 一般ログインリンクをクリック
+      await loginLink.click();
+      console.log('✅ Clicked general login link');
+      await this.addStep('Click general login link', 'success', true);
+      
+      // ページ遷移またはモーダル表示を待機
+      await this.page.waitForTimeout(3000);
+      
+      return true;
+    } catch (error) {
+      await this.addStep('Click general login link', 'failed', true, error instanceof Error ? error.message : 'Unknown error');
+      return false;
+    }
+  }
+
+  async step3_clickGoogleOAuth() {
+    if (!this.page) throw new Error('Page not initialized');
+    
+    try {
+      // Clerkのローディング待機
+      console.log('⏳ Waiting for Clerk to load after clicking general login...');
+      try {
+        await this.page.waitForSelector('.animate-spin', { state: 'hidden', timeout: 30000 });
+        console.log('✅ Clerk loading completed');
+      } catch {
+        console.log('⚠️ No loading spinner detected - continuing...');
+      }
+      
+      // Clerk UIの表示を待機
+      const clerkSelectors = [
+        '.cl-signIn-root',
+        '.cl-card', 
+        '.cl-rootBox',
+        'form[class*="cl-"]',
+        '[data-clerk-element]',
+        '.cl-formButtonPrimary',
+        '.cl-socialButtonsBlockButton'
+      ];
+      
+      console.log('🔍 Waiting for Clerk sign-in form to appear...');
+      let clerkElementFound = false;
+      for (const selector of clerkSelectors) {
+        try {
+          await this.page.waitForSelector(selector, { state: 'visible', timeout: 10000 });
+          console.log(`✅ Found Clerk element: ${selector}`);
+          clerkElementFound = true;
+          break;
+        } catch {
+          console.log(`❌ Not found: ${selector}`);
+          continue;
+        }
+      }
+      
+      if (!clerkElementFound) {
+        await this.addStep('Wait for Clerk OAuth form', 'failed', true, 'Clerk OAuth form did not appear after clicking general login');
+        return false;
+      }
+      
       // Google OAuthボタンを探す
-      const googleButton = this.page.locator('button:has-text("Google"), button:has-text("Continue with Google"), [data-provider="google"]').first();
+      const googleSelectors = [
+        'button:has-text("Continue with Google")',
+        'button:has-text("Google")', 
+        '[data-provider="google"]',
+        'button[aria-label*="Google"]',
+        'button[title*="Google"]',
+        '.cl-socialButtonsBlockButton:has-text("Google")',
+        '.cl-formButtonPrimary:has-text("Google")'
+      ];
       
-      await googleButton.waitFor({ state: 'visible', timeout: 10000 });
-      const isEnabled = await googleButton.isEnabled();
+      console.log('🔍 Looking for Google OAuth button...');
+      let googleButton = null;
+      for (const selector of googleSelectors) {
+        try {
+          const button = this.page.locator(selector).first();
+          await button.waitFor({ state: 'visible', timeout: 5000 });
+          const isEnabled = await button.isEnabled();
+          if (isEnabled) {
+            googleButton = button;
+            console.log(`✅ Found Google button: ${selector}`);
+            break;
+          }
+        } catch {
+          console.log(`❌ Google button selector failed: ${selector}`);
+          continue;
+        }
+      }
       
-      if (!isEnabled) {
-        await this.addStep('Click Google OAuth button', 'failed', true, 'Google button not enabled');
+      if (!googleButton) {
+        await this.addStep('Click Google OAuth button', 'failed', true, 'Google OAuth button not found or not enabled');
         return false;
       }
       
@@ -158,7 +270,7 @@ class OAuthE2ERunner {
     }
   }
 
-  async step3_manualGoogleAuth() {
+  async step4_manualGoogleAuth() {
     console.log('\n🔸 **手動操作が必要です**');
     console.log('-------------------');
     console.log('ブラウザでGoogle認証を完了してください：');
@@ -181,7 +293,7 @@ class OAuthE2ERunner {
     return true;
   }
 
-  async step4_verifyRedirectAndNavigate() {
+  async step5_verifyRedirectAndNavigate() {
     if (!this.page) throw new Error('Page not initialized');
     
     try {
@@ -239,7 +351,7 @@ class OAuthE2ERunner {
     }
   }
 
-  async step5_fillAndSubmitNeed() {
+  async step6_fillAndSubmitNeed() {
     if (!this.page) throw new Error('Page not initialized');
     
     try {
@@ -297,7 +409,7 @@ This need should be automatically cleaned up by the test suite.`;
     }
   }
 
-  async step6_verifyDraftInMyPage() {
+  async step7_verifyDraftInMyPage() {
     if (!this.page) throw new Error('Page not initialized');
     
     try {
@@ -357,29 +469,35 @@ This need should be automatically cleaned up by the test suite.`;
         return this.result;
       }
 
-      // Step 2: Google OAuthボタンクリック
-      if (!await this.step2_clickGoogleOAuth()) {
+      // Step 2: 一般ログインリンクをクリック
+      if (!await this.step2_clickGeneralLogin()) {
         this.result.status = 'failed';
         return this.result;
       }
 
-      // Step 3: 手動Google認証
-      await this.step3_manualGoogleAuth();
-
-      // Step 4: リダイレクト確認と /needs/new 移動
-      if (!await this.step4_verifyRedirectAndNavigate()) {
+      // Step 3: Google OAuthボタンクリック
+      if (!await this.step3_clickGoogleOAuth()) {
         this.result.status = 'failed';
         return this.result;
       }
 
-      // Step 5: ニーズ入力と送信
-      if (!await this.step5_fillAndSubmitNeed()) {
+      // Step 4: 手動Google認証
+      await this.step4_manualGoogleAuth();
+
+      // Step 5: リダイレクト確認と /needs/new 移動
+      if (!await this.step5_verifyRedirectAndNavigate()) {
         this.result.status = 'failed';
         return this.result;
       }
 
-      // Step 6: /me で下書き確認
-      if (!await this.step6_verifyDraftInMyPage()) {
+      // Step 6: ニーズ入力と送信
+      if (!await this.step6_fillAndSubmitNeed()) {
+        this.result.status = 'failed';
+        return this.result;
+      }
+
+      // Step 7: /me で下書き確認
+      if (!await this.step7_verifyDraftInMyPage()) {
         this.result.status = 'failed';
         return this.result;
       }

@@ -1,0 +1,91 @@
+{
+  "timestamp": "2025-09-15T12:49:07.786Z",
+  "url": "https://needport.jp/sign-in",
+  "clerkLoaded": false,
+  "clerkHosts": [
+    "clerk.needport.jp"
+  ],
+  "hostStatuses": [
+    {
+      "host": "clerk.needport.jp",
+      "dnsResolved": false,
+      "error": "DNS_NOT_RESOLVED"
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+  ],
+  "scripts": [
+    {
+      "src": "https://needport.jp/_next/static/chunks/fd9d1056-b7060eeebc7f881b.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/7023-3b7e3de32104e5bf.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/main-app-881f01dbe13267cd.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/98-84bca92a8f036e85.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/8722-b730912f8ba9b816.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/5129-31ca688f251f12c0.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/app/sign-in/%5B%5B...sign-in%5D%5D/page-d0cc8fc3dc60db26.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/231-b7aab77bbef2649e.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/9092-ad4c476418c22a18.js"
+    },
+    {
+      "src": "https://clerk.needport.jp/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/polyfills-78c92fac7aa8fdd8.js"
+    },
+    {
+      "src": "https://needport.jp/_next/static/chunks/webpack-d07f3441983eb8ab.js"
+    },
+    {
+      "content": "(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])"
+    },
+    {
+      "content": "self.__next_f.push([1,\"1:HL[\\\"/_next/static/css/2595715dc8159977.css\\\",\\\"style\\\"]\\n2:HL[\\\"/_next/static/css/b126f9371c5e9069.css\\\",\\\"style\\\"]\\n\"])"
+    },
+    {
+      "content": "self.__next_f.push([1,\"3:I[5751,[],\\\"\\\"]\\n5:I[6513,[],\\\"ClientPageRoot\\\"]\\n6:I[9683,[\\\"98\\\",\\\"static/chunks/98-84bca92a8f036e85.js\\\",\\\"8722\\\",\\\"static/chunks/8722-b730912f8ba9b816.js\\\",\\\"5129\\\",\\\"stat"
+    },
+    {
+      "content": "self.__next_f.push([1,\"0:[[[\\\"$\\\",\\\"link\\\",\\\"0\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/css/2595715dc8159977.css\\\",\\\"precedence\\\":\\\"next\\\",\\\"crossOrigin\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"link\\\",\\\""
+    },
+    {
+      "content": "self.__next_f.push([1,\"10:[[\\\"$\\\",\\\"meta\\\",\\\"0\\\",{\\\"name\\\":\\\"viewport\\\",\\\"content\\\":\\\"width=device-width, initial-scale=1\\\"}],[\\\"$\\\",\\\"meta\\\",\\\"1\\\",{\\\"charSet\\\":\\\"utf-8\\\"}],[\\\"$\\\",\\\"title\\\",\\\"2\\\",{\\\"c"
+    }
+  ],
+  "links": [
+    {
+      "href": "https://needport.jp/_next/static/css/2595715dc8159977.css",
+      "rel": "stylesheet"
+    },
+    {
+      "href": "https://needport.jp/_next/static/css/b126f9371c5e9069.css",
+      "rel": "stylesheet"
+    },
+    {
+      "href": "https://needport.jp/_next/static/chunks/webpack-d07f3441983eb8ab.js",
+      "rel": "preload"
+    },
+    {
+      "href": "https://needport.jp/manifest.webmanifest",
+      "rel": "manifest"
+    }
+  ],
+  "classification": "C",
+  "summary": "window.Clerk が未定義または __clerk_frontend_api が設定されていない (初期化前レンダリング or 環境変数不整合)"
+}
