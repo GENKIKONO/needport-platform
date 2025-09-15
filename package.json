@@ -48,6 +48,7 @@
     "monitor:prod:e2e": "node scripts/prod-e2e-monitor.js",
     "monitor:prod:full": "npm run monitor:prod && npm run monitor:prod:e2e",
     "cleanup:e2e": "npx tsx scripts/cleanup-e2e-drafts.ts --dry-run",
+    "clerk:backfill:profiles": "npx tsx scripts/clerk/backfill-profiles.ts",
     "cleanup:e2e:live": "npx tsx scripts/cleanup-e2e-drafts.ts",
     "test:clerk:login": "node scripts/test-clerk-login.js",
     "check:clerk:config": "node scripts/check-clerk-config.js"

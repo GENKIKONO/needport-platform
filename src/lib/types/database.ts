@@ -4,7 +4,9 @@ export interface Database {
       profiles: {
         Row: {
           id: string;
-          clerk_user_id: string;
+          clerk_user_id: string | null;
+          email: string | null;
+          full_name: string | null;
           role: 'user' | 'pro' | 'ops' | 'mod' | 'admin';
           stripe_customer_id: string | null;
           stripe_account_id: string | null;
@@ -13,7 +15,9 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          clerk_user_id: string;
+          clerk_user_id?: string | null;
+          email?: string | null;
+          full_name?: string | null;
           role?: 'user' | 'pro' | 'ops' | 'mod' | 'admin';
           stripe_customer_id?: string | null;
           stripe_account_id?: string | null;
@@ -22,7 +26,9 @@ export interface Database {
         };
         Update: {
           id?: string;
-          clerk_user_id?: string;
+          clerk_user_id?: string | null;
+          email?: string | null;
+          full_name?: string | null;
           role?: 'user' | 'pro' | 'ops' | 'mod' | 'admin';
           stripe_customer_id?: string | null;
           stripe_account_id?: string | null;
@@ -34,45 +40,51 @@ export interface Database {
         Row: {
           id: string;
           title: string;
-          summary: string;
+          summary: string | null;
           body: string;
-          tags: string[];
+          tags: string[] | null;
           area: string | null;
-          mode: 'single' | 'pooled';
+          mode: 'single' | 'pooled' | null;
           adopted_offer_id: string | null;
-          prejoin_count: number;
+          prejoin_count: number | null;
           published: boolean;
-          created_by: string;
+          status: 'draft' | 'published' | 'closed';
+          owner_id: string;
+          created_by: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           title: string;
-          summary: string;
+          summary?: string | null;
           body: string;
-          tags?: string[];
+          tags?: string[] | null;
           area?: string | null;
-          mode?: 'single' | 'pooled';
+          mode?: 'single' | 'pooled' | null;
           adopted_offer_id?: string | null;
-          prejoin_count?: number;
+          prejoin_count?: number | null;
           published?: boolean;
-          created_by: string;
+          status?: 'draft' | 'published' | 'closed';
+          owner_id: string;
+          created_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           title?: string;
-          summary?: string;
+          summary?: string | null;
           body?: string;
-          tags?: string[];
+          tags?: string[] | null;
           area?: string | null;
-          mode?: 'single' | 'pooled';
+          mode?: 'single' | 'pooled' | null;
           adopted_offer_id?: string | null;
-          prejoin_count?: number;
+          prejoin_count?: number | null;
           published?: boolean;
-          created_by?: string;
+          status?: 'draft' | 'published' | 'closed';
+          owner_id?: string;
+          created_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
