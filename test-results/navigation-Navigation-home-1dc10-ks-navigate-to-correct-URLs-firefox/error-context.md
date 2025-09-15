@@ -1,7 +1,20 @@
 # Page snapshot
 
 ```yaml
-- banner: NeedPort
+- banner:
+  - link "NeedPort":
+    - /url: /
+    - img
+    - text: NeedPort
+  - navigation:
+    - link "ニーズ一覧":
+      - /url: /needs
+    - link "ニーズを投稿する":
+      - /url: /needs/new
+  - link "一般ログイン":
+    - /url: /sign-in
+  - link "事業者ログイン":
+    - /url: /vendors/login
 - complementary:
   - navigation:
     - text: アカウント
@@ -31,7 +44,33 @@
       - listitem:
         - link "プライバシーポリシー":
           - /url: /privacy
-- main: 読み込み中…
+- main:
+  - heading "NeedPortにログイン" [level=1]
+  - paragraph: ニーズと解決者をつなぐマッチングプラットフォーム
+  - paragraph: アカウントにログインして、ニーズや提案を管理しましょう
+  - heading "Sign in to NeedPort" [level=1]
+  - paragraph: Welcome back! Please sign in to continue
+  - button "Sign in with Google Continue with Google":
+    - img "Sign in with Google"
+    - text: Continue with Google
+  - paragraph: or
+  - text: Email address
+  - textbox "Email address"
+  - text: Password
+  - textbox "Password"
+  - button "Show password":
+    - img
+  - button "Continue":
+    - text: Continue
+    - img
+  - text: Don’t have an account?
+  - link "Sign up":
+    - /url: https://allowing-gnat-26.accounts.dev/sign-up?__clerk_db_jwt=dvb_32j4j0CEPQjfxZyCrhS6xeMe73A#/?redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fneeds%2Fnew
+  - paragraph: Secured by
+  - link "Clerk logo":
+    - /url: https://go.clerk.com/components
+    - img
+  - paragraph: Development mode
 - contentinfo:
   - img
   - text: NeedPort
@@ -79,4 +118,5 @@
       - link "運営会社":
         - /url: /company
   - text: © 2024 NeedPort. All rights reserved. ニーズ起点のマッチングプラットフォーム
+- alert
 ```
