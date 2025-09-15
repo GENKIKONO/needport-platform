@@ -49,7 +49,10 @@
       "Bash(git ls-tree:*)",
       "Bash(source:*)",
       "Bash(vercel env pull:*)",
-      "WebFetch(domain:clerk.com)"
+      "WebFetch(domain:clerk.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:needport.jp)",
+      "Bash(BASE_URL=\"https://needport.jp\" npm run clerk:health)"
     ],
     "deny": [],
     "ask": []

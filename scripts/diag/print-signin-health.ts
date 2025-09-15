@@ -19,7 +19,7 @@
  * 2 = Configuration or network errors
  */
 
-import { chromium, Browser, Page } from 'playwright';
+import { chromium, type Browser, type Page } from 'playwright';
 
 interface SignInHealthReport {
   timestamp: string;
@@ -455,7 +455,7 @@ class SignInHealthChecker {
 
   private printReport(report: SignInHealthReport): void {
     console.log('\n📊 SignIn Health Report');
-    console.log('=' * 50);
+    console.log('='.repeat(50));
     console.log(`URL: ${report.url}`);
     console.log(`Timestamp: ${report.timestamp}`);
     console.log(`Overall Status: ${this.getStatusIcon(report.status)} ${report.status.toUpperCase()}`);
